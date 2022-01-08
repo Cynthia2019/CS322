@@ -1,0 +1,67 @@
+(:main
+    (:main
+        0 0
+        call input 0
+        rdi <- rax
+        call input 0
+        rsi <- rax
+
+        mem rsp -8 <- :FUN_next
+        call :divide 2
+        :FUN_next
+
+        rdi <- rax
+        call print 1
+        return
+    )
+
+    (:divide
+        2 3
+        mem rsp 0 <- r12
+        mem rsp 8 <- r13
+        mem rsp 16 <- r14
+
+        // decode
+        rsi >>= 1
+        rdi >>= 1
+
+        rax <- 0
+        cjump rsi = 0 :divide_end
+
+
+        r13 <- rdi
+        r13 -= rsi
+
+        :divide_loop1
+        cjump rdi < rsi :divide_loop1_next
+        r14 <- 1
+        r12 <- rsi
+
+        :divide_loop2
+        cjump r13 <= r12 :divide_loop2_next
+
+        r12 <<= 1
+        r14 <<= 1
+        r13 <- rdi
+        r13 -= r12
+
+        goto :divide_loop2
+        :divide_loop2_next
+
+        rax += r14
+        rdi -= r12
+        goto :divide_loop1
+        :divide_loop1_next
+
+        //encode
+        rax <<= 1
+        rax += 1
+
+        :divide_end
+
+        r12 <- mem rsp 0
+        r13 <- mem rsp 8
+        r14 <- mem rsp 16
+        return
+    )
+)
