@@ -1,11 +1,13 @@
 (:main
   (:main
-    0 0
+    0 2
     call input 0
-    rdi <- rax
+    mem rsp 0 <- rax
     call input 0
-    rsi <- rax
+    mem rsp 8 <- rax
 
+    rdi <- mem rsp 0
+    rsi <- mem rsp 8
     mem rsp -8 <- :FUN_next
     call :divide 2
     :FUN_next
