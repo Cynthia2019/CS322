@@ -1,36 +1,37 @@
 (:fib
   (:fib
-    0 0
+    0
     call input 0
     rax -= 1
     rax >>= 1
-    cjump rax < 2 :ret1
+    cjump rax < 2 :fib_end
+    
+    %p <- 0
+    %q <- 0
+    %r <- 1
+    %i <- 2
 
-    r8 <- 0
-    r9 <- 0
-    r10 <- 1
-    rsi <- 2
-    cjump rsi = rax :ret2
-    :loop
-    r8 <- r9
-    r9 <- r10
-    rcx <- r9
-    rcx += r8
-    r10 <- rcx
-    rsi += 1
-    cjump rsi <= rax :loop
-
-    :ret2
-    rdi <- r10
+    cjump %i = rax :fib_loop_next
+    :fib_loop
+    %p <- %q
+    %q <- %r
+    rcx <- %q
+    rcx += %p
+    %r <- rcx
+    %i += 1
+    cjump %i <= rax :fib_loop
+    
+    :fib_loop_next
+    rdi <- %r
     rdi <<= 1
     rdi += 1
     call print 1
     return
 
-    :ret1
+    :fib_end
     rdi <- rax
-    rdi <<= 1
-    rdi += 1
+    rdi	<<= 1
+    rdi	+= 1
     call print 1
     return
   )

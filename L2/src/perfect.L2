@@ -1,0 +1,41 @@
+(:perfect
+  (:perfect
+    0
+    call input 0
+    rax >>= 1
+    %left <- 0
+    %right <- rax
+    
+    :perfect_loop
+    %mid <- %right
+    %mid += %left
+    %mid >>= 1
+    %square <- %mid
+    %square *= %square
+    cjump %square < rax :perfect_leftPlus
+    cjump rax < %square :perfect_rightPlus
+    cjump %square = rax :perfect_true
+
+    :perfect_leftPlus
+    %left <- %mid
+    %left += 1
+    cjump %left <= %right :perfect_loop
+    cjump %right < %left :perfect_false
+
+    :perfect_rightPlus
+    %right <- %mid
+    %right -= 1
+    cjump %left <= %right :perfect_loop
+    cjump %right < %left :perfect_false
+
+    :perfect_true
+    rdi <- 3
+    call print 1
+    return
+
+    :perfect_false
+    rdi <- 1
+    call print 1
+    return 
+  )
+)
