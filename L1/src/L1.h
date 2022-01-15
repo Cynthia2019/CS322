@@ -17,6 +17,7 @@ namespace L1 {
       bool isARegister = false;
       bool isAConstant = false; 
       bool isAnOp = false; 
+      bool isALabel = false;
   };
 
   /*
@@ -87,6 +88,13 @@ namespace L1 {
     Item op; 
   };
 
+  //call u N instruction 
+  class Instruction_call : public Instruction {
+    public: 
+    Item constant; 
+    Item label; 
+    Item dst; 
+  }; 
 
   /*
    * Function.

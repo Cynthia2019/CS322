@@ -5,7 +5,7 @@
     rdx <- mem rdi 8
     rdx += -1
     mem rdi 8 -= rcx
-    rdx += mem rsp 8
+    call :testFunction 0
     return
   )
 

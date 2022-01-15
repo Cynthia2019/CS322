@@ -74,6 +74,7 @@ namespace L1 {
    */
   struct str_return : TAOCPP_PEGTL_STRING( "return" ) {};
   struct str_mem : TAOCPP_PEGTL_STRING( "mem" ) {};
+  struct str_call : TAOCPP_PEGTL_STRING( "call" ) {};
   struct str_arrow : TAOCPP_PEGTL_STRING( "<-" ) {};
   struct str_shift_left : TAOCPP_PEGTL_STRING( "<<=" ) {};
   struct str_shift_right : TAOCPP_PEGTL_STRING( ">>=" ) {};
@@ -132,6 +133,9 @@ namespace L1 {
   struct local_number:
     number {} ;
 
+  struct number_rule: 
+    number {};
+
   struct seps: 
     pegtl::star< 
       pegtl::sor< 
@@ -157,9 +161,6 @@ namespace L1 {
       register_rule
     > {};
   
-  struct load_offset_rule: 
-    number {};
-
   struct shift_by_number_rule:
     pegtl::seq<
       register_rule,
@@ -200,7 +201,7 @@ namespace L1 {
         seps,
         register_rule, 
         seps, 
-        load_offset_rule
+        number_rule
         >
     {};
 
@@ -210,7 +211,7 @@ namespace L1 {
         seps,
         register_rule, 
         seps, 
-        load_offset_rule, 
+        number_rule, 
         seps, 
         str_arrow, 
         seps, 
@@ -226,8 +227,6 @@ namespace L1 {
       TAOCPP_PEGTL_STRING( "*=" ),
       TAOCPP_PEGTL_STRING( "&=" )
     > {};
-  struct aops_value_rule: 
-    number {};
   // w aop t
   struct Instruction_arithmetic_rule: 
     pegtl::seq<
@@ -236,7 +235,7 @@ namespace L1 {
       aops_rule, 
       seps, 
       pegtl::sor<
-        aops_value_rule, 
+        number_rule, 
         register_rule
       >
     >{};
@@ -251,12 +250,12 @@ namespace L1 {
       seps, 
       register_rule, 
       seps, 
-      load_offset_rule, 
+      number_rule, 
       seps, 
       aops_rule, 
       seps, 
       pegtl::sor<
-        aops_value_rule, 
+        number_rule, 
         register_rule
       >
     > {};
@@ -271,9 +270,23 @@ namespace L1 {
       seps, 
       register_rule, 
       seps, 
-      load_offset_rule 
+      number_rule 
     > {};
   
+  /*
+  call 
+  */
+ struct Instruction_call_rule: 
+  pegtl::seq<
+    str_call, 
+    seps,
+    pegtl::sor<
+      Label_rule,
+      register_rule
+    >,
+    seps, 
+    number_rule
+  > {}; 
   struct Instruction_rule:
     pegtl::sor<
       pegtl::seq< pegtl::at<Instruction_return_rule>            , Instruction_return_rule             >,
@@ -283,7 +296,8 @@ namespace L1 {
       pegtl::seq< pegtl::at<Instruction_arithmetic_rule>        , Instruction_arithmetic_rule        >,
       pegtl::seq< pegtl::at<Instruction_shift_rule>        , Instruction_shift_rule        >,
       pegtl::seq< pegtl::at<Instruction_store_aop_rule>        , Instruction_store_aop_rule        >,
-      pegtl::seq< pegtl::at<Instruction_load_aop_rule>        , Instruction_load_aop_rule        >
+      pegtl::seq< pegtl::at<Instruction_load_aop_rule>        , Instruction_load_aop_rule        >,
+      pegtl::seq< pegtl::at<Instruction_call_rule>        , Instruction_call_rule        >
     > { };
 
   struct Instructions_rule:
@@ -426,16 +440,6 @@ namespace L1 {
     }
   };
 
-  template<> struct action < load_offset_rule > {
-    template< typename Input >
-    static void apply( const Input & in, Program & p){
-      Item i;
-      i.num = std::stoll(in.string());
-      i.isARegister = false;
-      i.isAConstant = true;
-      parsed_items.push_back(i);
-    }
-  };
   //action for += -= *= &= 
   template<> struct action < aops_rule > {
     template< typename Input >
@@ -446,8 +450,8 @@ namespace L1 {
       parsed_items.push_back(i);
     }
   }; 
-  //action for aops value when value is a number
-  template<> struct action < aops_value_rule > {
+  //action when value is a number
+  template<> struct action < number_rule > {
     template< typename Input >
     static void apply( const Input & in, Program & p){
       Item i; 
@@ -503,6 +507,24 @@ namespace L1 {
       i->src = parsed_items.back(); 
       parsed_items.pop_back(); 
       i->op = parsed_items.back(); 
+      parsed_items.pop_back(); 
+      i->dst = parsed_items.back(); 
+      parsed_items.pop_back(); 
+
+      currentF->instructions.push_back(i); 
+    }
+  }; 
+
+  /*
+   call actions 
+  */
+  //action for call u N
+  template<> struct action < Instruction_call_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      auto currentF = p.functions.back(); 
+      auto i = new Instruction_load_aop(); 
+      i->constant = parsed_items.back(); 
       parsed_items.pop_back(); 
       i->dst = parsed_items.back(); 
       parsed_items.pop_back(); 
