@@ -74,6 +74,7 @@ namespace L1 {
    */
   struct str_return : TAOCPP_PEGTL_STRING( "return" ) {};
   struct str_mem : TAOCPP_PEGTL_STRING( "mem" ) {};
+  struct str_call : TAOCPP_PEGTL_STRING( "call" ) {};
   struct str_arrow : TAOCPP_PEGTL_STRING( "<-" ) {};
   struct str_shift_left : TAOCPP_PEGTL_STRING( "<<=" ) {};
   struct str_shift_right : TAOCPP_PEGTL_STRING( ">>=" ) {};
@@ -132,7 +133,7 @@ namespace L1 {
   struct local_number:
     number {} ;
   
-  struct const_number:
+  struct number_rule: 
     number {};
 
   struct seps: 
@@ -159,9 +160,6 @@ namespace L1 {
       seps,
       register_rule
     > {};
-  
-  struct load_offset_rule: 
-    number {};
 
   struct shift_op_rule:
   pegtl::sor< str_shift_left, str_shift_right>{};
@@ -172,7 +170,7 @@ namespace L1 {
         seps,
         shift_op_rule,
         seps,
-        pegtl::sor<const_number, register_rule>
+        pegtl::sor<number_rule, register_rule>
     > {};
 
   struct Instruction_load_rule:
@@ -185,7 +183,7 @@ namespace L1 {
         seps,
         register_rule, 
         seps, 
-        load_offset_rule
+        number_rule
         >
     {};
 
@@ -195,7 +193,7 @@ namespace L1 {
         seps,
         register_rule, 
         seps, 
-        load_offset_rule, 
+        number_rule, 
         seps, 
         str_arrow, 
         seps, 
@@ -211,8 +209,6 @@ namespace L1 {
       TAOCPP_PEGTL_STRING( "*=" ),
       TAOCPP_PEGTL_STRING( "&=" )
     > {};
-  struct aops_value_rule: 
-    number {};
   // w aop t
   struct Instruction_arithmetic_rule: 
     pegtl::seq<
@@ -221,7 +217,7 @@ namespace L1 {
       aops_rule, 
       seps, 
       pegtl::sor<
-        aops_value_rule, 
+        number_rule, 
         register_rule
       >
     >{};
@@ -236,12 +232,12 @@ namespace L1 {
       seps, 
       register_rule, 
       seps, 
-      load_offset_rule, 
+      number_rule, 
       seps, 
       aops_rule, 
       seps, 
       pegtl::sor<
-        aops_value_rule, 
+        number_rule, 
         register_rule
       >
     > {};
@@ -256,9 +252,66 @@ namespace L1 {
       seps, 
       register_rule, 
       seps, 
-      load_offset_rule 
+      number_rule 
     > {};
   
+  /*
+  call 
+  */
+ struct Instruction_call_rule: 
+  pegtl::seq<
+    str_call, 
+    seps,
+    pegtl::sor<
+      Label_rule,
+      register_rule
+    >,
+    seps, 
+    number_rule
+  > {}; 
+
+  struct Instruction_call_print_rule: 
+    TAOCPP_PEGTL_STRING( "call print 1" ) {}; 
+
+  struct Instruction_call_input_rule: 
+    TAOCPP_PEGTL_STRING( "call input 0" ) {}; 
+
+  struct Instruction_call_allocate_rule: 
+    TAOCPP_PEGTL_STRING( "call allocate 2" ) {}; 
+
+  struct Instruction_call_error_rule: 
+    pegtl::seq<
+      TAOCPP_PEGTL_STRING( "call tensor-error" ),
+      seps,
+      number_rule
+    > {}; 
+  
+  /*
+  misc
+  */
+  struct Instruction_increment_rule: 
+    pegtl::seq<
+      register_rule, 
+      TAOCPP_PEGTL_STRING( "++" )
+    > {}; 
+  struct Instruction_decrement_rule: 
+    pegtl::seq<
+      register_rule, 
+      TAOCPP_PEGTL_STRING( "--" )
+    > {}; 
+
+  struct Instruction_at_rule: 
+    pegtl::seq<
+      register_rule, 
+      seps,
+      TAOCPP_PEGTL_STRING( "@" ), 
+      seps, 
+      register_rule, 
+      seps, 
+      register_rule, 
+      seps, 
+      number_rule
+    > {}; 
   struct Instruction_rule:
     pegtl::sor<
       pegtl::seq< pegtl::at<Instruction_return_rule>            , Instruction_return_rule             >,
@@ -268,7 +321,15 @@ namespace L1 {
       pegtl::seq< pegtl::at<Instruction_arithmetic_rule>        , Instruction_arithmetic_rule        >,
       pegtl::seq< pegtl::at<Instruction_shift_rule>        , Instruction_shift_rule        >,
       pegtl::seq< pegtl::at<Instruction_store_aop_rule>        , Instruction_store_aop_rule        >,
-      pegtl::seq< pegtl::at<Instruction_load_aop_rule>        , Instruction_load_aop_rule        >
+      pegtl::seq< pegtl::at<Instruction_load_aop_rule>        , Instruction_load_aop_rule        >,
+      pegtl::seq< pegtl::at<Instruction_call_rule>        , Instruction_call_rule        >,
+      pegtl::seq< pegtl::at<Instruction_call_print_rule>        , Instruction_call_print_rule        >,
+      pegtl::seq< pegtl::at<Instruction_call_input_rule>        , Instruction_call_input_rule        >,
+      pegtl::seq< pegtl::at<Instruction_call_allocate_rule>        , Instruction_call_allocate_rule        >,
+      pegtl::seq< pegtl::at<Instruction_call_error_rule>        , Instruction_call_error_rule        >,
+      pegtl::seq< pegtl::at<Instruction_increment_rule>        , Instruction_increment_rule        >,
+      pegtl::seq< pegtl::at<Instruction_decrement_rule>        , Instruction_decrement_rule        >,
+      pegtl::seq< pegtl::at<Instruction_at_rule>        , Instruction_at_rule        >
     > { };
 
   struct Instructions_rule:
@@ -365,13 +426,6 @@ namespace L1 {
     }
   };
 
-  template<> struct action < const_number > {
-    template< typename Input >
-    static void apply( const Input & in, Program & p){
-      if (is_debug) cout << "firing const_number, str: " << in.string() << endl;
-    }
-  };
-
   template<> struct action < argument_number > {
     template< typename Input >
 	static void apply( const Input & in, Program & p){
@@ -418,16 +472,6 @@ namespace L1 {
     }
   };
 
-  template<> struct action < load_offset_rule > {
-    template< typename Input >
-    static void apply( const Input & in, Program & p){
-      Item i;
-      i.num = std::stoll(in.string());
-      i.isARegister = false;
-      i.isAConstant = true;
-      parsed_items.push_back(i);
-    }
-  };
   //action for += -= *= &= 
   template<> struct action < aops_rule > {
     template< typename Input >
@@ -438,8 +482,8 @@ namespace L1 {
       parsed_items.push_back(i);
     }
   }; 
-  //action for aops value when value is a number
-  template<> struct action < aops_value_rule > {
+  //action when value is a number
+  template<> struct action < number_rule > {
     template< typename Input >
     static void apply( const Input & in, Program & p){
       Item i; 
@@ -503,6 +547,100 @@ namespace L1 {
       currentF->instructions.push_back(i); 
     }
   }; 
+
+  /*
+   call actions 
+  */
+  //action for call u N
+  template<> struct action < Instruction_call_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      auto currentF = p.functions.back(); 
+      auto i = new Instruction_call(); 
+      i->constant = parsed_items.back(); 
+      parsed_items.pop_back(); 
+      i->dst = parsed_items.back(); 
+      parsed_items.pop_back(); 
+
+      currentF->instructions.push_back(i); 
+    }
+  }; 
+
+  //action for call print 1
+  template<> struct action < Instruction_call_print_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      auto currentF = p.functions.back(); 
+      auto i = new Instruction_call_print(); 
+      currentF->instructions.push_back(i); 
+    }
+  };
+  //action for call input 0 
+  template<> struct action < Instruction_call_input_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      auto currentF = p.functions.back(); 
+      auto i = new Instruction_call_input(); 
+      currentF->instructions.push_back(i); 
+    }
+  };
+  //action for call allocate 2
+  template<> struct action < Instruction_call_allocate_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      auto currentF = p.functions.back(); 
+      auto i = new Instruction_call_allocate(); 
+      currentF->instructions.push_back(i); 
+    }
+  };
+
+  //action for call tensor-error F
+  template<> struct action < Instruction_call_error_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      auto currentF = p.functions.back(); 
+      auto i = new Instruction_call_error(); 
+      i->constant = parsed_items.back(); 
+      parsed_items.pop_back();
+      currentF->instructions.push_back(i); 
+    }
+  };
+
+  //action for increment w++
+  template<> struct action < Instruction_increment_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      auto currentF = p.functions.back(); 
+      auto i = new Instruction_increment(); 
+      currentF->instructions.push_back(i); 
+    }
+  };
+  //action for increment w--
+  template<> struct action < Instruction_decrement_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      auto currentF = p.functions.back(); 
+      auto i = new Instruction_decrement(); 
+      currentF->instructions.push_back(i); 
+    }
+  };
+ //action for w @ w w E 
+  template<> struct action < Instruction_at_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      auto currentF = p.functions.back(); 
+      auto i = new Instruction_at(); 
+      i->constant = parsed_items.back(); 
+      parsed_items.pop_back();
+      i->src_mult = parsed_items.back();
+      parsed_items.pop_back();
+      i->src_add = parsed_items.back();
+      parsed_items.pop_back();
+      i->dst = parsed_items.back();
+      parsed_items.pop_back();
+      currentF->instructions.push_back(i); 
+    }
+  };
 
   template<> struct action < Instruction_assignment_rule > {
     template< typename Input >
