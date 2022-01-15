@@ -287,6 +287,22 @@ namespace L1 {
     seps, 
     number_rule
   > {}; 
+
+  struct Instruction_call_print_rule: 
+    TAOCPP_PEGTL_STRING( "call print 1" ) {}; 
+
+  struct Instruction_call_input_rule: 
+    TAOCPP_PEGTL_STRING( "call input 0" ) {}; 
+
+  struct Instruction_call_allocate_rule: 
+    TAOCPP_PEGTL_STRING( "call allocate 2" ) {}; 
+
+  struct Instruction_call_error_rule: 
+    pegtl::seq<
+      TAOCPP_PEGTL_STRING( "call tensor-error" ),
+      seps,
+      number_rule
+    > {}; 
   struct Instruction_rule:
     pegtl::sor<
       pegtl::seq< pegtl::at<Instruction_return_rule>            , Instruction_return_rule             >,
@@ -297,7 +313,11 @@ namespace L1 {
       pegtl::seq< pegtl::at<Instruction_shift_rule>        , Instruction_shift_rule        >,
       pegtl::seq< pegtl::at<Instruction_store_aop_rule>        , Instruction_store_aop_rule        >,
       pegtl::seq< pegtl::at<Instruction_load_aop_rule>        , Instruction_load_aop_rule        >,
-      pegtl::seq< pegtl::at<Instruction_call_rule>        , Instruction_call_rule        >
+      pegtl::seq< pegtl::at<Instruction_call_rule>        , Instruction_call_rule        >,
+      pegtl::seq< pegtl::at<Instruction_call_print_rule>        , Instruction_call_print_rule        >,
+      pegtl::seq< pegtl::at<Instruction_call_input_rule>        , Instruction_call_input_rule        >,
+      pegtl::seq< pegtl::at<Instruction_call_allocate_rule>        , Instruction_call_allocate_rule        >,
+      pegtl::seq< pegtl::at<Instruction_call_error_rule>        , Instruction_call_error_rule        >
     > { };
 
   struct Instructions_rule:
@@ -523,7 +543,7 @@ namespace L1 {
     template< typename Input >
     static void apply( const Input & in, Program & p){
       auto currentF = p.functions.back(); 
-      auto i = new Instruction_load_aop(); 
+      auto i = new Instruction_call(); 
       i->constant = parsed_items.back(); 
       parsed_items.pop_back(); 
       i->dst = parsed_items.back(); 
@@ -532,6 +552,46 @@ namespace L1 {
       currentF->instructions.push_back(i); 
     }
   }; 
+
+  //action for call print 1
+  template<> struct action < Instruction_call_print_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      auto currentF = p.functions.back(); 
+      auto i = new Instruction_call_print(); 
+      currentF->instructions.push_back(i); 
+    }
+  };
+  //action for call input 0 
+  template<> struct action < Instruction_call_input_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      auto currentF = p.functions.back(); 
+      auto i = new Instruction_call_input(); 
+      currentF->instructions.push_back(i); 
+    }
+  };
+  //action for call allocate 2
+  template<> struct action < Instruction_call_allocate_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      auto currentF = p.functions.back(); 
+      auto i = new Instruction_call_allocate(); 
+      currentF->instructions.push_back(i); 
+    }
+  };
+
+  //action for call tensor-error F
+  template<> struct action < Instruction_call_error_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      auto currentF = p.functions.back(); 
+      auto i = new Instruction_call_error(); 
+      i->constant = parsed_items.back(); 
+      parsed_items.pop_back();
+      currentF->instructions.push_back(i); 
+    }
+  };
 
   template<> struct action < Instruction_assignment_rule > {
     template< typename Input >

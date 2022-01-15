@@ -6,6 +6,9 @@
     rdx += -1
     mem rdi 8 -= rcx
     call :testFunction 0
+    call print 1
+    call input 0 
+    call tensor-error 1
     return
   )
 

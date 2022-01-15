@@ -96,6 +96,14 @@ namespace L1 {
     Item dst; 
   }; 
 
+  class Instruction_call_print : public Instruction {};
+  class Instruction_call_input : public Instruction {};
+  class Instruction_call_allocate : public Instruction {};
+  class Instruction_call_error : public Instruction {
+    public: 
+    Item constant; 
+  };
+
   /*
    * Function.
    */
