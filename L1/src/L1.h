@@ -11,10 +11,12 @@ namespace L1 {
   class Item {
     public:
       string labelName;
+      string op; 
       int64_t num; 
       Register r;
-      bool isARegister;
-      bool isAConstant; 
+      bool isARegister = false;
+      bool isAConstant = false; 
+      bool isAnOp = false; 
   };
 
   /*
@@ -48,6 +50,14 @@ namespace L1 {
     Item src; 
     Item dst; 
     Item constant;
+  };
+
+  //aop 
+  class Instruction_aop : public Instruction {
+    public: 
+    Item src; 
+    Item dst; 
+    Item op; 
   };
 
   /*

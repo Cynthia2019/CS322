@@ -3,7 +3,7 @@
     0 0
     rax <- rdi
     rdx <- mem rdi 8
-    mem rsp 0 <- r10
+    rdx += -1
     return
   )
 

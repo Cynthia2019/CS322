@@ -154,7 +154,7 @@ namespace L1 {
     > {};
   
   struct load_offset_rule: 
-    pegtl::digit {};
+    number {};
 
   struct Instruction_load_rule:
      pegtl::seq<
@@ -183,13 +183,37 @@ namespace L1 {
         register_rule
         >
     {};
+  // += -= *= &=
+  struct aops_rule: 
+    pegtl::sor<
+      TAOCPP_PEGTL_STRING( "+=" ),
+      TAOCPP_PEGTL_STRING( "-=" ),
+      TAOCPP_PEGTL_STRING( "*=" ),
+      TAOCPP_PEGTL_STRING( "&=" )
+    > {};
+  struct aops_value_rule: 
+    number {};
+  // w aop t
+  struct Instruction_arithmetic_rule: 
+    pegtl::seq<
+      register_rule,
+      seps,  
+      aops_rule, 
+      seps, 
+      pegtl::sor<
+        aops_value_rule, 
+        register_rule
+      >
+    >{};
 
+  
   struct Instruction_rule:
     pegtl::sor<
       pegtl::seq< pegtl::at<Instruction_return_rule>            , Instruction_return_rule             >,
       pegtl::seq< pegtl::at<Instruction_assignment_rule>        , Instruction_assignment_rule         >,
       pegtl::seq< pegtl::at<Instruction_load_rule>        , Instruction_load_rule        >,
-      pegtl::seq< pegtl::at<Instruction_store_rule>        , Instruction_store_rule        >
+      pegtl::seq< pegtl::at<Instruction_store_rule>        , Instruction_store_rule        >,
+      pegtl::seq< pegtl::at<Instruction_arithmetic_rule>        , Instruction_arithmetic_rule        >
     > { };
 
   struct Instructions_rule:
@@ -339,6 +363,44 @@ namespace L1 {
       parsed_items.push_back(i);
     }
   };
+  //action for += -= *= &= 
+  template<> struct action < aops_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      Item i; 
+      i.isAnOp = true; 
+      i.op = in.string(); 
+      cout << "op: " << i.op << endl; 
+      parsed_items.push_back(i);
+    }
+  }; 
+  //action for aops value when value is a number
+  template<> struct action < aops_value_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      Item i; 
+      i.isAConstant = true; 
+      i.num = std::stoll(in.string()); 
+      cout << "aops number: " << i.num << endl; 
+      parsed_items.push_back(i);
+    }
+  }; 
+  //action for w aop t
+  template<> struct action < Instruction_arithmetic_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      auto currentF = p.functions.back(); 
+      auto i = new Instruction_aop(); 
+      i->src = parsed_items.back(); 
+      parsed_items.pop_back(); 
+      i->op = parsed_items.back(); 
+      parsed_items.pop_back(); 
+      i->dst = parsed_items.back(); 
+      parsed_items.pop_back(); 
+
+      currentF->instructions.push_back(i); 
+    }
+  }; 
 
   template<> struct action < Instruction_assignment_rule > {
     template< typename Input >
