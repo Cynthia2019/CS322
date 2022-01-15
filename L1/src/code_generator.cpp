@@ -28,7 +28,8 @@ namespace L1{
     outputFile << " pushq %r13\n";
     outputFile << " pushq %r14\n";
     outputFile << " pushq %r15\n";
-    std::string name = '_' + p.entryPointLabel; 
+    std::string name = p.entryPointLabel; 
+    name[0] = '_';
     cout << "programe name: " << name << endl; 
     outputFile << " call " + name + "\n"; 
     outputFile << " popq %r15\n";
@@ -40,18 +41,19 @@ namespace L1{
     outputFile << " retq\n"; 
 
     for(auto f : p.functions) {
-      outputFile << '_' + f->name + ':\n'; 
+      outputFile << '_' + f->name + ":\n"; 
       for(Instruction* i : f->instructions){
         //if assignment
-        Instruction_assignment *a = dynamic_cast<Instruction_assignment *>(i);
+        cout << "instruction: " << i->instructionName << endl;
+        //Instruction_assignment *a = dynamic_cast<Instruction_assignment *>(i);
         std::string translated = "\t\t"; 
-        if(a != nullptr) {
-          translated.append("movq "); 
-          if(a->isARegister){
-            translated.append('%' + a->r + ',');
+        // if(a != nullptr) {
+        //   translated.append("movq "); 
+        //   if(a->isARegister){
+        //     translated.append('%' + a->r + ',');
              
-          }
-        }
+        //   }
+        // }
       }
     }
     

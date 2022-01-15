@@ -1,7 +1,7 @@
 (:go
   (:go
     0 0
-    rax <- rdi
+    r8 <- 0
     rdx <- mem rdi 8
     rdx += -1
     mem rdi 8 -= rcx

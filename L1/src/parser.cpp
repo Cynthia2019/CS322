@@ -158,7 +158,10 @@ namespace L1 {
       seps,
       str_arrow,
       seps,
-      register_rule
+      pegtl::sor<
+        register_rule,
+        number_rule
+      >
     > {};
 
   struct shift_op_rule:
@@ -197,7 +200,10 @@ namespace L1 {
         seps, 
         str_arrow, 
         seps, 
-        register_rule
+        pegtl::sor<
+          register_rule, 
+          number_rule,
+          Label_rule>
         >
     {};
 
@@ -345,6 +351,13 @@ namespace L1 {
       seps, 
       number_rule
     > {}; 
+  struct Instruction_goto_rule:
+    pegtl::seq<
+      TAOCPP_PEGTL_STRING( "goto" ),
+      seps, 
+      Label_rule
+    > 
+  {};
   struct Instruction_rule:
     pegtl::sor<
       pegtl::seq< pegtl::at<Instruction_return_rule>            , Instruction_return_rule             >,
@@ -364,7 +377,9 @@ namespace L1 {
       pegtl::seq< pegtl::at<Instruction_call_error_rule>        , Instruction_call_error_rule        >,
       pegtl::seq< pegtl::at<Instruction_increment_rule>        , Instruction_increment_rule        >,
       pegtl::seq< pegtl::at<Instruction_decrement_rule>        , Instruction_decrement_rule        >,
-      pegtl::seq< pegtl::at<Instruction_at_rule>        , Instruction_at_rule        >
+      pegtl::seq< pegtl::at<Instruction_goto_rule>        , Instruction_goto_rule        >,
+      pegtl::seq< pegtl::at<Instruction_at_rule>        , Instruction_at_rule        >, 
+      pegtl::seq< pegtl::at<Label_rule>        , Label_rule        >
     > { };
 
   struct Instructions_rule:
@@ -482,6 +497,7 @@ namespace L1 {
 	static void apply( const Input & in, Program & p){
       auto currentF = p.functions.back();
       auto i = new Instruction_ret();
+      i->instructionName = "return";
       currentF->instructions.push_back(i);
     }
   };
@@ -522,7 +538,6 @@ namespace L1 {
   template<> struct action < number_rule > {
     template< typename Input >
     static void apply( const Input & in, Program & p){
-      if (is_debug) cout << "firing number_rule, str: " << in.string() << endl;
       Item i; 
       i.isAConstant = true; 
       i.num = std::stoll(in.string()); 
@@ -536,6 +551,7 @@ namespace L1 {
     static void apply( const Input & in, Program & p){
       auto currentF = p.functions.back(); 
       auto i = new Instruction_aop(); 
+      i->instructionName = "aop";
       i->src = parsed_items.back(); 
       parsed_items.pop_back(); 
       i->op = parsed_items.back(); 
@@ -553,6 +569,7 @@ namespace L1 {
     static void apply( const Input & in, Program & p){
       auto currentF = p.functions.back(); 
       auto i = new Instruction_store_aop(); 
+      i->instructionName = "store_aop"; 
       i->src = parsed_items.back(); 
       parsed_items.pop_back(); 
       i->op = parsed_items.back(); 
@@ -572,6 +589,7 @@ namespace L1 {
     static void apply( const Input & in, Program & p){
       auto currentF = p.functions.back(); 
       auto i = new Instruction_load_aop(); 
+      i->instructionName = "load_aop"; 
       i->constant = parsed_items.back(); 
       parsed_items.pop_back(); 
       i->src = parsed_items.back(); 
@@ -594,6 +612,7 @@ namespace L1 {
     static void apply( const Input & in, Program & p){
       auto currentF = p.functions.back(); 
       auto i = new Instruction_call(); 
+      i->instructionName = "call"; 
       i->constant = parsed_items.back(); 
       parsed_items.pop_back(); 
       i->dst = parsed_items.back(); 
@@ -609,6 +628,7 @@ namespace L1 {
     static void apply( const Input & in, Program & p){
       auto currentF = p.functions.back(); 
       auto i = new Instruction_call_print(); 
+      i->instructionName = "call_print"; 
       currentF->instructions.push_back(i); 
     }
   };
@@ -618,6 +638,7 @@ namespace L1 {
     static void apply( const Input & in, Program & p){
       auto currentF = p.functions.back(); 
       auto i = new Instruction_call_input(); 
+      i->instructionName = "call_input"; 
       currentF->instructions.push_back(i); 
     }
   };
@@ -627,6 +648,7 @@ namespace L1 {
     static void apply( const Input & in, Program & p){
       auto currentF = p.functions.back(); 
       auto i = new Instruction_call_allocate(); 
+      i->instructionName = "call_allocate"; 
       currentF->instructions.push_back(i); 
     }
   };
@@ -637,6 +659,7 @@ namespace L1 {
     static void apply( const Input & in, Program & p){
       auto currentF = p.functions.back(); 
       auto i = new Instruction_call_error(); 
+      i->instructionName = "call_error"; 
       i->constant = parsed_items.back(); 
       parsed_items.pop_back();
       currentF->instructions.push_back(i); 
@@ -649,6 +672,7 @@ namespace L1 {
     static void apply( const Input & in, Program & p){
       auto currentF = p.functions.back(); 
       auto i = new Instruction_increment(); 
+      i->instructionName = "increment"; 
       currentF->instructions.push_back(i); 
     }
   };
@@ -658,6 +682,7 @@ namespace L1 {
     static void apply( const Input & in, Program & p){
       auto currentF = p.functions.back(); 
       auto i = new Instruction_decrement(); 
+      i->instructionName = "decrement"; 
       currentF->instructions.push_back(i); 
     }
   };
@@ -667,6 +692,7 @@ namespace L1 {
     static void apply( const Input & in, Program & p){
       auto currentF = p.functions.back(); 
       auto i = new Instruction_at(); 
+      i->instructionName = "at"; 
       i->constant = parsed_items.back(); 
       parsed_items.pop_back();
       i->src_mult = parsed_items.back();
@@ -674,6 +700,19 @@ namespace L1 {
       i->src_add = parsed_items.back();
       parsed_items.pop_back();
       i->dst = parsed_items.back();
+      parsed_items.pop_back();
+      currentF->instructions.push_back(i); 
+    }
+  };
+
+  //action for goto label 
+  template<> struct action < Instruction_goto_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      auto currentF = p.functions.back(); 
+      auto i = new Instruction_goto(); 
+      i->instructionName = "goto"; 
+      i->label = parsed_items.back(); 
       parsed_items.pop_back();
       currentF->instructions.push_back(i); 
     }
@@ -691,6 +730,7 @@ namespace L1 {
        * Create the instruction.
        */ 
       auto i = new Instruction_assignment();
+      i->instructionName = "assignment"; 
       i->src = parsed_items.back();
       parsed_items.pop_back();
       i->dst = parsed_items.back();
@@ -710,6 +750,7 @@ namespace L1 {
       auto currentF = p.functions.back();
 
       auto i = new Instruction_load();
+      i->instructionName = "load"; 
       i->constant = parsed_items.back();
       parsed_items.pop_back(); 
       i->src = parsed_items.back();
@@ -728,6 +769,7 @@ namespace L1 {
       auto currentF = p.functions.back();
 
       auto i = new Instruction_store();
+      i->instructionName = "store"; 
       i->src = parsed_items.back();
       parsed_items.pop_back(); 
       i->constant = parsed_items.back();
@@ -759,6 +801,7 @@ namespace L1 {
       auto currentF = p.functions.back();
 
       auto i = new Instruction_shift();
+      i->instructionName = "shift"; 
       i->src = parsed_items.back();
       parsed_items.pop_back();
       i->dst = parsed_items.back();
@@ -787,6 +830,7 @@ namespace L1 {
       auto currentF = p.functions.back();
 
       auto i = new Instruction_compare();
+      i->instructionName = "compare"; 
       i->oprand2 = parsed_items.back();
       parsed_items.pop_back();
       i->op = parsed_items.back();
@@ -807,6 +851,7 @@ namespace L1 {
       auto currentF = p.functions.back();
 
       auto i = new Instruction_cjump();
+      i->instructionName = "cjump"; 
       i->label = parsed_items.back();
       parsed_items.pop_back();
       i->oprand2 = parsed_items.back();

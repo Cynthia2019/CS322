@@ -24,6 +24,8 @@ namespace L1 {
    * Instruction interface.
    */
   class Instruction{
+    public: 
+    string instructionName; 
   };
 
   /*
@@ -131,7 +133,13 @@ namespace L1 {
     Item src_mult; 
     Item src_add; 
     Item dst; 
-  }; 
+  };
+
+  //goto instruction 
+  class Instruction_goto : public Instruction {
+    public:
+    Item label; 
+  };
   /*
    * Function.
    */
