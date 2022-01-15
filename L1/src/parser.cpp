@@ -131,6 +131,9 @@ namespace L1 {
 
   struct local_number:
     number {} ;
+  
+  struct const_number:
+    number {};
 
   struct seps: 
     pegtl::star< 
@@ -160,34 +163,16 @@ namespace L1 {
   struct load_offset_rule: 
     number {};
 
-  struct shift_by_number_rule:
-    pegtl::seq<
-      register_rule,
-      seps,
-      pegtl::sor<
-        str_shift_left,
-        str_shift_right
-      >,
-      seps,
-      number
-    >{};
-
-  struct shift_by_reg_rule:
-    pegtl::seq<
-      register_rule,
-      seps,
-      pegtl::sor<
-        str_shift_left,
-        str_shift_right
-      >,
-      seps,
-      register_rule
-    >{};
+  struct shift_op_rule:
+  pegtl::sor< str_shift_left, str_shift_right>{};
   
   struct Instruction_shift_rule:
-    pegtl::sor<
-      shift_by_reg_rule,
-      shift_by_number_rule
+      pegtl::seq<
+        register_rule,
+        seps,
+        shift_op_rule,
+        seps,
+        pegtl::sor<const_number, register_rule>
     > {};
 
   struct Instruction_load_rule:
@@ -380,6 +365,13 @@ namespace L1 {
     }
   };
 
+  template<> struct action < const_number > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      if (is_debug) cout << "firing const_number, str: " << in.string() << endl;
+    }
+  };
+
   template<> struct action < argument_number > {
     template< typename Input >
 	static void apply( const Input & in, Program & p){
@@ -456,6 +448,7 @@ namespace L1 {
       parsed_items.push_back(i);
     }
   }; 
+
   //action for w aop t
   template<> struct action < Instruction_arithmetic_rule > {
     template< typename Input >
@@ -570,37 +563,28 @@ namespace L1 {
       currentF->instructions.push_back(i);
     }
   };
-
-  template<> struct action < shift_by_number_rule > {
+  
+  template<> struct action < shift_op_rule > {
     template< typename Input >
     static void apply( const Input & in, Program & p){
-      if (is_debug) cout << "firing shift_by_number_rule, str: " << in.string() << endl;
-
-      auto currentF = p.functions.back();
-
-      auto i = new Instruction_shift();
-      i->src = parsed_items.back();
-      i->src.isAConstant = true;
-      i->src.isARegister = false;
-      parsed_items.pop_back();
-      i->dst = parsed_items.back();
-      parsed_items.pop_back();
-
-      currentF->instructions.push_back(i);
+      if (is_debug) cout << "firing shift_op_rule, str: " << in.string() << endl;
+      Item i;
+      i.isAnOp = true;
+      i.op = in.string();
+      parsed_items.push_back(i);
     }
   };
 
-  template<> struct action < shift_by_reg_rule > {
+  
+  template<> struct action < Instruction_shift_rule > {
     template< typename Input >
     static void apply( const Input & in, Program & p){
-      if (is_debug) cout << "firing shift_by_reg_rule, str: " << in.string() << endl;
+      if (is_debug) cout << "firing Instruction_shift_rule, str: " << in.string() << endl;
 
       auto currentF = p.functions.back();
 
       auto i = new Instruction_shift();
       i->src = parsed_items.back();
-      i->src.isARegister = true;
-      i->src.isAConstant = false;
       parsed_items.pop_back();
       i->dst = parsed_items.back();
       parsed_items.pop_back();
