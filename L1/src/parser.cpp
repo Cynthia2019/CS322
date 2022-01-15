@@ -381,23 +381,23 @@ namespace L1 {
       currentF->instructions.push_back(i);
     }
   };
-  // template<> struct action < Instruction_store_rule > {
-  //   template< typename Input >
-	// static void apply( const Input & in, Program & p){
+  template<> struct action < Instruction_store_rule > {
+    template< typename Input >
+	static void apply( const Input & in, Program & p){
 
-  //     auto currentF = p.functions.back();
+      auto currentF = p.functions.back();
 
-  //     auto i = new Instruction_load();
-  //     i->constant = parsed_items.back();
-  //     parsed_items.pop_back(); 
-  //     i->src = parsed_items.back();
-  //     parsed_items.pop_back();
-  //     i->dst = parsed_items.back();
-  //     parsed_items.pop_back();
+      auto i = new Instruction_store();
+      i->src = parsed_items.back();
+      parsed_items.pop_back(); 
+      i->constant = parsed_items.back();
+      parsed_items.pop_back();
+      i->dst = parsed_items.back();
+      parsed_items.pop_back();
 
-  //     currentF->instructions.push_back(i);
-  //   }
-  // };
+      currentF->instructions.push_back(i);
+    }
+  };
 
 
   Program parse_file (char *fileName){

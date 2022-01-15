@@ -1,0 +1,14 @@
+(:go
+  (:go
+    0 0
+    rax <- rdi
+    rdx <- mem rdi 8
+    mem rsp 0 <- r10
+    return
+  )
+
+  (:testFunction
+    1 2
+    return 
+  )
+)

@@ -42,6 +42,14 @@ namespace L1 {
     Item constant;
   };
 
+  //store instruction
+  class Instruction_store : public Instruction{
+    public: 
+    Item src; 
+    Item dst; 
+    Item constant;
+  };
+
   /*
    * Function.
    */
