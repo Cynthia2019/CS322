@@ -43,6 +43,14 @@ namespace L1 {
     Item dst; 
     Item constant;
   };
+  
+  class Instruction_shift : public Instruction{
+    public: 
+    Item src; 
+    Item dst; 
+    Item constant;
+  };
+
 
   //store instruction
   class Instruction_store : public Instruction{

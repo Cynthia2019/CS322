@@ -17,12 +17,12 @@
 
 using namespace std;
 
+bool is_debug = false;
 void print_help (char *progName){
   std::cerr << "Usage: " << progName << " [-v] [-g 0|1] [-O 0|1|2] SOURCE" << std::endl;
   return ;
 }
 
-bool is_debug = false;
 int main(
   int argc, 
   char **argv

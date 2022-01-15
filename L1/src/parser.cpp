@@ -35,7 +35,9 @@ namespace pegtl = tao::TAO_PEGTL_NAMESPACE;
 using namespace pegtl;
 using namespace std;
 
+extern bool is_debug;
 namespace L1 {
+
 
   /* 
    * Data required to parse
@@ -73,6 +75,8 @@ namespace L1 {
   struct str_return : TAOCPP_PEGTL_STRING( "return" ) {};
   struct str_mem : TAOCPP_PEGTL_STRING( "mem" ) {};
   struct str_arrow : TAOCPP_PEGTL_STRING( "<-" ) {};
+  struct str_shift_left : TAOCPP_PEGTL_STRING( "<<=" ) {};
+  struct str_shift_right : TAOCPP_PEGTL_STRING( ">>=" ) {};
 
   struct comment: 
     pegtl::disable< 
@@ -156,6 +160,36 @@ namespace L1 {
   struct load_offset_rule: 
     number {};
 
+  struct shift_by_number_rule:
+    pegtl::seq<
+      register_rule,
+      seps,
+      pegtl::sor<
+        str_shift_left,
+        str_shift_right
+      >,
+      seps,
+      number
+    >{};
+
+  struct shift_by_reg_rule:
+    pegtl::seq<
+      register_rule,
+      seps,
+      pegtl::sor<
+        str_shift_left,
+        str_shift_right
+      >,
+      seps,
+      register_rule
+    >{};
+  
+  struct Instruction_shift_rule:
+    pegtl::sor<
+      shift_by_reg_rule,
+      shift_by_number_rule
+    > {};
+
   struct Instruction_load_rule:
      pegtl::seq<
         register_rule,
@@ -214,6 +248,7 @@ namespace L1 {
       pegtl::seq< pegtl::at<Instruction_load_rule>        , Instruction_load_rule        >,
       pegtl::seq< pegtl::at<Instruction_store_rule>        , Instruction_store_rule        >,
       pegtl::seq< pegtl::at<Instruction_arithmetic_rule>        , Instruction_arithmetic_rule        >
+      // pegtl::seq< pegtl::at<Instruction_shift>        , Instruction_shift        >
     > { };
 
   struct Instructions_rule:
@@ -275,6 +310,7 @@ namespace L1 {
   template<> struct action < label > {
     template< typename Input >
 	static void apply( const Input & in, Program & p){
+      if (is_debug) cout << "firing label, str: " << in.string() << endl;
       if (p.entryPointLabel.empty()){
         p.entryPointLabel = in.string();
         string_to_r["rax"] = rax; 
@@ -302,6 +338,7 @@ namespace L1 {
   template<> struct action < function_name > {
     template< typename Input >
 	static void apply( const Input & in, Program & p){
+      if (is_debug) cout << "firing function_name, str: " << in.string() << endl;
       auto newF = new Function();
       newF->name = in.string();
       p.functions.push_back(newF);
@@ -346,6 +383,7 @@ namespace L1 {
   template<> struct action < register_rule > {
     template< typename Input >
     static void apply( const Input & in, Program & p){
+      if (is_debug) cout << "firing register_rule, str: " << in.string() << endl;
       Item i;
       i.isARegister = true;
       i.r = string_to_r[in.string()];
@@ -446,6 +484,7 @@ namespace L1 {
   template<> struct action < Instruction_store_rule > {
     template< typename Input >
 	static void apply( const Input & in, Program & p){
+      if (is_debug) cout << "firing Instruction_store_rule, str: " << in.string() << endl;
 
       auto currentF = p.functions.back();
 
@@ -461,6 +500,43 @@ namespace L1 {
     }
   };
 
+  template<> struct action < shift_by_number_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      if (is_debug) cout << "firing shift_by_number_rule, str: " << in.string() << endl;
+
+      auto currentF = p.functions.back();
+
+      auto i = new Instruction_shift();
+      i->src = parsed_items.back();
+      i->src.isAConstant = true;
+      i->src.isARegister = false;
+      parsed_items.pop_back();
+      i->dst = parsed_items.back();
+      parsed_items.pop_back();
+
+      currentF->instructions.push_back(i);
+    }
+  };
+
+  template<> struct action < shift_by_reg_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      if (is_debug) cout << "firing shift_by_reg_rule, str: " << in.string() << endl;
+
+      auto currentF = p.functions.back();
+
+      auto i = new Instruction_shift();
+      i->src = parsed_items.back();
+      i->src.isARegister = true;
+      i->src.isAConstant = false;
+      parsed_items.pop_back();
+      i->dst = parsed_items.back();
+      parsed_items.pop_back();
+
+      currentF->instructions.push_back(i);
+    }
+  };
 
   Program parse_file (char *fileName){
 

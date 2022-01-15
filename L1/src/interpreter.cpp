@@ -17,6 +17,7 @@
 
 using namespace std;
 
+bool is_debug = true;
 void print_help (char *progName){
   std::cerr << "Usage: " << progName << " SOURCE" << std::endl;
   return ;

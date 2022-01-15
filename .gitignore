@@ -1,2 +1,6 @@
 .vscode
 obj
+L1/bin/L1
+L1/bin/L1i
+prog.S
+L1/src/test.L1
