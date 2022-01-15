@@ -9,6 +9,9 @@
     call print 1
     call input 0 
     call tensor-error 1
+    rsi++ 
+    rdx--
+    rax @ rdi rsi 4
     return
   )
 

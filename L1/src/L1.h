@@ -105,6 +105,18 @@ namespace L1 {
   };
 
   /*
+  misc instruction 
+  */
+  class Instruction_increment : public Instruction {}; 
+  class Instruction_decrement : public Instruction {}; 
+  class Instruction_at : public Instruction {
+    public: 
+    Item constant; 
+    Item src_mult; 
+    Item src_add; 
+    Item dst; 
+  }; 
+  /*
    * Function.
    */
   class Function{

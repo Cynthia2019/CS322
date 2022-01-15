@@ -303,6 +303,33 @@ namespace L1 {
       seps,
       number_rule
     > {}; 
+  
+  /*
+  misc
+  */
+  struct Instruction_increment_rule: 
+    pegtl::seq<
+      register_rule, 
+      TAOCPP_PEGTL_STRING( "++" )
+    > {}; 
+  struct Instruction_decrement_rule: 
+    pegtl::seq<
+      register_rule, 
+      TAOCPP_PEGTL_STRING( "--" )
+    > {}; 
+
+  struct Instruction_at_rule: 
+    pegtl::seq<
+      register_rule, 
+      seps,
+      TAOCPP_PEGTL_STRING( "@" ), 
+      seps, 
+      register_rule, 
+      seps, 
+      register_rule, 
+      seps, 
+      number_rule
+    > {}; 
   struct Instruction_rule:
     pegtl::sor<
       pegtl::seq< pegtl::at<Instruction_return_rule>            , Instruction_return_rule             >,
@@ -317,7 +344,10 @@ namespace L1 {
       pegtl::seq< pegtl::at<Instruction_call_print_rule>        , Instruction_call_print_rule        >,
       pegtl::seq< pegtl::at<Instruction_call_input_rule>        , Instruction_call_input_rule        >,
       pegtl::seq< pegtl::at<Instruction_call_allocate_rule>        , Instruction_call_allocate_rule        >,
-      pegtl::seq< pegtl::at<Instruction_call_error_rule>        , Instruction_call_error_rule        >
+      pegtl::seq< pegtl::at<Instruction_call_error_rule>        , Instruction_call_error_rule        >,
+      pegtl::seq< pegtl::at<Instruction_increment_rule>        , Instruction_increment_rule        >,
+      pegtl::seq< pegtl::at<Instruction_decrement_rule>        , Instruction_decrement_rule        >,
+      pegtl::seq< pegtl::at<Instruction_at_rule>        , Instruction_at_rule        >
     > { };
 
   struct Instructions_rule:
@@ -588,6 +618,42 @@ namespace L1 {
       auto currentF = p.functions.back(); 
       auto i = new Instruction_call_error(); 
       i->constant = parsed_items.back(); 
+      parsed_items.pop_back();
+      currentF->instructions.push_back(i); 
+    }
+  };
+
+  //action for increment w++
+  template<> struct action < Instruction_increment_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      auto currentF = p.functions.back(); 
+      auto i = new Instruction_increment(); 
+      currentF->instructions.push_back(i); 
+    }
+  };
+  //action for increment w--
+  template<> struct action < Instruction_decrement_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      auto currentF = p.functions.back(); 
+      auto i = new Instruction_decrement(); 
+      currentF->instructions.push_back(i); 
+    }
+  };
+ //action for w @ w w E 
+  template<> struct action < Instruction_at_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      auto currentF = p.functions.back(); 
+      auto i = new Instruction_at(); 
+      i->constant = parsed_items.back(); 
+      parsed_items.pop_back();
+      i->src_mult = parsed_items.back();
+      parsed_items.pop_back();
+      i->src_add = parsed_items.back();
+      parsed_items.pop_back();
+      i->dst = parsed_items.back();
       parsed_items.pop_back();
       currentF->instructions.push_back(i); 
     }
