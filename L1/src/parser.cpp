@@ -132,7 +132,7 @@ namespace L1 {
 
   struct local_number:
     number {} ;
-
+  
   struct number_rule: 
     number {};
 
@@ -160,35 +160,17 @@ namespace L1 {
       seps,
       register_rule
     > {};
-  
-  struct shift_by_number_rule:
-    pegtl::seq<
-      register_rule,
-      seps,
-      pegtl::sor<
-        str_shift_left,
-        str_shift_right
-      >,
-      seps,
-      number
-    >{};
 
-  struct shift_by_reg_rule:
-    pegtl::seq<
-      register_rule,
-      seps,
-      pegtl::sor<
-        str_shift_left,
-        str_shift_right
-      >,
-      seps,
-      register_rule
-    >{};
+  struct shift_op_rule:
+  pegtl::sor< str_shift_left, str_shift_right>{};
   
   struct Instruction_shift_rule:
-    pegtl::sor<
-      shift_by_reg_rule,
-      shift_by_number_rule
+      pegtl::seq<
+        register_rule,
+        seps,
+        shift_op_rule,
+        seps,
+        pegtl::sor<number_rule, register_rule>
     > {};
 
   struct Instruction_load_rule:
@@ -273,6 +255,39 @@ namespace L1 {
       number_rule 
     > {};
   
+  struct compare_op_rule:
+    pegtl::sor<
+      TAOCPP_PEGTL_STRING( "<=" ),
+      TAOCPP_PEGTL_STRING( "<" ),
+      TAOCPP_PEGTL_STRING( "=" )
+    > {};
+
+  struct Instruction_compare_rule:
+    pegtl::seq<
+      register_rule,
+      seps,
+      str_arrow,
+      seps,
+      pegtl::sor<number_rule, register_rule >,
+      seps,
+      compare_op_rule,
+      seps,
+      pegtl::sor<number_rule, register_rule>
+    > {};
+
+  struct Instruction_cjump_rule:
+    pegtl::seq<
+      TAOCPP_PEGTL_STRING( "cjump" ),
+      seps,
+      pegtl::sor<number_rule, register_rule >,
+      seps,
+      compare_op_rule,
+      seps,
+      pegtl::sor<number_rule, register_rule>,
+      seps,
+      Label_rule
+    > {};
+
   /*
   call 
   */
@@ -333,13 +348,15 @@ namespace L1 {
   struct Instruction_rule:
     pegtl::sor<
       pegtl::seq< pegtl::at<Instruction_return_rule>            , Instruction_return_rule             >,
+      pegtl::seq< pegtl::at<Instruction_compare_rule>        , Instruction_compare_rule        >,
+      pegtl::seq< pegtl::at<Instruction_store_aop_rule>        , Instruction_store_aop_rule        >,
+      pegtl::seq< pegtl::at<Instruction_load_aop_rule>        , Instruction_load_aop_rule        >,
       pegtl::seq< pegtl::at<Instruction_assignment_rule>        , Instruction_assignment_rule         >,
       pegtl::seq< pegtl::at<Instruction_load_rule>        , Instruction_load_rule        >,
       pegtl::seq< pegtl::at<Instruction_store_rule>        , Instruction_store_rule        >,
       pegtl::seq< pegtl::at<Instruction_arithmetic_rule>        , Instruction_arithmetic_rule        >,
       pegtl::seq< pegtl::at<Instruction_shift_rule>        , Instruction_shift_rule        >,
-      pegtl::seq< pegtl::at<Instruction_store_aop_rule>        , Instruction_store_aop_rule        >,
-      pegtl::seq< pegtl::at<Instruction_load_aop_rule>        , Instruction_load_aop_rule        >,
+      pegtl::seq< pegtl::at<Instruction_cjump_rule>        , Instruction_cjump_rule        >,
       pegtl::seq< pegtl::at<Instruction_call_rule>        , Instruction_call_rule        >,
       pegtl::seq< pegtl::at<Instruction_call_print_rule>        , Instruction_call_print_rule        >,
       pegtl::seq< pegtl::at<Instruction_call_input_rule>        , Instruction_call_input_rule        >,
@@ -472,8 +489,9 @@ namespace L1 {
   template<> struct action < Label_rule > {
     template< typename Input >
 	static void apply( const Input & in, Program & p){
+      if (is_debug) cout << "firing Label_rule, str: " << in.string() << endl;
       Item i;
-      i.isARegister = false;
+      i.isALabel = true;
       i.labelName = in.string();
       parsed_items.push_back(i);
     }
@@ -504,12 +522,14 @@ namespace L1 {
   template<> struct action < number_rule > {
     template< typename Input >
     static void apply( const Input & in, Program & p){
+      if (is_debug) cout << "firing number_rule, str: " << in.string() << endl;
       Item i; 
       i.isAConstant = true; 
       i.num = std::stoll(in.string()); 
       parsed_items.push_back(i);
     }
   }; 
+
   //action for w aop t
   template<> struct action < Instruction_arithmetic_rule > {
     template< typename Input >
@@ -718,18 +738,60 @@ namespace L1 {
       currentF->instructions.push_back(i);
     }
   };
-
-  template<> struct action < shift_by_number_rule > {
+  
+  template<> struct action < shift_op_rule > {
     template< typename Input >
     static void apply( const Input & in, Program & p){
-      if (is_debug) cout << "firing shift_by_number_rule, str: " << in.string() << endl;
+      if (is_debug) cout << "firing shift_op_rule, str: " << in.string() << endl;
+      Item i;
+      i.isAnOp = true;
+      i.op = in.string();
+      parsed_items.push_back(i);
+    }
+  };
+
+  
+  template<> struct action < Instruction_shift_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      if (is_debug) cout << "firing Instruction_shift_rule, str: " << in.string() << endl;
 
       auto currentF = p.functions.back();
 
       auto i = new Instruction_shift();
       i->src = parsed_items.back();
-      i->src.isAConstant = true;
-      i->src.isARegister = false;
+      parsed_items.pop_back();
+      i->dst = parsed_items.back();
+      parsed_items.pop_back();
+
+      currentF->instructions.push_back(i);
+    }
+  };
+  
+  template<> struct action < compare_op_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      if (is_debug) cout << "firing compare_op_rule, str: " << in.string() << endl;
+      Item i;
+      i.isAnOp = true;
+      i.op = in.string();
+      parsed_items.push_back(i);
+    }
+  };
+  
+  template<> struct action < Instruction_compare_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      if (is_debug) cout << "firing Instruction_compare_rule, str: " << in.string() << endl;
+
+      auto currentF = p.functions.back();
+
+      auto i = new Instruction_compare();
+      i->oprand2 = parsed_items.back();
+      parsed_items.pop_back();
+      i->op = parsed_items.back();
+      parsed_items.pop_back();
+      i->oprand1 = parsed_items.back();
       parsed_items.pop_back();
       i->dst = parsed_items.back();
       parsed_items.pop_back();
@@ -738,24 +800,27 @@ namespace L1 {
     }
   };
 
-  template<> struct action < shift_by_reg_rule > {
+  template<> struct action < Instruction_cjump_rule > {
     template< typename Input >
     static void apply( const Input & in, Program & p){
-      if (is_debug) cout << "firing shift_by_reg_rule, str: " << in.string() << endl;
-
+      if (is_debug) cout << "firing Instruction_cjump_rule, str: " << in.string() << endl;
       auto currentF = p.functions.back();
 
-      auto i = new Instruction_shift();
-      i->src = parsed_items.back();
-      i->src.isARegister = true;
-      i->src.isAConstant = false;
+      auto i = new Instruction_cjump();
+      i->label = parsed_items.back();
       parsed_items.pop_back();
-      i->dst = parsed_items.back();
+      i->oprand2 = parsed_items.back();
+      parsed_items.pop_back();
+      i->op = parsed_items.back();
+      parsed_items.pop_back();
+      i->oprand1 = parsed_items.back();
       parsed_items.pop_back();
 
       currentF->instructions.push_back(i);
     }
   };
+
+
 
   Program parse_file (char *fileName){
 
