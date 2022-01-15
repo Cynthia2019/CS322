@@ -277,15 +277,15 @@ namespace L1 {
 
   struct Instruction_cjump_rule:
     pegtl::seq<
-      register_rule,
-      seps,
-      str_arrow,
+      TAOCPP_PEGTL_STRING( "cjump" ),
       seps,
       pegtl::sor<number_rule, register_rule >,
       seps,
       compare_op_rule,
       seps,
-      pegtl::sor<number_rule, register_rule>
+      pegtl::sor<number_rule, register_rule>,
+      seps,
+      Label_rule
     > {};
 
   /*
@@ -356,6 +356,7 @@ namespace L1 {
       pegtl::seq< pegtl::at<Instruction_store_rule>        , Instruction_store_rule        >,
       pegtl::seq< pegtl::at<Instruction_arithmetic_rule>        , Instruction_arithmetic_rule        >,
       pegtl::seq< pegtl::at<Instruction_shift_rule>        , Instruction_shift_rule        >,
+      pegtl::seq< pegtl::at<Instruction_cjump_rule>        , Instruction_cjump_rule        >,
       pegtl::seq< pegtl::at<Instruction_call_rule>        , Instruction_call_rule        >,
       pegtl::seq< pegtl::at<Instruction_call_print_rule>        , Instruction_call_print_rule        >,
       pegtl::seq< pegtl::at<Instruction_call_input_rule>        , Instruction_call_input_rule        >,
@@ -488,8 +489,9 @@ namespace L1 {
   template<> struct action < Label_rule > {
     template< typename Input >
 	static void apply( const Input & in, Program & p){
+      if (is_debug) cout << "firing Label_rule, str: " << in.string() << endl;
       Item i;
-      i.isARegister = false;
+      i.isALabel = true;
       i.labelName = in.string();
       parsed_items.push_back(i);
     }
@@ -797,6 +799,27 @@ namespace L1 {
       currentF->instructions.push_back(i);
     }
   };
+
+  template<> struct action < Instruction_cjump_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      if (is_debug) cout << "firing Instruction_cjump_rule, str: " << in.string() << endl;
+      auto currentF = p.functions.back();
+
+      auto i = new Instruction_cjump();
+      i->label = parsed_items.back();
+      parsed_items.pop_back();
+      i->oprand2 = parsed_items.back();
+      parsed_items.pop_back();
+      i->op = parsed_items.back();
+      parsed_items.pop_back();
+      i->oprand1 = parsed_items.back();
+      parsed_items.pop_back();
+
+      currentF->instructions.push_back(i);
+    }
+  };
+
 
 
   Program parse_file (char *fileName){

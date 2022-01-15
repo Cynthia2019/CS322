@@ -95,7 +95,15 @@ namespace L1 {
     Item op;
     Item oprand2;
   };
-  
+
+  class Instruction_cjump: public Instruction {
+    public:
+    Item oprand1;
+    Item op;
+    Item oprand2;
+    Item label;
+  };
+
   //call u N instruction 
   class Instruction_call : public Instruction {
     public: 
