@@ -35,9 +35,9 @@ namespace pegtl = tao::TAO_PEGTL_NAMESPACE;
 using namespace pegtl;
 using namespace std;
 
+extern bool is_debug;
 namespace L1 {
 
-  bool is_debug = true;
 
   /* 
    * Data required to parse
@@ -169,7 +169,7 @@ namespace L1 {
         str_shift_right
       >,
       seps,
-      register_rule
+      number
     >{};
 
   struct shift_by_reg_rule:
@@ -181,10 +181,10 @@ namespace L1 {
         str_shift_right
       >,
       seps,
-      number
+      register_rule
     >{};
   
-  struct shift_rule:
+  struct Instruction_shift_rule:
     pegtl::sor<
       shift_by_reg_rule,
       shift_by_number_rule
@@ -223,7 +223,9 @@ namespace L1 {
       pegtl::seq< pegtl::at<Instruction_return_rule>            , Instruction_return_rule             >,
       pegtl::seq< pegtl::at<Instruction_assignment_rule>        , Instruction_assignment_rule         >,
       pegtl::seq< pegtl::at<Instruction_load_rule>        , Instruction_load_rule        >,
-      pegtl::seq< pegtl::at<Instruction_store_rule>        , Instruction_store_rule        >
+      pegtl::seq< pegtl::at<Instruction_store_rule>        , Instruction_store_rule        >,
+      Instruction_shift_rule
+      // pegtl::seq< pegtl::at<Instruction_shift>        , Instruction_shift        >
     > { };
 
   struct Instructions_rule:
@@ -421,6 +423,7 @@ namespace L1 {
   template<> struct action < Instruction_store_rule > {
     template< typename Input >
 	static void apply( const Input & in, Program & p){
+      if (is_debug) cout << "firing Instruction_store_rule, str: " << in.string() << endl;
 
       auto currentF = p.functions.back();
 

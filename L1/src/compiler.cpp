@@ -17,6 +17,7 @@
 
 using namespace std;
 
+bool is_debug = false;
 void print_help (char *progName){
   std::cerr << "Usage: " << progName << " [-v] [-g 0|1] [-O 0|1|2] SOURCE" << std::endl;
   return ;
@@ -50,7 +51,7 @@ int main(
 
       case 'v':
         verbose = true;
-        // is_debug = true;
+        is_debug = true;
         break ;
 
       default:
