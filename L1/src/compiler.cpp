@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <iostream>
 
+#include <L1.h>
 #include <parser.h>
 #include <code_generator.h>
 
@@ -68,8 +69,12 @@ int main(
   /* 
    * Print the source program.
    */
+
   if (verbose){
     for (auto f : p.functions){
+      for (auto i : f->instructions) {
+        cout << i->tostring() << endl;
+      }
       //TODO
     }
   }
