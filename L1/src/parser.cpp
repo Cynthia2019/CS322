@@ -240,6 +240,7 @@ namespace L1 {
       >
     >{};
 
+
   
   struct Instruction_rule:
     pegtl::sor<
@@ -247,8 +248,8 @@ namespace L1 {
       pegtl::seq< pegtl::at<Instruction_assignment_rule>        , Instruction_assignment_rule         >,
       pegtl::seq< pegtl::at<Instruction_load_rule>        , Instruction_load_rule        >,
       pegtl::seq< pegtl::at<Instruction_store_rule>        , Instruction_store_rule        >,
-      pegtl::seq< pegtl::at<Instruction_arithmetic_rule>        , Instruction_arithmetic_rule        >
-      // pegtl::seq< pegtl::at<Instruction_shift>        , Instruction_shift        >
+      pegtl::seq< pegtl::at<Instruction_arithmetic_rule>        , Instruction_arithmetic_rule        >,
+      pegtl::seq< pegtl::at<Instruction_shift_rule>        , Instruction_shift_rule        >
     > { };
 
   struct Instructions_rule:

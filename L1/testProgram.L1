@@ -4,6 +4,7 @@
     rax <- rdi
     rdx <- mem rdi 8
     rdx += -1
+    rdx <<= 1
     return
   )
 
