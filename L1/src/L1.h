@@ -44,6 +44,7 @@ namespace L1 {
     Item constant;
   };
   
+  //shift instruction
   class Instruction_shift : public Instruction{
     public: 
     Item src; 
@@ -60,13 +61,32 @@ namespace L1 {
     Item constant;
   };
 
-  //aop 
+  //aop instruction 
   class Instruction_aop : public Instruction {
     public: 
     Item src; 
     Item dst; 
     Item op; 
   };
+
+  //store aop instruction 
+  class Instruction_store_aop : public Instruction {
+    public: 
+    Item src; 
+    Item constant; 
+    Item dst; 
+    Item op; 
+  };
+
+  //load aop instruction 
+  class Instruction_load_aop : public Instruction {
+    public: 
+    Item src; 
+    Item constant; 
+    Item dst; 
+    Item op; 
+  };
+
 
   /*
    * Function.

@@ -217,6 +217,7 @@ namespace L1 {
         register_rule
         >
     {};
+
   // += -= *= &=
   struct aops_rule: 
     pegtl::sor<
@@ -240,7 +241,38 @@ namespace L1 {
       >
     >{};
 
-
+  /*
+   Memory arithmetic operations
+  */
+ //mem x M += t
+  struct Instruction_store_aop_rule: 
+    pegtl::seq<
+      str_mem, 
+      seps, 
+      register_rule, 
+      seps, 
+      load_offset_rule, 
+      seps, 
+      aops_rule, 
+      seps, 
+      pegtl::sor<
+        aops_value_rule, 
+        register_rule
+      >
+    > {};
+  //w += mem x M 
+  struct Instruction_load_aop_rule: 
+    pegtl::seq<
+      register_rule, 
+      seps, 
+      aops_rule, 
+      seps, 
+      str_mem, 
+      seps, 
+      register_rule, 
+      seps, 
+      load_offset_rule 
+    > {};
   
   struct Instruction_rule:
     pegtl::sor<
@@ -249,7 +281,9 @@ namespace L1 {
       pegtl::seq< pegtl::at<Instruction_load_rule>        , Instruction_load_rule        >,
       pegtl::seq< pegtl::at<Instruction_store_rule>        , Instruction_store_rule        >,
       pegtl::seq< pegtl::at<Instruction_arithmetic_rule>        , Instruction_arithmetic_rule        >,
-      pegtl::seq< pegtl::at<Instruction_shift_rule>        , Instruction_shift_rule        >
+      pegtl::seq< pegtl::at<Instruction_shift_rule>        , Instruction_shift_rule        >,
+      pegtl::seq< pegtl::at<Instruction_store_aop_rule>        , Instruction_store_aop_rule        >,
+      pegtl::seq< pegtl::at<Instruction_load_aop_rule>        , Instruction_load_aop_rule        >
     > { };
 
   struct Instructions_rule:
@@ -409,7 +443,6 @@ namespace L1 {
       Item i; 
       i.isAnOp = true; 
       i.op = in.string(); 
-      cout << "op: " << i.op << endl; 
       parsed_items.push_back(i);
     }
   }; 
@@ -420,7 +453,6 @@ namespace L1 {
       Item i; 
       i.isAConstant = true; 
       i.num = std::stoll(in.string()); 
-      cout << "aops number: " << i.num << endl; 
       parsed_items.push_back(i);
     }
   }; 
@@ -430,6 +462,44 @@ namespace L1 {
     static void apply( const Input & in, Program & p){
       auto currentF = p.functions.back(); 
       auto i = new Instruction_aop(); 
+      i->src = parsed_items.back(); 
+      parsed_items.pop_back(); 
+      i->op = parsed_items.back(); 
+      parsed_items.pop_back(); 
+      i->dst = parsed_items.back(); 
+      parsed_items.pop_back(); 
+
+      currentF->instructions.push_back(i); 
+    }
+  }; 
+
+  //action for mem x M += t and mem x M -= t
+  template<> struct action < Instruction_store_aop_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      auto currentF = p.functions.back(); 
+      auto i = new Instruction_store_aop(); 
+      i->src = parsed_items.back(); 
+      parsed_items.pop_back(); 
+      i->op = parsed_items.back(); 
+      parsed_items.pop_back(); 
+      i->constant = parsed_items.back(); 
+      parsed_items.pop_back(); 
+      i->dst = parsed_items.back(); 
+      parsed_items.pop_back(); 
+
+      currentF->instructions.push_back(i); 
+    }
+  }; 
+
+  //action for w += mem x M and w -= mem x M
+  template<> struct action < Instruction_load_aop_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      auto currentF = p.functions.back(); 
+      auto i = new Instruction_load_aop(); 
+      i->constant = parsed_items.back(); 
+      parsed_items.pop_back(); 
       i->src = parsed_items.back(); 
       parsed_items.pop_back(); 
       i->op = parsed_items.back(); 
