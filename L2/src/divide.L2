@@ -1,0 +1,63 @@
+(:main
+  (:main
+    0
+    call input 0
+    %dividend <- rax
+    //mem rsp 0 <- rax
+    call input 0
+    %divisor <- rax
+    //mem rsp 8 <- rax
+
+    rdi <- %dividend
+    rsi <- %divisor
+    mem rsp -8 <- :FUN_next
+    call :divide 2
+    :FUN_next
+
+    rdi <- rax
+    call print 1
+    return
+  )
+
+  (:divide
+    2
+    // decode
+    rsi >>= 1
+    rdi >>= 1
+
+    rax <- 0
+    cjump rsi = 0 :divide_end
+
+
+    %remaining <- rdi
+    %remaining -= rsi
+
+    :divide_loop1
+    cjump rdi < rsi :divide_loop1_next
+    %res <- 1
+    %step <- rsi
+
+    :divide_loop2
+    cjump %remaining <= %step :divide_loop2_next
+
+    %step <<= 1
+    %res <<= 1
+    %remaining <- rdi
+    %remaining -= %step
+
+    goto :divide_loop2
+    :divide_loop2_next
+
+    rax += %res
+    rdi -= %step
+    goto :divide_loop1
+    :divide_loop1_next
+
+    //encode
+    rax <<= 1
+    rax += 1
+
+    :divide_end
+    return
+  )
+)
