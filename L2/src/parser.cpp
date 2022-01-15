@@ -42,6 +42,11 @@ namespace L1 {
    */ 
   std::vector<Item> parsed_items;
 
+  /*
+   *map from string to register
+  */
+  std::map<std::string, Register> string_to_r; 
+
   /* 
    * Grammar rules from now on.
    */
@@ -66,10 +71,14 @@ namespace L1 {
    * Keywords.
    */
   struct str_return : TAOCPP_PEGTL_STRING( "return" ) {};
-  struct str_arrow : TAOCPP_PEGTL_STRING( "<-" ) {};
-  struct str_rdi : TAOCPP_PEGTL_STRING( "rdi" ) {};
-  struct str_rax : TAOCPP_PEGTL_STRING( "rax" ) {};
   struct str_mem : TAOCPP_PEGTL_STRING( "mem" ) {};
+  struct str_arrow : TAOCPP_PEGTL_STRING( "<-" ) {};
+
+  struct comment: 
+    pegtl::disable< 
+      TAOCPP_PEGTL_STRING( "//" ), 
+      pegtl::until< pegtl::eolf > 
+    > {};
 
   struct label:
     pegtl::seq<
@@ -77,17 +86,24 @@ namespace L1 {
       name
     > {};
 
-  struct register_rdi_rule:
-      str_rdi {};
-
-  struct register_rax_rule:
-      str_rax {};
-   
   struct register_rule:
     pegtl::sor<
       TAOCPP_PEGTL_STRING( "rdi" ),
       TAOCPP_PEGTL_STRING( "rax" ),
-      TAOCPP_PEGTL_STRING( "rdx" )
+      TAOCPP_PEGTL_STRING( "rdx" ),
+      TAOCPP_PEGTL_STRING( "rsi" ),
+      TAOCPP_PEGTL_STRING( "rbx" ),
+      TAOCPP_PEGTL_STRING( "rcx" ),
+      TAOCPP_PEGTL_STRING( "rbp" ),
+      TAOCPP_PEGTL_STRING( "r8" ),
+      TAOCPP_PEGTL_STRING( "r9" ),
+      TAOCPP_PEGTL_STRING( "r10" ),
+      TAOCPP_PEGTL_STRING( "r11" ),
+      TAOCPP_PEGTL_STRING( "r12" ),
+      TAOCPP_PEGTL_STRING( "r13" ),
+      TAOCPP_PEGTL_STRING( "r14" ),
+      TAOCPP_PEGTL_STRING( "r15" ),
+      TAOCPP_PEGTL_STRING( "rsp" )
     > {};
 
   struct number:
@@ -111,12 +127,6 @@ namespace L1 {
 
   struct local_number:
     number {} ;
-
-  struct comment: 
-    pegtl::disable< 
-      TAOCPP_PEGTL_STRING( "//" ), 
-      pegtl::until< pegtl::eolf > 
-    > {};
 
   struct seps: 
     pegtl::star< 
@@ -160,11 +170,26 @@ namespace L1 {
         >
     {};
 
+  struct Instruction_store_rule:
+     pegtl::seq<
+	      str_mem,
+        seps,
+        register_rule, 
+        seps, 
+        load_offset_rule, 
+        seps, 
+        str_arrow, 
+        seps, 
+        register_rule
+        >
+    {};
+
   struct Instruction_rule:
     pegtl::sor<
       pegtl::seq< pegtl::at<Instruction_return_rule>            , Instruction_return_rule             >,
       pegtl::seq< pegtl::at<Instruction_assignment_rule>        , Instruction_assignment_rule         >,
-       pegtl::seq< pegtl::at<Instruction_load_rule>        , Instruction_load_rule        >
+      pegtl::seq< pegtl::at<Instruction_load_rule>        , Instruction_load_rule        >,
+      pegtl::seq< pegtl::at<Instruction_store_rule>        , Instruction_store_rule        >
     > { };
 
   struct Instructions_rule:
@@ -228,6 +253,22 @@ namespace L1 {
 	static void apply( const Input & in, Program & p){
       if (p.entryPointLabel.empty()){
         p.entryPointLabel = in.string();
+        string_to_r["rax"] = rax; 
+        string_to_r["rbx"] = rbx; 
+        string_to_r["rcx"] = rcx; 
+        string_to_r["rdx"] = rdx;         
+        string_to_r["rdi"] = rdi; 
+        string_to_r["rsi"] = rsi; 
+        string_to_r["rbp"] = rbp; 
+        string_to_r["r8"] = r8; 
+        string_to_r["r9"] = r9; 
+        string_to_r["r10"] = r10; 
+        string_to_r["r11"] = r11; 
+        string_to_r["r12"] = r12; 
+        string_to_r["r13"] = r13; 
+        string_to_r["r14"] = r14; 
+        string_to_r["r15"] = r15; 
+        string_to_r["rsp"] = rsp;
       } else {
         abort();
       }
@@ -283,27 +324,7 @@ namespace L1 {
     static void apply( const Input & in, Program & p){
       Item i;
       i.isARegister = true;
-      i.rName = in.string()
-      parsed_items.push_back(i);
-    }
-  };
-
-  template<> struct action < register_rdi_rule > {
-    template< typename Input >
-    static void apply( const Input & in, Program & p){
-      Item i;
-      i.isARegister = true;
-      i.r = rdi;
-      parsed_items.push_back(i);
-    }
-  };
-
-  template<> struct action < register_rax_rule > {
-    template< typename Input >
-    static void apply( const Input & in, Program & p){
-      Item i;
-      i.isARegister = true;
-      i.r = rax;
+      i.r = string_to_r[in.string()];
       parsed_items.push_back(i);
     }
   };
@@ -360,6 +381,24 @@ namespace L1 {
       currentF->instructions.push_back(i);
     }
   };
+  // template<> struct action < Instruction_store_rule > {
+  //   template< typename Input >
+	// static void apply( const Input & in, Program & p){
+
+  //     auto currentF = p.functions.back();
+
+  //     auto i = new Instruction_load();
+  //     i->constant = parsed_items.back();
+  //     parsed_items.pop_back(); 
+  //     i->src = parsed_items.back();
+  //     parsed_items.pop_back();
+  //     i->dst = parsed_items.back();
+  //     parsed_items.pop_back();
+
+  //     currentF->instructions.push_back(i);
+  //   }
+  // };
+
 
   Program parse_file (char *fileName){
 
