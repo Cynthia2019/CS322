@@ -35,8 +35,6 @@ namespace pegtl = tao::TAO_PEGTL_NAMESPACE;
 using namespace pegtl;
 using namespace std;
 
-extern is_debug;
-
 namespace L1 {
 
   /* 
@@ -252,7 +250,7 @@ namespace L1 {
 
   template<> struct action < label > {
     template< typename Input >
-    static void apply( const Input & in, Program & p){
+	static void apply( const Input & in, Program & p){
       if (p.entryPointLabel.empty()){
         p.entryPointLabel = in.string();
         string_to_r["rax"] = rax; 
@@ -279,9 +277,7 @@ namespace L1 {
 
   template<> struct action < function_name > {
     template< typename Input >
-    static void apply( const Input & in, Program & p){
-      if (is_debug) cout << "firing action function_name. str: " << in.string() << endl;
-
+	static void apply( const Input & in, Program & p){
       auto newF = new Function();
       newF->name = in.string();
       p.functions.push_back(newF);
@@ -290,8 +286,7 @@ namespace L1 {
 
   template<> struct action < argument_number > {
     template< typename Input >
-    static void apply( const Input & in, Program & p){
-      if (is_debug) cout << "firing action argument_number. str: " << in.string() << endl;
+	static void apply( const Input & in, Program & p){
       auto currentF = p.functions.back();
       currentF->arguments = std::stoll(in.string());
     }
@@ -299,8 +294,7 @@ namespace L1 {
 
   template<> struct action < local_number > {
     template< typename Input >
-    static void apply( const Input & in, Program & p){
-      if (is_debug) cout << "firing action local_number. str: " << in.string() << endl;
+	static void apply( const Input & in, Program & p){
       auto currentF = p.functions.back();
       currentF->locals = std::stoll(in.string());
     }
@@ -308,8 +302,7 @@ namespace L1 {
 
   template<> struct action < str_return > {
     template< typename Input >
-    static void apply( const Input & in, Program & p){
-      if (is_debug) cout << "firing action str_return. str: " << in.string() << endl;
+	static void apply( const Input & in, Program & p){
       auto currentF = p.functions.back();
       auto i = new Instruction_ret();
       currentF->instructions.push_back(i);
@@ -318,8 +311,7 @@ namespace L1 {
 
   template<> struct action < Label_rule > {
     template< typename Input >
-    static void apply( const Input & in, Program & p){
-      if (is_debug) cout << "firing action Label_rule. str: " << in.string() << endl;
+	static void apply( const Input & in, Program & p){
       Item i;
       i.isARegister = false;
       i.labelName = in.string();
@@ -330,32 +322,9 @@ namespace L1 {
   template<> struct action < register_rule > {
     template< typename Input >
     static void apply( const Input & in, Program & p){
-      if (is_debug) cout << "firing action register_rule. str: " << in.string() << endl;
       Item i;
       i.isARegister = true;
-      i.rName = in.string()
-      parsed_items.push_back(i);
-    }
-  };
-
-  template<> struct action < register_rdi_rule > {
-    template< typename Input >
-    static void apply( const Input & in, Program & p){
-      if (is_debug) cout << "firing action register_rdi_rule. str: " << in.string() << endl;
-      Item i;
-      i.isARegister = true;
-      i.r = rdi;
-      parsed_items.push_back(i);
-    }
-  };
-
-  template<> struct action < register_rax_rule > {
-    template< typename Input >
-    static void apply( const Input & in, Program & p){
-      if (is_debug) cout << "firing action register_rax_rule. str: " << in.string() << endl;
-      Item i;
-      i.isARegister = true;
-      i.r = rax;
+      i.r = string_to_r[in.string()];
       parsed_items.push_back(i);
     }
   };
@@ -363,7 +332,6 @@ namespace L1 {
   template<> struct action < load_offset_rule > {
     template< typename Input >
     static void apply( const Input & in, Program & p){
-      if (is_debug) cout << "firing action load_offset_rule. str: " << in.string() << endl;
       Item i;
       i.num = std::stoll(in.string());
       i.isARegister = false;
@@ -374,9 +342,7 @@ namespace L1 {
 
   template<> struct action < Instruction_assignment_rule > {
     template< typename Input >
-    static void apply( const Input & in, Program & p){
-      if (is_debug) cout << "firing action Instruction_assignment_rule. str: "
-         << in.string() << endl;
+	static void apply( const Input & in, Program & p){
       /* 
        * Fetch the current function.
        */ 
@@ -401,7 +367,6 @@ namespace L1 {
   template<> struct action < Instruction_load_rule > {
     template< typename Input >
 	static void apply( const Input & in, Program & p){
-      if (is_debug) cout << "firing action Instruction_load_rule. str: " << in.string() << endl;
 
       auto currentF = p.functions.back();
 
