@@ -22,7 +22,6 @@ void print_help (char *progName){
   return ;
 }
 
-bool is_debug = false;
 int main(
   int argc, 
   char **argv
@@ -51,7 +50,7 @@ int main(
 
       case 'v':
         verbose = true;
-        is_debug = true;
+        // is_debug = true;
         break ;
 
       default:
