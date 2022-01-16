@@ -359,6 +359,8 @@ namespace L1 {
       Label_rule
     > 
   {};
+  struct Instruction_label_rule: 
+   label {}; 
   struct Instruction_rule:
     pegtl::sor<
       pegtl::seq< pegtl::at<Instruction_return_rule>            , Instruction_return_rule             >,
@@ -380,7 +382,7 @@ namespace L1 {
       pegtl::seq< pegtl::at<Instruction_decrement_rule>        , Instruction_decrement_rule        >,
       pegtl::seq< pegtl::at<Instruction_goto_rule>        , Instruction_goto_rule        >,
       pegtl::seq< pegtl::at<Instruction_at_rule>        , Instruction_at_rule        >, 
-      pegtl::seq< pegtl::at<Label_rule>        , Label_rule        >
+      pegtl::seq< pegtl::at<Instruction_label_rule>        , Instruction_label_rule        >
     > { };
 
   struct Instructions_rule:
@@ -547,6 +549,21 @@ namespace L1 {
     }
   }; 
 
+  //action for :label
+  template<> struct action < Instruction_label_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      auto currentF = p.functions.back(); 
+      auto i = new Instruction_label(); 
+      Item item;
+      item.isALabel = true; 
+      item.labelName = in.string();  
+      i->instructionName = "label";
+      i->label = item;
+
+      currentF->instructions.push_back(i); 
+    }
+  }; 
   //action for w aop t
   template<> struct action < Instruction_arithmetic_rule > {
     template< typename Input >
