@@ -160,7 +160,8 @@ namespace L1 {
       seps,
       pegtl::sor<
         register_rule,
-        number_rule
+        number_rule, 
+        Label_rule
       >
     > {};
 
@@ -520,6 +521,7 @@ namespace L1 {
       Item i;
       i.isARegister = true;
       i.r = string_to_r[in.string()];
+      i.register_name= in.string(); 
       parsed_items.push_back(i);
     }
   };

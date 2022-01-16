@@ -2,6 +2,8 @@
   (:go
     0 0
     r8 <- 0
+    r10 <- rax 
+    rax <- :testFunction
     rdx <- mem rdi 8
     rdx += -1
     mem rdi 8 -= rcx

@@ -41,20 +41,36 @@ namespace L1{
     outputFile << " retq\n"; 
 
     for(auto f : p.functions) {
-      outputFile << '_' + f->name + ":\n"; 
+      std::string f_name = f->name; 
+      f_name[0] = '_'; 
+      outputFile << f_name + ":\n"; 
+      std::string translated = "\t"; 
       for(Instruction* i : f->instructions){
         //if assignment
-        cout << "instruction: " << i->instructionName << endl;
-        //Instruction_assignment *a = dynamic_cast<Instruction_assignment *>(i);
-        std::string translated = "\t\t"; 
-        // if(a != nullptr) {
-        //   translated.append("movq "); 
-        //   if(a->isARegister){
-        //     translated.append('%' + a->r + ',');
-             
-        //   }
-        // }
+        if(i->instructionName == "assignment") {
+          Instruction_assignment* a= static_cast<Instruction_assignment *>(i); 
+          translated.append("movq "); 
+          if(a->src.isARegister){
+            translated += '%';
+            translated.append(a->src.register_name);
+          }
+          else if(a->src.isAConstant) {
+            translated += '$';
+            translated.append(std::to_string(a->src.num)); 
+          }
+          else if(a->src.isALabel) {
+            std::string func_name = a->src.labelName; 
+            func_name[0] = '_';
+            translated += '$';
+            translated.append(func_name); 
+          }
+          translated.append(", %");
+          translated.append(a->dst.register_name);
+          translated += '\n'; 
+          cout << "current result: " << translated << endl; 
+        }
       }
+      outputFile << translated; 
     }
     
     /* 

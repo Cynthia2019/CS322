@@ -12,6 +12,7 @@ namespace L1 {
     public:
       string labelName;
       string op; 
+      string register_name; 
       int64_t num; 
       Register r;
       bool isARegister = false;
