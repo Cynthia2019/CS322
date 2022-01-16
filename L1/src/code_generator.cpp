@@ -22,7 +22,7 @@ namespace L1{
     //write pushq for registers
     outputFile << ".text\n"; 
     outputFile << " .globl go\n"; 
-    outputFile << ".go: \n"; 
+    outputFile << "go: \n"; 
     outputFile << " pushq %rbx\n";
     outputFile << " pushq %rbp\n";
     outputFile << " pushq %r12\n";
