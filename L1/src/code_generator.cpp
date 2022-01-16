@@ -66,7 +66,7 @@ namespace L1{
       f_name[0] = '_'; 
       outputFile << f_name + ":\n"; 
       //check if there are locals
-      if(f->locals > 0 || f->arguments > 6){
+      if(f->locals > 0){
         int64_t offset = (f->locals + max((int)f->arguments - 6, 0)) * 8; 
         std::string line = " subq $";
         line += to_string(offset) + ", %rsp\n";  
@@ -272,6 +272,7 @@ namespace L1{
           else {
             translated += " subq ";
           }
+<<<<<<< HEAD
           if(a->src.isARegister) {
             translated += '%' + a->src.register_name + ", " + to_string(a->constant.num) + "(%" + a->dst.register_name + ")\n";
           }
@@ -279,6 +280,10 @@ namespace L1{
             translated += '$' + to_string(a->src.num) + ", " + to_string(a->constant.num) + "(%" + a->dst.register_name + ")\n";
           }
           
+=======
+          // cout << "hello" << a->src.register_name << endl;
+          translated += '$' + to_string(a->src.num) + ", " + to_string(a->constant.num) + "(%" + a->dst.register_name + ")\n";
+>>>>>>> cbad9f67e885e27496114e2912dead6643256255
         }
         else if(i->instructionName == "at"){
           Instruction_at* a = static_cast<Instruction_at*>(i); 
@@ -343,20 +348,20 @@ namespace L1{
             translated += restore;
           }
 
-          translated += "retq\n";
+          translated += " retq\n";
 
         }
         outputFile << translated; 
       }
       //restore locals 
-      int off_byte = f->locals + max((int)f->arguments - 6, 0);
-      if(off_byte > 0){
-        int64_t offset = (off_byte) * 8;
-        std::string restore = " addq $";
-        restore += to_string(offset) + ", %rsp\n";  
-        outputFile << restore; 
-      }
-      outputFile << " retq\n";
+      // int off_byte = f->locals + max((int)f->arguments - 6, 0);
+      // if(off_byte > 0){
+      //   int64_t offset = (off_byte) * 8;
+      //   std::string restore = " addq $";
+      //   restore += to_string(offset) + ", %rsp\n";  
+      //   outputFile << restore; 
+      // }
+      // outputFile << " retq\n";
     }
     
     /* 
