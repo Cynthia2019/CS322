@@ -100,87 +100,58 @@ namespace L1{
             if ((com->op.op == "<=" && com->oprand1.num <= com->oprand2.num)
               ||(com->op.op == "<" && com->oprand1.num < com->oprand2.num)
               ||(com->op.op == "=" && com->oprand1.num == com->oprand2.num)) {
-                string mov = "movq $1, %";
-                translated.append(mov + dst);
-                translated.append("\n");
+                translated += " movq $1, %" + dst + '\n';
             } else {
-                string mov = "movq $0, %";
-                translated.append(mov + dst);
-                translated.append("\n");
+                translated += " movq $0, %" + dst + '\n';
             }
           } else if (com->oprand1.isAConstant && com->oprand2.isARegister) {
-              translated.append("cmpq $");
-              translated.append(to_string(com->oprand1.num));
-              translated.append(", %");
-              translated.append(com->oprand2.register_name);
-              translated.append("\n");
+              translated += " cmpq $" + to_string(com->oprand1.num) + ", %" + com->oprand2.register_name + '\n';
               if (com->op.op == "<=") {
-                translated.append(" setge %");
+                translated += " setge %";
               }
               else if (com->op.op == "<") {
-                translated.append(" setg %"); //TODO: check this
+                translated += " setg %"; //TODO: check this
               }
               else if (com->op.op == "=") {
-                translated.append(" sete %");
+                translated += " sete %";
               }
-              translated.append(dst_8);
-              translated.append("\n");
-              translated.append(" movzbq %");
-              translated.append(dst_8);
-              translated.append(", %");
-              translated.append(dst);
-              translated.append("\n");
+              translated += dst_8 + '\n' + " movzbq %" + dst_8 + ", %" + dst + '\n'; 
           } else {
-            translated.append("cmpq ");
+            translated += " cmpq ";
             if (com->oprand2.isAConstant) {
-              translated.append("$");
-              translated.append(to_string(com->oprand2.num));
+              translated += "$" + to_string(com->oprand2.num);
             } else {
-              translated.append("%");
-              translated.append(com->oprand2.register_name);
+              translated += "%" + com->oprand2.register_name;
             }
-            translated.append(", %");
-            translated.append(com->oprand1.register_name);
-            translated.append("\n");
+            translated += ", %" + com->oprand1.register_name + '\n';
             if (com->op.op == "<=") {
-              translated.append(" setle %");
+              translated += " setle %"; 
             }
             else if (com->op.op == "<") {
-              translated.append(" setl %"); //TODO: check this
+              translated += " setl %"; //TODO: check this
             }
             else if (com->op.op == "=") {
-              translated.append(" sete %");
+              translated += " sete %";
             }
             // translated.append("setle %");
-            translated.append(dst_8);
-            translated.append("\n");
-            translated.append(" movzbq %");
-            translated.append(dst_8);
-            translated.append(", %");
-            translated.append(dst);
-            translated.append("\n");
+            translated += dst_8 + '\n' + " movzbq %" + dst_8 + ", %" + dst + '\n';
           }
         }
 
         else if(i->instructionName == "shift") {
           Instruction_shift* shi = static_cast<Instruction_shift *>(i);
           if (shi->op.op == "<<=") {
-            translated.append("salq ");
+            translated += " salq ";
           } else {
-            translated.append("sarq ");
+            translated += " sarq ";
           }
 
           if (shi->src.isARegister) {
-            translated.append("%");
-            translated.append(reg_64_to_8[shi->src.register_name]);
+            translated += "%" + reg_64_to_8[shi->src.register_name];
           } else {
-            translated.append("$");
-            translated.append(to_string(shi->src.num));
+            translated += "$" + to_string(shi->src.num);
           }
-
-          translated.append(", %");
-          translated.append(shi->dst.register_name);
-          translated.append("\n");
+          translated += ", %" + shi->dst.register_name + '\n'; 
         }
           
         else if(i->instructionName == "cjump") {
@@ -192,53 +163,41 @@ namespace L1{
             if ((cmd->op.op == "<=" && cmd->oprand1.num <= cmd->oprand2.num)
               ||(cmd->op.op == "<" && cmd->oprand1.num < cmd->oprand2.num)
               ||(cmd->op.op == "=" && cmd->oprand1.num == cmd->oprand2.num)) {
-                translated.append("jmp ");
-                translated.append(label);
-                translated.append("\n");
+                translated += "jmp " + label + '\n';
             }
           }
           else if (cmd->oprand1.isAConstant && cmd->oprand2.isARegister) {
-            translated.append("cmpq $");
-            translated.append(to_string(cmd->oprand1.num));
-            translated.append(", %");
-            translated.append(cmd->oprand2.register_name);
-            translated.append("\n");
+            translated += " cmpq $" + to_string(cmd->oprand1.num) + ", %" + cmd->oprand2.register_name + '\n';
             if (cmd->op.op == "<=") {
-              translated.append(" jge ");
+              translated += " jge ";
             }
             else if (cmd->op.op == "<") {
-              translated.append(" jg ");
+              translated += " jg ";
             }
             else if (cmd->op.op == "=") {
-              translated.append(" je ");
+              translated += " je ";
             }
-            translated.append(label);
-            translated.append("\n");
+            translated += label + '\n';
           }
           else {
-            translated.append("cmpq ");
+            translated += " cmpq ";
             if (cmd->oprand2.isARegister) {
-              translated.append("%");
-              translated.append(cmd->oprand2.register_name);
+              translated += "%" + cmd->oprand2.register_name; 
             } else {
-              translated.append("$");
-              translated.append(to_string(cmd->oprand2.num));
+              translated += "$" + to_string(cmd->oprand2.num); 
             }
-            translated.append(", %");
-            translated.append(cmd->oprand1.register_name);
-            translated.append("\n");
+            translated += ", %" + cmd->oprand1.register_name + '\n'; 
 
             if (cmd->op.op == "<=") {
-              translated.append(" jle ");
+              translated += " jle ";
             }
             else if (cmd->op.op == "<") {
-              translated.append(" jl ");
+              translated += " jl ";
             }
             else if (cmd->op.op == "=") {
-              translated.append(" je ");
+              translated += " je ";
             }
-            translated.append(label);
-            translated.append("\n");
+            translated += label + '\n';
           } 
         }
 
@@ -337,24 +296,24 @@ namespace L1{
           }
         }
         else if(i->instructionName == "call_print") {
-          translated += "call print"; 
+          translated += " call print"; 
         }
         else if(i->instructionName == "call_input") {
-          translated += "call input"; 
+          translated += " call input"; 
         }
         else if(i->instructionName == "call_allocate") {
-          translated += "call allocate"; 
+          translated += " call allocate"; 
         }
         else if(i->instructionName == "call_error") {
           Instruction_call_error* a = static_cast<Instruction_call_error*>(i); 
           if(a->constant.num == 1){
-            translated += "call array_tensor_error_null"; 
+            translated += " call array_tensor_error_null"; 
           }
           else if(a->constant.num == 3){
-            translated += "call array_error";
+            translated += " call array_error";
           }
           else {
-            translated += "call tensor_error"; 
+            translated += " call tensor_error"; 
           }
         }
         outputFile << translated; 
