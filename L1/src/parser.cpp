@@ -332,11 +332,13 @@ namespace L1 {
   struct Instruction_increment_rule: 
     pegtl::seq<
       register_rule, 
+      seps,
       TAOCPP_PEGTL_STRING( "++" )
     > {}; 
   struct Instruction_decrement_rule: 
     pegtl::seq<
       register_rule, 
+      seps,
       TAOCPP_PEGTL_STRING( "--" )
     > {}; 
 
