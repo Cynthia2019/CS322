@@ -272,7 +272,13 @@ namespace L1{
           else {
             translated += " subq ";
           }
-          translated += '%' + a->src.register_name + ", " + to_string(a->constant.num) + "(%" + a->dst.register_name + ")\n";
+          if(a->src.isARegister) {
+            translated += '%' + a->src.register_name + ", " + to_string(a->constant.num) + "(%" + a->dst.register_name + ")\n";
+          }
+          else {
+            translated += '$' + to_string(a->src.num) + ", " + to_string(a->constant.num) + "(%" + a->dst.register_name + ")\n";
+          }
+          
         }
         else if(i->instructionName == "at"){
           Instruction_at* a = static_cast<Instruction_at*>(i); 
