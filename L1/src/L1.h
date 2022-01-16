@@ -184,6 +184,12 @@ namespace L1 {
     }
   };
 
+  //label instruction 
+  class Instruction_label : public Instruction {
+    public: 
+    Item label; 
+  };
+
   /*
   misc instruction 
   */

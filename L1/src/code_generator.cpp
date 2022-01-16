@@ -316,6 +316,18 @@ namespace L1{
             translated += " call tensor_error\n"; 
           }
         }
+        else if(i->instructionName == "goto"){
+          Instruction_goto* a = static_cast<Instruction_goto*>(i); 
+          string name = a->label.labelName; 
+          name[0] = '_';
+          translated += "jmp " + name + '\n';  
+        }
+        else if(i->instructionName == "label") {
+          Instruction_label* a = static_cast<Instruction_label*>(i);
+          string label = a->label.labelName; 
+          label[0] = '_'; 
+          translated += label + ':' + '\n'; 
+        }
         outputFile << translated; 
       }
       //restore locals 
