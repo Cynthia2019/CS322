@@ -272,7 +272,6 @@ namespace L1{
           else {
             translated += " subq ";
           }
-<<<<<<< HEAD
           if(a->src.isARegister) {
             translated += '%' + a->src.register_name + ", " + to_string(a->constant.num) + "(%" + a->dst.register_name + ")\n";
           }
@@ -280,10 +279,6 @@ namespace L1{
             translated += '$' + to_string(a->src.num) + ", " + to_string(a->constant.num) + "(%" + a->dst.register_name + ")\n";
           }
           
-=======
-          // cout << "hello" << a->src.register_name << endl;
-          translated += '$' + to_string(a->src.num) + ", " + to_string(a->constant.num) + "(%" + a->dst.register_name + ")\n";
->>>>>>> cbad9f67e885e27496114e2912dead6643256255
         }
         else if(i->instructionName == "at"){
           Instruction_at* a = static_cast<Instruction_at*>(i); 
