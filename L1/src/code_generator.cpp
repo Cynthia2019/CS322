@@ -108,17 +108,17 @@ namespace L1{
               translated.append(com->oprand2.register_name);
               translated.append("\n");
               if (com->op.op == "<=") {
-                translated.append("setge %");
+                translated.append(" setge %");
               }
               else if (com->op.op == "<") {
-                translated.append("setg %"); //TODO: check this
+                translated.append(" setg %"); //TODO: check this
               }
               else if (com->op.op == "=") {
-                translated.append("sete %");
+                translated.append(" sete %");
               }
               translated.append(dst_8);
               translated.append("\n");
-              translated.append("movzbq %");
+              translated.append(" movzbq %");
               translated.append(dst_8);
               translated.append(", %");
               translated.append(dst);
@@ -136,18 +136,18 @@ namespace L1{
             translated.append(com->oprand1.register_name);
             translated.append("\n");
             if (com->op.op == "<=") {
-              translated.append("setle %");
+              translated.append(" setle %");
             }
             else if (com->op.op == "<") {
-              translated.append("setl %"); //TODO: check this
+              translated.append(" setl %"); //TODO: check this
             }
             else if (com->op.op == "=") {
-              translated.append("sete %");
+              translated.append(" sete %");
             }
             // translated.append("setle %");
             translated.append(dst_8);
             translated.append("\n");
-            translated.append("movzbq %");
+            translated.append(" movzbq %");
             translated.append(dst_8);
             translated.append(", %");
             translated.append(dst);
@@ -197,13 +197,13 @@ namespace L1{
             translated.append(cmd->oprand2.register_name);
             translated.append("\n");
             if (cmd->op.op == "<=") {
-              translated.append("jge ");
+              translated.append(" jge ");
             }
             else if (cmd->op.op == "<") {
-              translated.append("jg ");
+              translated.append(" jg ");
             }
             else if (cmd->op.op == "=") {
-              translated.append("je ");
+              translated.append(" je ");
             }
             translated.append(label);
             translated.append("\n");
@@ -222,13 +222,13 @@ namespace L1{
             translated.append("\n");
 
             if (cmd->op.op == "<=") {
-              translated.append("jle ");
+              translated.append(" jle ");
             }
             else if (cmd->op.op == "<") {
-              translated.append("jl ");
+              translated.append(" jl ");
             }
             else if (cmd->op.op == "=") {
-              translated.append("je ");
+              translated.append(" je ");
             }
             translated.append(label);
             translated.append("\n");
