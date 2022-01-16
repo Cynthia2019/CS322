@@ -19,7 +19,15 @@ namespace L1 {
       bool isAnOp = false; 
       bool isALabel = false;
       std::string tostring() {
-        return "";
+        if (isARegister) {
+          return "rdi";
+        } else if (isAConstant) {
+          return to_string(num);
+        } else if (isAnOp) {
+          return op;
+        } else if (isALabel) {
+          return labelName;
+        }
       }
   };
 
@@ -68,7 +76,7 @@ namespace L1 {
     Item op;
     Item src; 
     std::string tostring() {
-      return dst.tostring() + " " + src.tostring();
+      return dst.tostring() + " " + op.tostring() + " " + src.tostring();
     }
   };
 
@@ -178,8 +186,16 @@ namespace L1 {
   /*
   misc instruction 
   */
-  class Instruction_increment : public Instruction {}; 
-  class Instruction_decrement : public Instruction {}; 
+  class Instruction_increment : public Instruction {
+    std::string tostring() {
+      return "";
+    }
+  }; 
+  class Instruction_decrement : public Instruction {
+    std::string tostring() {
+      return "";
+    }
+  }; 
   class Instruction_at : public Instruction {
     public: 
     Item constant; 

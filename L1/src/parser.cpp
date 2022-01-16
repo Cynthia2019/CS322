@@ -804,6 +804,8 @@ namespace L1 {
       i->instructionName = "shift"; 
       i->src = parsed_items.back();
       parsed_items.pop_back();
+      i->op = parsed_items.back();
+      parsed_items.pop_back();
       i->dst = parsed_items.back();
       parsed_items.pop_back();
 
