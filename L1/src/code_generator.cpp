@@ -69,7 +69,7 @@ namespace L1{
       if(f->locals > 0 || f->arguments > 6){
         int64_t offset = (f->locals + max((int)f->arguments - 6, 0)) * 8; 
         std::string line = " subq $";
-        line += std::to_string(offset) + ", %rsp\n";  
+        line += to_string(offset) + ", %rsp\n";  
         outputFile << line; 
       }
       for(Instruction* i : f->instructions){
@@ -82,7 +82,7 @@ namespace L1{
             translated += '%' + a->src.register_name;
           }
           else if(a->src.isAConstant) {
-            translated += '$' + std::to_string(a->src.num);
+            translated += '$' + to_string(a->src.num);
           }
           else if(a->src.isALabel) {
             std::string func_name = a->src.labelName; 
@@ -204,7 +204,7 @@ namespace L1{
         //if load
         else if(i->instructionName == "load"){
           Instruction_load* a = static_cast<Instruction_load*>(i); 
-          translated += " movq " + std::to_string(a->constant.num) + "(%" + a->src.register_name + "), %" + a->dst.register_name + '\n';
+          translated += " movq " + to_string(a->constant.num) + "(%" + a->src.register_name + "), %" + a->dst.register_name + '\n';
         }
         //if store
         else if(i->instructionName == "store") {
@@ -214,7 +214,7 @@ namespace L1{
             translated += '%' + a->src.register_name;
           }
           else if(a->src.isAConstant) {
-            translated += std::to_string(a->src.num);
+            translated += to_string(a->src.num);
           }
           else if(a->src.isALabel) {
             std::string func_name = a->src.labelName; 
@@ -222,7 +222,7 @@ namespace L1{
             translated += '$' + func_name;
             // outputFile << "subq $8, %rsp\n"; 
           }
-          translated += ", " + std::to_string(a->constant.num) + "(%" + a->dst.register_name + ")\n";
+          translated += ", " + to_string(a->constant.num) + "(%" + a->dst.register_name + ")\n";
         }
         else if(i->instructionName == "aop") {
           Instruction_aop* a = static_cast<Instruction_aop*>(i); 
@@ -242,7 +242,7 @@ namespace L1{
             translated += '%' + a->src.register_name;
           }
           else {
-            translated += '$' + std::to_string(a->src.num);
+            translated += '$' + to_string(a->src.num);
           }
           translated += ", %" + a->dst.register_name + '\n';
         }
@@ -262,7 +262,7 @@ namespace L1{
           else {
             translated += " subq ";
           }
-          translated += std::to_string(a->constant.num) + "(%" + a->src.register_name + "), " + a->dst.register_name + '\n'; 
+          translated += to_string(a->constant.num) + "(%" + a->src.register_name + "), " + a->dst.register_name + '\n'; 
         }
         else if(i->instructionName == "store_aop"){
           Instruction_store_aop* a = static_cast<Instruction_store_aop*>(i); 
@@ -272,17 +272,17 @@ namespace L1{
           else {
             translated += " subq ";
           }
-          translated += '%' + a->src.register_name + ", " + std::to_string(a->constant.num) + "(%" + a->dst.register_name + ")\n";
+          translated += '%' + a->src.register_name + ", " + to_string(a->constant.num) + "(%" + a->dst.register_name + ")\n";
         }
         else if(i->instructionName == "at"){
           Instruction_at* a = static_cast<Instruction_at*>(i); 
-          translated += " lea (%" + a->src_add.register_name + ", " + a->src_mult.register_name + ", " + std::to_string(a->constant.num) + "), %" + a->dst.register_name + '\n';
+          translated += " lea (%" + a->src_add.register_name + ", " + a->src_mult.register_name + ", " + to_string(a->constant.num) + "), %" + a->dst.register_name + '\n';
         }
         else if(i->instructionName == "call") {
           Instruction_call* a = static_cast<Instruction_call*>(i);
           translated += " subq $"; 
           int64_t space = max((int)a->constant.num - 6, 0) * 8 + 8; 
-          translated += std::to_string(space) + ", %rsp\n";
+          translated += to_string(space) + ", %rsp\n";
           outputFile << translated; 
           translated = " jmp "; 
           if(a->dst.isALabel){
@@ -296,24 +296,24 @@ namespace L1{
           }
         }
         else if(i->instructionName == "call_print") {
-          translated += " call print"; 
+          translated += " call print\n"; 
         }
         else if(i->instructionName == "call_input") {
-          translated += " call input"; 
+          translated += " call input\n"; 
         }
         else if(i->instructionName == "call_allocate") {
-          translated += " call allocate"; 
+          translated += " call allocate\n"; 
         }
         else if(i->instructionName == "call_error") {
           Instruction_call_error* a = static_cast<Instruction_call_error*>(i); 
           if(a->constant.num == 1){
-            translated += " call array_tensor_error_null"; 
+            translated += " call array_tensor_error_null\n"; 
           }
           else if(a->constant.num == 3){
-            translated += " call array_error";
+            translated += " call array_error\n";
           }
           else {
-            translated += " call tensor_error"; 
+            translated += " call tensor_error\n"; 
           }
         }
         outputFile << translated; 
@@ -322,7 +322,7 @@ namespace L1{
       if(f->locals > 0){
         int64_t offset = (f->locals + max((int)f->arguments - 6, 0)) * 8; 
         std::string restore = " addq $";
-        restore += std::to_string(offset) + ", %rsp\n";  
+        restore += to_string(offset) + ", %rsp\n";  
         outputFile << restore; 
       }
       outputFile << " retq\n";
