@@ -272,7 +272,8 @@ namespace L1{
           else {
             translated += " subq ";
           }
-          translated += '%' + a->src.register_name + ", " + to_string(a->constant.num) + "(%" + a->dst.register_name + ")\n";
+          // cout << "hello" << a->src.register_name << endl;
+          translated += '$' + to_string(a->src.num) + ", " + to_string(a->constant.num) + "(%" + a->dst.register_name + ")\n";
         }
         else if(i->instructionName == "at"){
           Instruction_at* a = static_cast<Instruction_at*>(i); 
