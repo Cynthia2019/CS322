@@ -328,11 +328,24 @@ namespace L1{
           label[0] = '_'; 
           translated += label + ':' + '\n'; 
         }
+        else if(i->instructionName == "return") {
+          int off_byte = f->locals + max((int)f->arguments - 6, 0);
+          if (off_byte > 0) {
+            int64_t offset = (off_byte) * 8;
+            std::string restore = " addq $";
+            restore += to_string(offset) + ", %rsp\n";  
+            translated += restore;
+          }
+
+          translated += "retq\n";
+
+        }
         outputFile << translated; 
       }
       //restore locals 
-      if(f->locals > 0){
-        int64_t offset = (f->locals + max((int)f->arguments - 6, 0)) * 8; 
+      int off_byte = f->locals + max((int)f->arguments - 6, 0);
+      if(off_byte > 0){
+        int64_t offset = (off_byte) * 8;
         std::string restore = " addq $";
         restore += to_string(offset) + ", %rsp\n";  
         outputFile << restore; 
