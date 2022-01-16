@@ -262,7 +262,7 @@ namespace L1{
           else {
             translated += " subq ";
           }
-          translated += to_string(a->constant.num) + "(%" + a->src.register_name + "), " + a->dst.register_name + '\n'; 
+          translated += to_string(a->constant.num) + "(%" + a->src.register_name + "), %" + a->dst.register_name + '\n'; 
         }
         else if(i->instructionName == "store_aop"){
           Instruction_store_aop* a = static_cast<Instruction_store_aop*>(i); 
