@@ -21,7 +21,7 @@ namespace L1 {
       bool isALabel = false;
       std::string tostring() {
         if (isARegister) {
-          return "rdi";
+          return register_name;
         } else if (isAConstant) {
           return to_string(num);
         } else if (isAnOp) {
