@@ -276,7 +276,7 @@ namespace L1{
         }
         else if(i->instructionName == "at"){
           Instruction_at* a = static_cast<Instruction_at*>(i); 
-          translated += " lea (%" + a->src_add.register_name + ", " + a->src_mult.register_name + ", " + to_string(a->constant.num) + "), %" + a->dst.register_name + '\n';
+          translated += " lea (%" + a->src_add.register_name + ", %" + a->src_mult.register_name + ", " + to_string(a->constant.num) + "), %" + a->dst.register_name + '\n';
         }
         else if(i->instructionName == "call") {
           Instruction_call* a = static_cast<Instruction_call*>(i);
