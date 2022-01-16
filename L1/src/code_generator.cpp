@@ -66,7 +66,7 @@ namespace L1{
       f_name[0] = '_'; 
       outputFile << f_name + ":\n"; 
       //check if there are locals
-      if(f->locals > 0 || f->arguments > 6){
+      if(f->locals > 0){
         int64_t offset = (f->locals + max((int)f->arguments - 6, 0)) * 8; 
         std::string line = " subq $";
         line += to_string(offset) + ", %rsp\n";  
@@ -338,20 +338,20 @@ namespace L1{
             translated += restore;
           }
 
-          translated += "retq\n";
+          translated += " retq\n";
 
         }
         outputFile << translated; 
       }
       //restore locals 
-      int off_byte = f->locals + max((int)f->arguments - 6, 0);
-      if(off_byte > 0){
-        int64_t offset = (off_byte) * 8;
-        std::string restore = " addq $";
-        restore += to_string(offset) + ", %rsp\n";  
-        outputFile << restore; 
-      }
-      outputFile << " retq\n";
+      // int off_byte = f->locals + max((int)f->arguments - 6, 0);
+      // if(off_byte > 0){
+      //   int64_t offset = (off_byte) * 8;
+      //   std::string restore = " addq $";
+      //   restore += to_string(offset) + ", %rsp\n";  
+      //   outputFile << restore; 
+      // }
+      // outputFile << " retq\n";
     }
     
     /* 
