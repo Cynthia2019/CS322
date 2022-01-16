@@ -19,6 +19,17 @@ namespace L1 {
       bool isAConstant = false; 
       bool isAnOp = false; 
       bool isALabel = false;
+      std::string tostring() {
+        if (isARegister) {
+          return "rdi";
+        } else if (isAConstant) {
+          return to_string(num);
+        } else if (isAnOp) {
+          return op;
+        } else if (isALabel) {
+          return labelName;
+        }
+      }
   };
 
   /*
@@ -27,17 +38,25 @@ namespace L1 {
   class Instruction{
     public: 
     string instructionName; 
+    virtual std::string tostring() { return ""; };
   };
 
   /*
    * Instructions.
    */
   class Instruction_ret : public Instruction{
+    public:
+    std::string tostring() {
+      return "return";
+    }
   };
 
   class Instruction_assignment : public Instruction{
     public:
       Item src,dst;
+    std::string tostring() {
+      return "";
+    }
   };
   
   //load instruction
@@ -46,14 +65,20 @@ namespace L1 {
     Item src; 
     Item dst; 
     Item constant;
+    std::string tostring() {
+      return "";
+    }
   };
   
   //shift instruction
   class Instruction_shift : public Instruction{
     public: 
-    Item src; 
     Item dst; 
-    Item constant;
+    Item op;
+    Item src; 
+    std::string tostring() {
+      return dst.tostring() + " " + op.tostring() + " " + src.tostring();
+    }
   };
 
 
@@ -63,6 +88,9 @@ namespace L1 {
     Item src; 
     Item dst; 
     Item constant;
+    std::string tostring() {
+      return "";
+    }
   };
 
   //aop instruction 
@@ -71,6 +99,9 @@ namespace L1 {
     Item src; 
     Item dst; 
     Item op; 
+    std::string tostring() {
+      return "";
+    }
   };
 
   //store aop instruction 
@@ -80,6 +111,9 @@ namespace L1 {
     Item constant; 
     Item dst; 
     Item op; 
+    std::string tostring() {
+      return "";
+    }
   };
 
   //load aop instruction 
@@ -89,6 +123,9 @@ namespace L1 {
     Item constant; 
     Item dst; 
     Item op; 
+    std::string tostring() {
+      return "";
+    }
   };
 
   class Instruction_compare: public Instruction {
@@ -97,6 +134,9 @@ namespace L1 {
     Item oprand1;
     Item op;
     Item oprand2;
+    std::string tostring() {
+      return "";
+    }
   };
 
   class Instruction_cjump: public Instruction {
@@ -105,6 +145,9 @@ namespace L1 {
     Item op;
     Item oprand2;
     Item label;
+    std::string tostring() {
+      return "";
+    }
   };
 
   //call u N instruction 
@@ -113,21 +156,47 @@ namespace L1 {
     Item constant; 
     Item label; 
     Item dst; 
+    std::string tostring() {
+      return "";
+    }
   }; 
 
-  class Instruction_call_print : public Instruction {};
-  class Instruction_call_input : public Instruction {};
-  class Instruction_call_allocate : public Instruction {};
+  class Instruction_call_print : public Instruction {
+    std::string tostring() {
+      return "";
+    }
+  };
+  class Instruction_call_input : public Instruction {
+    std::string tostring() {
+      return "";
+    }
+  };
+  class Instruction_call_allocate : public Instruction {
+    std::string tostring() {
+      return "";
+    }
+  };
   class Instruction_call_error : public Instruction {
     public: 
     Item constant; 
+    std::string tostring() {
+      return "";
+    }
   };
 
   /*
   misc instruction 
   */
-  class Instruction_increment : public Instruction {}; 
-  class Instruction_decrement : public Instruction {}; 
+  class Instruction_increment : public Instruction {
+    std::string tostring() {
+      return "";
+    }
+  }; 
+  class Instruction_decrement : public Instruction {
+    std::string tostring() {
+      return "";
+    }
+  }; 
   class Instruction_at : public Instruction {
     public: 
     Item constant; 
