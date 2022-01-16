@@ -43,12 +43,19 @@ namespace L1{
       std::string f_name = f->name; 
       f_name[0] = '_'; 
       outputFile << f_name + ":\n"; 
+      //check if there are locals
+      if(f->locals > 0 || f->arguments > 6){
+        int64_t offset = (f->locals + max((int)f->arguments - 6, 0)) * 8; 
+        std::string line = " subq $";
+        line += std::to_string(offset) + ", %rsp\n";  
+        outputFile << line; 
+      }
       for(Instruction* i : f->instructions){
-        std::string translated = " "; 
+        std::string translated = ""; 
         //if assignment
         if(i->instructionName == "assignment") {
           Instruction_assignment* a= static_cast<Instruction_assignment *>(i); 
-          translated += "movq "; 
+          translated += " movq "; 
           if(a->src.isARegister){
             translated += '%' + a->src.register_name;
           }
@@ -65,12 +72,12 @@ namespace L1{
         //if load
         else if(i->instructionName == "load"){
           Instruction_load* a = static_cast<Instruction_load*>(i); 
-          translated += "movq " + std::to_string(a->constant.num) + "(%" + a->src.register_name + "), %" + a->dst.register_name + '\n';
+          translated += " movq " + std::to_string(a->constant.num) + "(%" + a->src.register_name + "), %" + a->dst.register_name + '\n';
         }
         //if store
         else if(i->instructionName == "store") {
           Instruction_store* a = static_cast<Instruction_store*>(i); 
-          translated += "movq "; 
+          translated += " movq "; 
           if(a->src.isARegister){
             translated += '%' + a->src.register_name;
           }
@@ -81,22 +88,23 @@ namespace L1{
             std::string func_name = a->src.labelName; 
             func_name[0] = '_';
             translated += '$' + func_name;
+            // outputFile << "subq $8, %rsp\n"; 
           }
           translated += ", " + std::to_string(a->constant.num) + "(%" + a->dst.register_name + ")\n";
         }
         else if(i->instructionName == "aop") {
           Instruction_aop* a = static_cast<Instruction_aop*>(i); 
           if(a->op.op == "+=") {
-            translated += "addq ";
+            translated += " addq ";
           }
           else if(a->op.op == "-=") {
-            translated += "subq ";
+            translated += " subq ";
           }
           else if(a->op.op == "*=") {
-            translated += "imulq ";
+            translated += " imulq ";
           }
           else {
-            translated += "andq "; 
+            translated += " andq "; 
           }
           if(a->src.isARegister){
             translated += '%' + a->src.register_name;
@@ -108,39 +116,84 @@ namespace L1{
         }
         else if(i->instructionName == "increment"){
           Instruction_increment* a = static_cast<Instruction_increment*>(i); 
-          translated += "inc %" + a->src.register_name + '\n';
+          translated += " inc %" + a->src.register_name + '\n';
         }
         else if(i->instructionName == "decrement"){
           Instruction_decrement* a = static_cast<Instruction_decrement*>(i); 
-          translated += "dec %" + a->src.register_name + '\n';
+          translated += " dec %" + a->src.register_name + '\n';
         }
         else if(i->instructionName == "load_aop"){
           Instruction_load_aop* a = static_cast<Instruction_load_aop*>(i); 
           if(a->op.op == "+="){
-            translated += "addq "; 
+            translated += " addq "; 
           }
           else {
-            translated += "subq ";
+            translated += " subq ";
           }
           translated += std::to_string(a->constant.num) + "(%" + a->src.register_name + "), " + a->dst.register_name + '\n'; 
         }
         else if(i->instructionName == "store_aop"){
           Instruction_store_aop* a = static_cast<Instruction_store_aop*>(i); 
           if(a->op.op == "+="){
-            translated += "addq "; 
+            translated += " addq "; 
           }
           else {
-            translated += "subq ";
+            translated += " subq ";
           }
           translated += '%' + a->src.register_name + ", " + std::to_string(a->constant.num) + "(%" + a->dst.register_name + ")\n";
         }
         else if(i->instructionName == "at"){
-          Instruction_at*a = static_cast<Instruction_at*>(i); 
-          translated += "lea (%" + a->src_add.register_name + ", " + a->src_mult.register_name + ", " + std::to_string(a->constant.num) + "), %" + a->dst.register_name + '\n';
+          Instruction_at* a = static_cast<Instruction_at*>(i); 
+          translated += " lea (%" + a->src_add.register_name + ", " + a->src_mult.register_name + ", " + std::to_string(a->constant.num) + "), %" + a->dst.register_name + '\n';
         }
-
+        else if(i->instructionName == "call") {
+          Instruction_call* a = static_cast<Instruction_call*>(i);
+          translated += " subq $"; 
+          int64_t space = max((int)a->constant.num - 6, 0) * 8 + 8; 
+          translated += std::to_string(space) + ", %rsp\n";
+          outputFile << translated; 
+          translated = " jmp "; 
+          if(a->dst.isALabel){
+            std::string name = a->dst.labelName; 
+            name[0] = '_'; 
+            translated += name + '\n'; 
+          }
+          else {
+            std::string name = a->dst.register_name; 
+            translated += "*%" + name + '\n'; 
+          }
+        }
+        else if(i->instructionName == "call_print") {
+          translated += "call print"; 
+        }
+        else if(i->instructionName == "call_input") {
+          translated += "call input"; 
+        }
+        else if(i->instructionName == "call_allocate") {
+          translated += "call allocate"; 
+        }
+        else if(i->instructionName == "call_error") {
+          Instruction_call_error* a = static_cast<Instruction_call_error*>(i); 
+          if(a->constant.num == 1){
+            translated += "call array_tensor_error_null"; 
+          }
+          else if(a->constant.num == 3){
+            translated += "call array_error";
+          }
+          else {
+            translated += "call tensor_error"; 
+          }
+        }
         outputFile << translated; 
       }
+      //restore locals 
+      if(f->locals > 0){
+        int64_t offset = (f->locals + max((int)f->arguments - 6, 0)) * 8; 
+        std::string restore = " addq $";
+        restore += std::to_string(offset) + ", %rsp\n";  
+        outputFile << restore; 
+      }
+      outputFile << " retq\n";
     }
     
     /* 

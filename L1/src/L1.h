@@ -155,7 +155,6 @@ namespace L1 {
   class Instruction_call : public Instruction {
     public: 
     Item constant; 
-    Item label; 
     Item dst; 
     std::string tostring() {
       return "";
