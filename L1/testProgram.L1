@@ -5,15 +5,18 @@
     r10 <- rax 
     rax <- :testFunction
     rdx <- mem rdi 8
+    mem rsp -8 <- :label
+    mem rdi 8 <- rcx
+    rdi++
+    rcx--
+    rax @ rdi rsi 4
+    mem rsp 8 += rdi
+    rdi -= mem rsp 16
     rdx += -1
-    mem rdi 8 -= rcx
     call :testFunction 0
     call print 1
     call input 0 
     call tensor-error 1
-    rsi++ 
-    rdx--
-    rax @ rdi rsi 4
     return
   )
 
