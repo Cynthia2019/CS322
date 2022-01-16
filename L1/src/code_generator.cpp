@@ -214,7 +214,7 @@ namespace L1{
             translated += '%' + a->src.register_name;
           }
           else if(a->src.isAConstant) {
-            translated += to_string(a->src.num);
+            translated += '$' + to_string(a->src.num);
           }
           else if(a->src.isALabel) {
             std::string func_name = a->src.labelName; 
