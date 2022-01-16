@@ -29,7 +29,8 @@ namespace L1 {
         } else if (isALabel) {
           return labelName;
         }
-      }
+        else return "";
+      };
   };
 
   /*
@@ -188,11 +189,15 @@ namespace L1 {
   misc instruction 
   */
   class Instruction_increment : public Instruction {
+    public: 
+    Item src;
     std::string tostring() {
       return "";
     }
   }; 
   class Instruction_decrement : public Instruction {
+    public: 
+    Item src;
     std::string tostring() {
       return "";
     }

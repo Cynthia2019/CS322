@@ -675,6 +675,8 @@ namespace L1 {
       auto currentF = p.functions.back(); 
       auto i = new Instruction_increment(); 
       i->instructionName = "increment"; 
+      i->src = parsed_items.back(); 
+      parsed_items.pop_back();
       currentF->instructions.push_back(i); 
     }
   };
@@ -685,6 +687,8 @@ namespace L1 {
       auto currentF = p.functions.back(); 
       auto i = new Instruction_decrement(); 
       i->instructionName = "decrement"; 
+      i->src = parsed_items.back(); 
+      parsed_items.pop_back();
       currentF->instructions.push_back(i); 
     }
   };
