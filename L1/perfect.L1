@@ -1,41 +1,41 @@
 (:perfect
-  (:perfect
-    0 0
-    call input 0
-    rax >>= 1
-    r8 <- 0
-    r10 <- rax
-    
-    :perfect_loop
-    r9 <- r10
-    r9 += r8
-    r9 >>= 1
-    r11 <- r9
-    r11 *= r11
-    cjump r11 < rax :perfect_leftPlus
-    cjump rax < r11 :perfect_rightPlus
-    cjump r11 = rax :perfect_true
+    (:perfect
+        0 0
+        call input 0
+        rax -= 1
+        rax >>= 1
+        r8 <- 0
+	    r10 <- rax
+        :loop
+        r9 <- r10
+        r9 += r8
+        r9 >>= 1
+	    r11 <- r9
+        r11 *= r11
+        cjump r11 < rax :leftPlus
+        cjump rax < r11 :rightPlus
+        cjump r11 = rax :true
 
-    :perfect_leftPlus
-    r8 <- r9
-    r8 += 1
-    cjump r8 <= r10 :perfect_loop
-    cjump r10 < r8 :perfect_false
+        :leftPlus
+        r8 <- r9
+        r8 += 1
+        cjump r8 <= r10 :loop
+        cjump r10 < r8 :false
 
-    :perfect_rightPlus
-    r10 <- r9
-    r10 -= 1
-    cjump r8 <= r10 :perfect_loop
-    cjump r10 < r8 :perfect_false
+        :rightPlus
+        r10 <- r9
+        r10 -= 1
+        cjump r8 <= r10 :loop
+        cjump r10 < r8 :false
 
-    :perfect_true
-    rdi <- 3
-    call print 1
-    return
+        :true
+        rdi <- 3
+        call print 1
+        return
 
-    :perfect_false
-    rdi <- 1
-    call print 1
-    return 
-  )
+        :false
+        rdi <- 1
+        call print 1
+        return
+    )
 )
