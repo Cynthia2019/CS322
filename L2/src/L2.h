@@ -13,8 +13,8 @@ namespace L2 {
   class Item {
     public:
       // virtual std::string tostring() = 0;
-      virtual std::string get_content() {};
-      virtual ItemType get_type() {};
+      virtual std::string get_content() { return ""; };
+      virtual ItemType get_type() { return item_label; };
   };
 
   class Item_op :public Item {
@@ -82,7 +82,7 @@ namespace L2 {
     public: 
     std::string instructionName; 
     virtual std::string tostring() { return ""; };
-    virtual std::string toL1() {};
+    virtual std::string toL1() { return ""; };
   };
 
   /*
