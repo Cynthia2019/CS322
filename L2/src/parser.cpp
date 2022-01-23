@@ -94,6 +94,13 @@ namespace L2 {
   struct str_arrow : TAOCPP_PEGTL_STRING( "<-" ) {};
   struct str_shift_left : TAOCPP_PEGTL_STRING( "<<=" ) {};
   struct str_shift_right : TAOCPP_PEGTL_STRING( ">>=" ) {};
+  struct str_stack_arg : TAOCPP_PEGTL_STRING( "stack-arg" ) {};
+
+  struct variable:
+    pegtl::seq<
+      pegtl::one<'%'>,
+      name
+    >{};
 
   struct comment: 
     pegtl::disable< 
@@ -210,7 +217,7 @@ namespace L2 {
 
   struct Instruction_assignment_rule:
     pegtl::seq<
-      register_rule,
+      pegtl::sor<register_rule, variable>,
       seps,
       str_arrow,
       seps,
@@ -557,8 +564,7 @@ namespace L2 {
     template< typename Input >
 	static void apply( const Input & in, Program & p){
       if (is_debug) cout << "firing Label_rule, str: " << in.string() << endl;
-      Item i;
-      i.isALabel = true;
+      Item_label i;
       i.labelName = in.string();
       parsed_items.push_back(i);
     }
@@ -568,9 +574,7 @@ namespace L2 {
     template< typename Input >
     static void apply( const Input & in, Program & p){
       if (is_debug) cout << "firing register_rule, str: " << in.string() << endl;
-      Item i;
-      i.isARegister = true;
-      i.r = string_to_r[in.string()];
+      Item_register i;
       i.register_name= in.string(); 
       parsed_items.push_back(i);
     }
@@ -580,8 +584,7 @@ namespace L2 {
   template<> struct action < aops_rule > {
     template< typename Input >
     static void apply( const Input & in, Program & p){
-      Item i; 
-      i.isAnOp = true; 
+      Item_op i; 
       i.op = in.string(); 
       parsed_items.push_back(i);
     }
@@ -590,8 +593,7 @@ namespace L2 {
   template<> struct action < number_rule > {
     template< typename Input >
     static void apply( const Input & in, Program & p){
-      Item i; 
-      i.isAConstant = true; 
+      Item_number i; 
       i.num = std::stoll(in.string()); 
       parsed_items.push_back(i);
     }
@@ -603,8 +605,7 @@ namespace L2 {
     static void apply( const Input & in, Program & p){
       auto currentF = p.functions.back(); 
       auto i = new Instruction_label(); 
-      Item item;
-      item.isALabel = true; 
+      Item_label item;
       item.labelName = in.string();  
       i->instructionName = "label";
       i->label = item;
@@ -856,8 +857,7 @@ namespace L2 {
     template< typename Input >
     static void apply( const Input & in, Program & p){
       if (is_debug) cout << "firing shift_op_rule, str: " << in.string() << endl;
-      Item i;
-      i.isAnOp = true;
+      Item_op i;
       i.op = in.string();
       parsed_items.push_back(i);
     }
@@ -888,8 +888,7 @@ namespace L2 {
     template< typename Input >
     static void apply( const Input & in, Program & p){
       if (is_debug) cout << "firing compare_op_rule, str: " << in.string() << endl;
-      Item i;
-      i.isAnOp = true;
+      Item_op i;
       i.op = in.string();
       parsed_items.push_back(i);
     }
@@ -957,4 +956,13 @@ namespace L2 {
     return p;
   }
 
+  Program parse_spill_file(char *fileName) {
+    Program p;
+    return p;
+  }
+
+  Program parse_function_file(char *fileName) {
+    Program p;
+    return p;
+  }
 }

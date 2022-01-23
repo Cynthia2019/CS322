@@ -2,9 +2,13 @@
 obj
 L1/bin/L1
 L1/bin/L1i
+L2/bin/L2
+L2/bin/L2i
 prog.S
 L1/src/test.L1
 *.tmp
 prog.o
 runtime.o
 a.out
+*.tar.bz2
+*.tmp
