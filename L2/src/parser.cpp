@@ -27,7 +27,7 @@
 #include <tao/pegtl/analyze.hpp>
 #include <tao/pegtl/contrib/raw_string.hpp>
 
-#include <L1.h>
+#include <L2.h>
 #include <parser.h>
 
 namespace pegtl = tao::TAO_PEGTL_NAMESPACE;
@@ -35,9 +35,9 @@ namespace pegtl = tao::TAO_PEGTL_NAMESPACE;
 using namespace pegtl;
 using namespace std;
 
-extern is_debug;
+extern bool is_debug;
+namespace L2 {
 
-namespace L1 {
 
   /* 
    * Data required to parse
@@ -74,7 +74,10 @@ namespace L1 {
    */
   struct str_return : TAOCPP_PEGTL_STRING( "return" ) {};
   struct str_mem : TAOCPP_PEGTL_STRING( "mem" ) {};
+  struct str_call : TAOCPP_PEGTL_STRING( "call" ) {};
   struct str_arrow : TAOCPP_PEGTL_STRING( "<-" ) {};
+  struct str_shift_left : TAOCPP_PEGTL_STRING( "<<=" ) {};
+  struct str_shift_right : TAOCPP_PEGTL_STRING( ">>=" ) {};
 
   struct comment: 
     pegtl::disable< 
@@ -129,6 +132,9 @@ namespace L1 {
 
   struct local_number:
     number {} ;
+  
+  struct number_rule: 
+    number {};
 
   struct seps: 
     pegtl::star< 
@@ -152,11 +158,24 @@ namespace L1 {
       seps,
       str_arrow,
       seps,
-      register_rule
+      pegtl::sor<
+        register_rule,
+        number_rule, 
+        Label_rule
+      >
     > {};
+
+  struct shift_op_rule:
+  pegtl::sor< str_shift_left, str_shift_right>{};
   
-  struct load_offset_rule: 
-    pegtl::digit {};
+  struct Instruction_shift_rule:
+      pegtl::seq<
+        register_rule,
+        seps,
+        shift_op_rule,
+        seps,
+        pegtl::sor<number_rule, register_rule>
+    > {};
 
   struct Instruction_load_rule:
      pegtl::seq<
@@ -168,7 +187,7 @@ namespace L1 {
         seps,
         register_rule, 
         seps, 
-        load_offset_rule
+        number_rule
         >
     {};
 
@@ -178,20 +197,194 @@ namespace L1 {
         seps,
         register_rule, 
         seps, 
-        load_offset_rule, 
+        number_rule, 
         seps, 
         str_arrow, 
         seps, 
-        register_rule
+        pegtl::sor<
+          register_rule, 
+          number_rule,
+          Label_rule>
         >
     {};
 
+  // += -= *= &=
+  struct aops_rule: 
+    pegtl::sor<
+      TAOCPP_PEGTL_STRING( "+=" ),
+      TAOCPP_PEGTL_STRING( "-=" ),
+      TAOCPP_PEGTL_STRING( "*=" ),
+      TAOCPP_PEGTL_STRING( "&=" )
+    > {};
+  // w aop t
+  struct Instruction_arithmetic_rule: 
+    pegtl::seq<
+      register_rule,
+      seps,  
+      aops_rule, 
+      seps, 
+      pegtl::sor<
+        number_rule, 
+        register_rule
+      >
+    >{};
+
+  /*
+   Memory arithmetic operations
+  */
+ //mem x M += t
+  struct Instruction_store_aop_rule: 
+    pegtl::seq<
+      str_mem, 
+      seps, 
+      register_rule, 
+      seps, 
+      number_rule, 
+      seps, 
+      aops_rule, 
+      seps, 
+      pegtl::sor<
+        number_rule, 
+        register_rule
+      >
+    > {};
+  //w += mem x M 
+  struct Instruction_load_aop_rule: 
+    pegtl::seq<
+      register_rule, 
+      seps, 
+      aops_rule, 
+      seps, 
+      str_mem, 
+      seps, 
+      register_rule, 
+      seps, 
+      number_rule 
+    > {};
+  
+  struct compare_op_rule:
+    pegtl::sor<
+      TAOCPP_PEGTL_STRING( "<=" ),
+      TAOCPP_PEGTL_STRING( "<" ),
+      TAOCPP_PEGTL_STRING( "=" )
+    > {};
+
+  struct Instruction_compare_rule:
+    pegtl::seq<
+      register_rule,
+      seps,
+      str_arrow,
+      seps,
+      pegtl::sor<number_rule, register_rule >,
+      seps,
+      compare_op_rule,
+      seps,
+      pegtl::sor<number_rule, register_rule>
+    > {};
+
+  struct Instruction_cjump_rule:
+    pegtl::seq<
+      TAOCPP_PEGTL_STRING( "cjump" ),
+      seps,
+      pegtl::sor<number_rule, register_rule >,
+      seps,
+      compare_op_rule,
+      seps,
+      pegtl::sor<number_rule, register_rule>,
+      seps,
+      Label_rule
+    > {};
+
+  /*
+  call 
+  */
+ struct Instruction_call_rule: 
+  pegtl::seq<
+    str_call, 
+    seps,
+    pegtl::sor<
+      Label_rule,
+      register_rule
+    >,
+    seps, 
+    number_rule
+  > {}; 
+
+  struct Instruction_call_print_rule: 
+    TAOCPP_PEGTL_STRING( "call print 1" ) {}; 
+
+  struct Instruction_call_input_rule: 
+    TAOCPP_PEGTL_STRING( "call input 0" ) {}; 
+
+  struct Instruction_call_allocate_rule: 
+    TAOCPP_PEGTL_STRING( "call allocate 2" ) {}; 
+
+  struct Instruction_call_error_rule: 
+    pegtl::seq<
+      TAOCPP_PEGTL_STRING( "call tensor-error" ),
+      seps,
+      number_rule
+    > {}; 
+  
+  /*
+  misc
+  */
+  struct Instruction_increment_rule: 
+    pegtl::seq<
+      register_rule, 
+      seps,
+      TAOCPP_PEGTL_STRING( "++" )
+    > {}; 
+  struct Instruction_decrement_rule: 
+    pegtl::seq<
+      register_rule, 
+      seps,
+      TAOCPP_PEGTL_STRING( "--" )
+    > {}; 
+
+  struct Instruction_at_rule: 
+    pegtl::seq<
+      register_rule, 
+      seps,
+      TAOCPP_PEGTL_STRING( "@" ), 
+      seps, 
+      register_rule, 
+      seps, 
+      register_rule, 
+      seps, 
+      number_rule
+    > {}; 
+  struct Instruction_goto_rule:
+    pegtl::seq<
+      TAOCPP_PEGTL_STRING( "goto" ),
+      seps, 
+      Label_rule
+    > 
+  {};
+  struct Instruction_label_rule: 
+   label {}; 
   struct Instruction_rule:
     pegtl::sor<
       pegtl::seq< pegtl::at<Instruction_return_rule>            , Instruction_return_rule             >,
+      pegtl::seq< pegtl::at<Instruction_compare_rule>        , Instruction_compare_rule        >,
+      pegtl::seq< pegtl::at<Instruction_store_aop_rule>        , Instruction_store_aop_rule        >,
+      pegtl::seq< pegtl::at<Instruction_load_aop_rule>        , Instruction_load_aop_rule        >,
       pegtl::seq< pegtl::at<Instruction_assignment_rule>        , Instruction_assignment_rule         >,
       pegtl::seq< pegtl::at<Instruction_load_rule>        , Instruction_load_rule        >,
-      pegtl::seq< pegtl::at<Instruction_store_rule>        , Instruction_store_rule        >
+      pegtl::seq< pegtl::at<Instruction_store_rule>        , Instruction_store_rule        >,
+      pegtl::seq< pegtl::at<Instruction_arithmetic_rule>        , Instruction_arithmetic_rule        >,
+      pegtl::seq< pegtl::at<Instruction_shift_rule>        , Instruction_shift_rule        >,
+      pegtl::seq< pegtl::at<Instruction_cjump_rule>        , Instruction_cjump_rule        >,
+      pegtl::seq< pegtl::at<Instruction_call_rule>        , Instruction_call_rule        >,
+      pegtl::seq< pegtl::at<Instruction_call_print_rule>        , Instruction_call_print_rule        >,
+      pegtl::seq< pegtl::at<Instruction_call_input_rule>        , Instruction_call_input_rule        >,
+      pegtl::seq< pegtl::at<Instruction_call_allocate_rule>        , Instruction_call_allocate_rule        >,
+      pegtl::seq< pegtl::at<Instruction_call_error_rule>        , Instruction_call_error_rule        >,
+      pegtl::seq< pegtl::at<Instruction_increment_rule>        , Instruction_increment_rule        >,
+      pegtl::seq< pegtl::at<Instruction_decrement_rule>        , Instruction_decrement_rule        >,
+      pegtl::seq< pegtl::at<Instruction_goto_rule>        , Instruction_goto_rule        >,
+      pegtl::seq< pegtl::at<Instruction_at_rule>        , Instruction_at_rule        >, 
+      pegtl::seq< pegtl::at<Instruction_label_rule>        , Instruction_label_rule        >
     > { };
 
   struct Instructions_rule:
@@ -252,7 +445,8 @@ namespace L1 {
 
   template<> struct action < label > {
     template< typename Input >
-    static void apply( const Input & in, Program & p){
+	static void apply( const Input & in, Program & p){
+      if (is_debug) cout << "firing label, str: " << in.string() << endl;
       if (p.entryPointLabel.empty()){
         p.entryPointLabel = in.string();
         string_to_r["rax"] = rax; 
@@ -279,9 +473,8 @@ namespace L1 {
 
   template<> struct action < function_name > {
     template< typename Input >
-    static void apply( const Input & in, Program & p){
-      if (is_debug) cout << "firing action function_name. str: " << in.string() << endl;
-
+	static void apply( const Input & in, Program & p){
+      if (is_debug) cout << "firing function_name, str: " << in.string() << endl;
       auto newF = new Function();
       newF->name = in.string();
       p.functions.push_back(newF);
@@ -290,8 +483,7 @@ namespace L1 {
 
   template<> struct action < argument_number > {
     template< typename Input >
-    static void apply( const Input & in, Program & p){
-      if (is_debug) cout << "firing action argument_number. str: " << in.string() << endl;
+	static void apply( const Input & in, Program & p){
       auto currentF = p.functions.back();
       currentF->arguments = std::stoll(in.string());
     }
@@ -299,8 +491,7 @@ namespace L1 {
 
   template<> struct action < local_number > {
     template< typename Input >
-    static void apply( const Input & in, Program & p){
-      if (is_debug) cout << "firing action local_number. str: " << in.string() << endl;
+	static void apply( const Input & in, Program & p){
       auto currentF = p.functions.back();
       currentF->locals = std::stoll(in.string());
     }
@@ -308,20 +499,20 @@ namespace L1 {
 
   template<> struct action < str_return > {
     template< typename Input >
-    static void apply( const Input & in, Program & p){
-      if (is_debug) cout << "firing action str_return. str: " << in.string() << endl;
+	static void apply( const Input & in, Program & p){
       auto currentF = p.functions.back();
       auto i = new Instruction_ret();
+      i->instructionName = "return";
       currentF->instructions.push_back(i);
     }
   };
 
   template<> struct action < Label_rule > {
     template< typename Input >
-    static void apply( const Input & in, Program & p){
-      if (is_debug) cout << "firing action Label_rule. str: " << in.string() << endl;
+	static void apply( const Input & in, Program & p){
+      if (is_debug) cout << "firing Label_rule, str: " << in.string() << endl;
       Item i;
-      i.isARegister = false;
+      i.isALabel = true;
       i.labelName = in.string();
       parsed_items.push_back(i);
     }
@@ -330,53 +521,231 @@ namespace L1 {
   template<> struct action < register_rule > {
     template< typename Input >
     static void apply( const Input & in, Program & p){
-      if (is_debug) cout << "firing action register_rule. str: " << in.string() << endl;
+      if (is_debug) cout << "firing register_rule, str: " << in.string() << endl;
       Item i;
       i.isARegister = true;
-      i.rName = in.string()
+      i.r = string_to_r[in.string()];
+      i.register_name= in.string(); 
       parsed_items.push_back(i);
     }
   };
 
-  template<> struct action < register_rdi_rule > {
+  //action for += -= *= &= 
+  template<> struct action < aops_rule > {
     template< typename Input >
     static void apply( const Input & in, Program & p){
-      if (is_debug) cout << "firing action register_rdi_rule. str: " << in.string() << endl;
-      Item i;
-      i.isARegister = true;
-      i.r = rdi;
+      Item i; 
+      i.isAnOp = true; 
+      i.op = in.string(); 
       parsed_items.push_back(i);
+    }
+  }; 
+  //action when value is a number
+  template<> struct action < number_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      Item i; 
+      i.isAConstant = true; 
+      i.num = std::stoll(in.string()); 
+      parsed_items.push_back(i);
+    }
+  }; 
+
+  //action for :label
+  template<> struct action < Instruction_label_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      auto currentF = p.functions.back(); 
+      auto i = new Instruction_label(); 
+      Item item;
+      item.isALabel = true; 
+      item.labelName = in.string();  
+      i->instructionName = "label";
+      i->label = item;
+
+      currentF->instructions.push_back(i); 
+    }
+  }; 
+  //action for w aop t
+  template<> struct action < Instruction_arithmetic_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      auto currentF = p.functions.back(); 
+      auto i = new Instruction_aop(); 
+      i->instructionName = "aop";
+      i->src = parsed_items.back(); 
+      parsed_items.pop_back(); 
+      i->op = parsed_items.back(); 
+      parsed_items.pop_back(); 
+      i->dst = parsed_items.back(); 
+      parsed_items.pop_back(); 
+
+      currentF->instructions.push_back(i); 
+    }
+  }; 
+
+  //action for mem x M += t and mem x M -= t
+  template<> struct action < Instruction_store_aop_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      auto currentF = p.functions.back(); 
+      auto i = new Instruction_store_aop(); 
+      i->instructionName = "store_aop"; 
+      i->src = parsed_items.back(); 
+      parsed_items.pop_back(); 
+      i->op = parsed_items.back(); 
+      parsed_items.pop_back(); 
+      i->constant = parsed_items.back(); 
+      parsed_items.pop_back(); 
+      i->dst = parsed_items.back(); 
+      parsed_items.pop_back(); 
+
+      currentF->instructions.push_back(i); 
+    }
+  }; 
+
+  //action for w += mem x M and w -= mem x M
+  template<> struct action < Instruction_load_aop_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      auto currentF = p.functions.back(); 
+      auto i = new Instruction_load_aop(); 
+      i->instructionName = "load_aop"; 
+      i->constant = parsed_items.back(); 
+      parsed_items.pop_back(); 
+      i->src = parsed_items.back(); 
+      parsed_items.pop_back(); 
+      i->op = parsed_items.back(); 
+      parsed_items.pop_back(); 
+      i->dst = parsed_items.back(); 
+      parsed_items.pop_back(); 
+
+      currentF->instructions.push_back(i); 
+    }
+  }; 
+
+  /*
+   call actions 
+  */
+  //action for call u N
+  template<> struct action < Instruction_call_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      auto currentF = p.functions.back(); 
+      auto i = new Instruction_call(); 
+      i->instructionName = "call"; 
+      i->constant = parsed_items.back(); 
+      parsed_items.pop_back(); 
+      i->dst = parsed_items.back(); 
+      parsed_items.pop_back(); 
+
+      currentF->instructions.push_back(i); 
+    }
+  }; 
+
+  //action for call print 1
+  template<> struct action < Instruction_call_print_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      auto currentF = p.functions.back(); 
+      auto i = new Instruction_call_print(); 
+      i->instructionName = "call_print"; 
+      currentF->instructions.push_back(i); 
+    }
+  };
+  //action for call input 0 
+  template<> struct action < Instruction_call_input_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      auto currentF = p.functions.back(); 
+      auto i = new Instruction_call_input(); 
+      i->instructionName = "call_input"; 
+      currentF->instructions.push_back(i); 
+    }
+  };
+  //action for call allocate 2
+  template<> struct action < Instruction_call_allocate_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      auto currentF = p.functions.back(); 
+      auto i = new Instruction_call_allocate(); 
+      i->instructionName = "call_allocate"; 
+      currentF->instructions.push_back(i); 
     }
   };
 
-  template<> struct action < register_rax_rule > {
+  //action for call tensor-error F
+  template<> struct action < Instruction_call_error_rule > {
     template< typename Input >
     static void apply( const Input & in, Program & p){
-      if (is_debug) cout << "firing action register_rax_rule. str: " << in.string() << endl;
-      Item i;
-      i.isARegister = true;
-      i.r = rax;
-      parsed_items.push_back(i);
+      auto currentF = p.functions.back(); 
+      auto i = new Instruction_call_error(); 
+      i->instructionName = "call_error"; 
+      i->constant = parsed_items.back(); 
+      parsed_items.pop_back();
+      currentF->instructions.push_back(i); 
     }
   };
 
-  template<> struct action < load_offset_rule > {
+  //action for increment w++
+  template<> struct action < Instruction_increment_rule > {
     template< typename Input >
     static void apply( const Input & in, Program & p){
-      if (is_debug) cout << "firing action load_offset_rule. str: " << in.string() << endl;
-      Item i;
-      i.num = std::stoll(in.string());
-      i.isARegister = false;
-      i.isAConstant = true;
-      parsed_items.push_back(i);
+      auto currentF = p.functions.back(); 
+      auto i = new Instruction_increment(); 
+      i->instructionName = "increment"; 
+      i->src = parsed_items.back(); 
+      parsed_items.pop_back();
+      currentF->instructions.push_back(i); 
+    }
+  };
+  //action for increment w--
+  template<> struct action < Instruction_decrement_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      auto currentF = p.functions.back(); 
+      auto i = new Instruction_decrement(); 
+      i->instructionName = "decrement"; 
+      i->src = parsed_items.back(); 
+      parsed_items.pop_back();
+      currentF->instructions.push_back(i); 
+    }
+  };
+ //action for w @ w w E 
+  template<> struct action < Instruction_at_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      auto currentF = p.functions.back(); 
+      auto i = new Instruction_at(); 
+      i->instructionName = "at"; 
+      i->constant = parsed_items.back(); 
+      parsed_items.pop_back();
+      i->src_mult = parsed_items.back();
+      parsed_items.pop_back();
+      i->src_add = parsed_items.back();
+      parsed_items.pop_back();
+      i->dst = parsed_items.back();
+      parsed_items.pop_back();
+      currentF->instructions.push_back(i); 
+    }
+  };
+
+  //action for goto label 
+  template<> struct action < Instruction_goto_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      auto currentF = p.functions.back(); 
+      auto i = new Instruction_goto(); 
+      i->instructionName = "goto"; 
+      i->label = parsed_items.back(); 
+      parsed_items.pop_back();
+      currentF->instructions.push_back(i); 
     }
   };
 
   template<> struct action < Instruction_assignment_rule > {
     template< typename Input >
-    static void apply( const Input & in, Program & p){
-      if (is_debug) cout << "firing action Instruction_assignment_rule. str: "
-         << in.string() << endl;
+	static void apply( const Input & in, Program & p){
       /* 
        * Fetch the current function.
        */ 
@@ -386,6 +755,7 @@ namespace L1 {
        * Create the instruction.
        */ 
       auto i = new Instruction_assignment();
+      i->instructionName = "assignment"; 
       i->src = parsed_items.back();
       parsed_items.pop_back();
       i->dst = parsed_items.back();
@@ -401,11 +771,11 @@ namespace L1 {
   template<> struct action < Instruction_load_rule > {
     template< typename Input >
 	static void apply( const Input & in, Program & p){
-      if (is_debug) cout << "firing action Instruction_load_rule. str: " << in.string() << endl;
 
       auto currentF = p.functions.back();
 
       auto i = new Instruction_load();
+      i->instructionName = "load"; 
       i->constant = parsed_items.back();
       parsed_items.pop_back(); 
       i->src = parsed_items.back();
@@ -416,23 +786,112 @@ namespace L1 {
       currentF->instructions.push_back(i);
     }
   };
-  // template<> struct action < Instruction_store_rule > {
-  //   template< typename Input >
-	// static void apply( const Input & in, Program & p){
+  template<> struct action < Instruction_store_rule > {
+    template< typename Input >
+	static void apply( const Input & in, Program & p){
+      if (is_debug) cout << "firing Instruction_store_rule, str: " << in.string() << endl;
 
-  //     auto currentF = p.functions.back();
+      auto currentF = p.functions.back();
 
-  //     auto i = new Instruction_load();
-  //     i->constant = parsed_items.back();
-  //     parsed_items.pop_back(); 
-  //     i->src = parsed_items.back();
-  //     parsed_items.pop_back();
-  //     i->dst = parsed_items.back();
-  //     parsed_items.pop_back();
+      auto i = new Instruction_store();
+      i->instructionName = "store"; 
+      i->src = parsed_items.back();
+      parsed_items.pop_back(); 
+      i->constant = parsed_items.back();
+      parsed_items.pop_back();
+      i->dst = parsed_items.back();
+      parsed_items.pop_back();
 
-  //     currentF->instructions.push_back(i);
-  //   }
-  // };
+      currentF->instructions.push_back(i);
+    }
+  };
+  
+  template<> struct action < shift_op_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      if (is_debug) cout << "firing shift_op_rule, str: " << in.string() << endl;
+      Item i;
+      i.isAnOp = true;
+      i.op = in.string();
+      parsed_items.push_back(i);
+    }
+  };
+
+  
+  template<> struct action < Instruction_shift_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      if (is_debug) cout << "firing Instruction_shift_rule, str: " << in.string() << endl;
+
+      auto currentF = p.functions.back();
+
+      auto i = new Instruction_shift();
+      i->instructionName = "shift"; 
+      i->src = parsed_items.back();
+      parsed_items.pop_back();
+      i->op = parsed_items.back();
+      parsed_items.pop_back();
+      i->dst = parsed_items.back();
+      parsed_items.pop_back();
+
+      currentF->instructions.push_back(i);
+    }
+  };
+  
+  template<> struct action < compare_op_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      if (is_debug) cout << "firing compare_op_rule, str: " << in.string() << endl;
+      Item i;
+      i.isAnOp = true;
+      i.op = in.string();
+      parsed_items.push_back(i);
+    }
+  };
+  
+  template<> struct action < Instruction_compare_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      if (is_debug) cout << "firing Instruction_compare_rule, str: " << in.string() << endl;
+
+      auto currentF = p.functions.back();
+
+      auto i = new Instruction_compare();
+      i->instructionName = "compare"; 
+      i->oprand2 = parsed_items.back();
+      parsed_items.pop_back();
+      i->op = parsed_items.back();
+      parsed_items.pop_back();
+      i->oprand1 = parsed_items.back();
+      parsed_items.pop_back();
+      i->dst = parsed_items.back();
+      parsed_items.pop_back();
+
+      currentF->instructions.push_back(i);
+    }
+  };
+
+  template<> struct action < Instruction_cjump_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      if (is_debug) cout << "firing Instruction_cjump_rule, str: " << in.string() << endl;
+      auto currentF = p.functions.back();
+
+      auto i = new Instruction_cjump();
+      i->instructionName = "cjump"; 
+      i->label = parsed_items.back();
+      parsed_items.pop_back();
+      i->oprand2 = parsed_items.back();
+      parsed_items.pop_back();
+      i->op = parsed_items.back();
+      parsed_items.pop_back();
+      i->oprand1 = parsed_items.back();
+      parsed_items.pop_back();
+
+      currentF->instructions.push_back(i);
+    }
+  };
+
 
 
   Program parse_file (char *fileName){
@@ -452,4 +911,13 @@ namespace L1 {
     return p;
   }
 
+  Program parse_spill_file(char *fileName) {
+    Program p;
+    return p;
+  }
+
+  Program parse_function_file(char *fileName) {
+    Program p;
+    return p;
+  }
 }
