@@ -8,56 +8,92 @@ using namespace std;
 namespace L2 {
 
   enum Register {rdi, rax, rbx, rbp, r10, r11, r12, r13, r14, r15, rsi, rdx, rcx, r8, r9, rsp};
+
+  enum ItemType {item_label, item_number, item_register, item_variable};
   class Item {
     public:
-      string labelName;
-      string op; 
-      string register_name; 
-      int64_t num; 
-      Register r;
-      bool isARegister = false;
-      bool isAConstant = false; 
-      bool isAnOp = false; 
-      bool isALabel = false;
-      std::string tostring() {
-        if (isARegister) {
-          return register_name;
-        } else if (isAConstant) {
-          return to_string(num);
-        } else if (isAnOp) {
-          return op;
-        } else if (isALabel) {
-          return labelName;
-        }
-        else return "";
-      };
+      // virtual std::string tostring() = 0;
+      virtual std::string get_content() {};
+      virtual ItemType get_type() {};
   };
+
+  class Item_op :public Item {
+    public:
+    std::string op;
+    std::string get_content() {
+      return op;
+    }
+  };
+
+  class Item_register: public Item {
+    public:
+    std::string register_name; 
+    std::string get_content() {
+      return register_name;
+    }
+
+    ItemType get_type() {
+      return item_register;
+    }
+  };
+
+  class Item_number: public Item {
+    public:
+    int64_t num; 
+    std::string get_content() {
+      return to_string(num);
+    }
+    ItemType get_type() {
+      return item_number;
+    }
+  };
+
+  class Item_label: public Item {
+    public:
+    std::string labelName;
+    std::string get_content() {
+      return labelName;
+    }
+    ItemType get_type() {
+      return item_label;
+    }
+  };
+
+  class Item_variable: public Item {
+    public:
+    std::string variable_name;
+    std::string get_content() {
+      return variable_name;
+    }
+    ItemType get_type() {
+      return item_variable;
+    }
+  };
+
 
   /*
    * Instruction interface.
    */
+  // enum InstructionType {inst_return, inst_assign, inst_load, inst_shift, inst_store, 
+  //     inst_aop, inst_store_aop, inst_load_aop, inst_comare, inst_cjump, inst_call,
+  //     inst_call_print, inst_call_input, inst_call_allocate, inst_call_error, inst_label,
+  //     inst_increment, inst_decrement, inst_at, inst_goto};
   class Instruction{
     public: 
-    string instructionName; 
+    std::string instructionName; 
     virtual std::string tostring() { return ""; };
+    virtual std::string toL1() {};
   };
 
   /*
    * Instructions.
    */
   class Instruction_ret : public Instruction{
-    public:
-    std::string tostring() {
-      return "return";
-    }
   };
 
   class Instruction_assignment : public Instruction{
     public:
       Item src,dst;
-    std::string tostring() {
-      return "";
-    }
   };
   
   //load instruction
@@ -66,9 +102,6 @@ namespace L2 {
     Item src; 
     Item dst; 
     Item constant;
-    std::string tostring() {
-      return "";
-    }
   };
   
   //shift instruction
@@ -77,9 +110,6 @@ namespace L2 {
     Item dst; 
     Item op;
     Item src; 
-    std::string tostring() {
-      return dst.tostring() + " " + op.tostring() + " " + src.tostring();
-    }
   };
 
 
@@ -89,9 +119,6 @@ namespace L2 {
     Item src; 
     Item dst; 
     Item constant;
-    std::string tostring() {
-      return "";
-    }
   };
 
   //aop instruction 
@@ -100,9 +127,6 @@ namespace L2 {
     Item src; 
     Item dst; 
     Item op; 
-    std::string tostring() {
-      return "";
-    }
   };
 
   //store aop instruction 
@@ -112,9 +136,6 @@ namespace L2 {
     Item constant; 
     Item dst; 
     Item op; 
-    std::string tostring() {
-      return "";
-    }
   };
 
   //load aop instruction 
@@ -124,9 +145,6 @@ namespace L2 {
     Item constant; 
     Item dst; 
     Item op; 
-    std::string tostring() {
-      return "";
-    }
   };
 
   class Instruction_compare: public Instruction {
@@ -135,9 +153,6 @@ namespace L2 {
     Item oprand1;
     Item op;
     Item oprand2;
-    std::string tostring() {
-      return "";
-    }
   };
 
   class Instruction_cjump: public Instruction {
@@ -146,9 +161,6 @@ namespace L2 {
     Item op;
     Item oprand2;
     Item label;
-    std::string tostring() {
-      return "";
-    }
   };
 
   //call u N instruction 
@@ -156,32 +168,17 @@ namespace L2 {
     public: 
     Item constant; 
     Item dst; 
-    std::string tostring() {
-      return "";
-    }
   }; 
 
   class Instruction_call_print : public Instruction {
-    std::string tostring() {
-      return "";
-    }
   };
   class Instruction_call_input : public Instruction {
-    std::string tostring() {
-      return "";
-    }
   };
   class Instruction_call_allocate : public Instruction {
-    std::string tostring() {
-      return "";
-    }
   };
   class Instruction_call_error : public Instruction {
     public: 
     Item constant; 
-    std::string tostring() {
-      return "";
-    }
   };
 
   //label instruction 
@@ -196,16 +193,10 @@ namespace L2 {
   class Instruction_increment : public Instruction {
     public: 
     Item src;
-    std::string tostring() {
-      return "";
-    }
   }; 
   class Instruction_decrement : public Instruction {
     public: 
     Item src;
-    std::string tostring() {
-      return "";
-    }
   }; 
   class Instruction_at : public Instruction {
     public: 
