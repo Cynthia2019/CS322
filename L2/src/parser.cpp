@@ -42,7 +42,7 @@ namespace L2 {
   /* 
    * Data required to parse
    */ 
-  std::vector<Item> parsed_items;
+  std::vector<Item *> parsed_items;
 
   /*
    *map from string to register
@@ -517,8 +517,8 @@ namespace L2 {
     template< typename Input >
 	static void apply( const Input & in, Program & p){
       if (is_debug) cout << "firing Label_rule, str: " << in.string() << endl;
-      Item_label i;
-      i.labelName = in.string();
+      Item_label *i = new Item_label();
+      i->labelName = in.string();
       parsed_items.push_back(i);
     }
   };
@@ -527,8 +527,8 @@ namespace L2 {
     template< typename Input >
     static void apply( const Input & in, Program & p){
       if (is_debug) cout << "firing register_rule, str: " << in.string() << endl;
-      Item_register i;
-      i.register_name= in.string(); 
+      Item_register *i = new Item_register();
+      i->register_name= in.string(); 
       parsed_items.push_back(i);
     }
   };
@@ -537,8 +537,8 @@ namespace L2 {
   template<> struct action < aops_rule > {
     template< typename Input >
     static void apply( const Input & in, Program & p){
-      Item_op i; 
-      i.op = in.string(); 
+      Item_op *i = new Item_op(); 
+      i->op = in.string(); 
       parsed_items.push_back(i);
     }
   }; 
@@ -546,8 +546,8 @@ namespace L2 {
   template<> struct action < number_rule > {
     template< typename Input >
     static void apply( const Input & in, Program & p){
-      Item_number i; 
-      i.num = std::stoll(in.string()); 
+      Item_number *i = new Item_number(); 
+      i->num = std::stoll(in.string()); 
       parsed_items.push_back(i);
     }
   }; 
@@ -558,8 +558,8 @@ namespace L2 {
     static void apply( const Input & in, Program & p){
       auto currentF = p.functions.back(); 
       auto i = new Instruction_label(); 
-      Item_label item;
-      item.labelName = in.string();  
+      Item_label *item = new Item_label();
+      item->labelName = in.string();  
       i->instructionName = "label";
       i->label = item;
 
@@ -810,8 +810,8 @@ namespace L2 {
     template< typename Input >
     static void apply( const Input & in, Program & p){
       if (is_debug) cout << "firing shift_op_rule, str: " << in.string() << endl;
-      Item_op i;
-      i.op = in.string();
+      Item_op *i = new Item_op();
+      i->op = in.string();
       parsed_items.push_back(i);
     }
   };
@@ -841,8 +841,8 @@ namespace L2 {
     template< typename Input >
     static void apply( const Input & in, Program & p){
       if (is_debug) cout << "firing compare_op_rule, str: " << in.string() << endl;
-      Item_op i;
-      i.op = in.string();
+      Item_op *i = new Item_op();
+      i->op = in.string();
       parsed_items.push_back(i);
     }
   };

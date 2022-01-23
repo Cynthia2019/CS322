@@ -9,12 +9,12 @@ namespace L2 {
 
   enum Register {rdi, rax, rbx, rbp, r10, r11, r12, r13, r14, r15, rsi, rdx, rcx, r8, r9, rsp};
 
-  enum ItemType {item_label, item_number, item_register, item_variable};
+  enum ItemType {item_op, item_label, item_number, item_register, item_variable};
   class Item {
     public:
       // virtual std::string tostring() = 0;
-      virtual std::string get_content() { return ""; };
-      virtual ItemType get_type() { return item_label; };
+      virtual std::string get_content() = 0;
+      virtual ItemType get_type() = 0;
   };
 
   class Item_op :public Item {
@@ -22,6 +22,9 @@ namespace L2 {
     std::string op;
     std::string get_content() {
       return op;
+    }
+    ItemType get_type() {
+      return item_op;
     }
   };
 
@@ -93,81 +96,81 @@ namespace L2 {
 
   class Instruction_assignment : public Instruction{
     public:
-      Item src,dst;
+      Item *src, *dst;
   };
   
   //load instruction
   class Instruction_load : public Instruction{
     public: 
-    Item src; 
-    Item dst; 
-    Item constant;
+    Item *src; 
+    Item *dst; 
+    Item *constant;
   };
   
   //shift instruction
   class Instruction_shift : public Instruction{
     public: 
-    Item dst; 
-    Item op;
-    Item src; 
+    Item *dst; 
+    Item *op;
+    Item *src; 
   };
 
 
   //store instruction
   class Instruction_store : public Instruction{
     public: 
-    Item src; 
-    Item dst; 
-    Item constant;
+    Item *src; 
+    Item *dst; 
+    Item *constant;
   };
 
   //aop instruction 
   class Instruction_aop : public Instruction {
     public: 
-    Item src; 
-    Item dst; 
-    Item op; 
+    Item *src; 
+    Item *dst; 
+    Item *op; 
   };
 
   //store aop instruction 
   class Instruction_store_aop : public Instruction {
     public: 
-    Item src; 
-    Item constant; 
-    Item dst; 
-    Item op; 
+    Item *src; 
+    Item *constant; 
+    Item *dst; 
+    Item *op; 
   };
 
   //load aop instruction 
   class Instruction_load_aop : public Instruction {
     public: 
-    Item src; 
-    Item constant; 
-    Item dst; 
-    Item op; 
+    Item *src; 
+    Item *constant; 
+    Item *dst; 
+    Item *op; 
   };
 
   class Instruction_compare: public Instruction {
     public:
-    Item dst;
-    Item oprand1;
-    Item op;
-    Item oprand2;
+    Item *dst;
+    Item *oprand1;
+    Item *op;
+    Item *oprand2;
   };
 
   class Instruction_cjump: public Instruction {
     public:
-    Item oprand1;
-    Item op;
-    Item oprand2;
-    Item label;
+    Item *oprand1;
+    Item *op;
+    Item *oprand2;
+    Item *label;
   };
 
   //call u N instruction 
   class Instruction_call : public Instruction {
     public: 
-    Item constant; 
-    Item dst; 
+    Item *constant; 
+    Item *dst; 
   }; 
 
   class Instruction_call_print : public Instruction {
@@ -178,13 +181,13 @@ namespace L2 {
   };
   class Instruction_call_error : public Instruction {
     public: 
-    Item constant; 
+    Item *constant; 
   };
 
   //label instruction 
   class Instruction_label : public Instruction {
     public: 
-    Item label; 
+    Item *label; 
   };
 
   /*
@@ -192,24 +195,24 @@ namespace L2 {
   */
   class Instruction_increment : public Instruction {
     public: 
-    Item src;
+    Item *src;
   }; 
   class Instruction_decrement : public Instruction {
     public: 
-    Item src;
+    Item *src;
   }; 
   class Instruction_at : public Instruction {
     public: 
-    Item constant; 
-    Item src_mult; 
-    Item src_add; 
-    Item dst; 
+    Item *constant; 
+    Item *src_mult; 
+    Item *src_add; 
+    Item *dst; 
   };
 
   //goto instruction 
   class Instruction_goto : public Instruction {
     public:
-    Item label; 
+    Item *label; 
   };
   /*
    * Function.
