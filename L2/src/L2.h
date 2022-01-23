@@ -124,6 +124,13 @@ namespace L2 {
     Item *constant;
   };
 
+  //stack arg instruction
+  class Instruction_stack : public Instruction{
+    public: 
+    Item *dst; 
+    Item *constant;
+  };
+
   //aop instruction 
   class Instruction_aop : public Instruction {
     public: 
