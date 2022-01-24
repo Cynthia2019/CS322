@@ -1,6 +1,7 @@
 (:fib
     0
     call input 0
+    goto :fib_end
     rax -= 1
     rax >>= 1
     cjump rax < 2 :fib_end

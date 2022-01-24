@@ -25,6 +25,24 @@ namespace L2 {
     }
     std::cout  << std::endl; 
   }
+  Instruction* get_successor(vector<Instruction*>& instructions, Instruction* i){
+      //two successors
+      Instruction_goto* a = dynamic_cast<Instruction_goto*>(i); 
+      if(a != nullptr){
+          Item* label = a->label; 
+          cout << "curr label: " << label << endl; 
+          int index = find(instructions.begin(), instructions.end(), i) - instructions.begin() + 1; 
+          cout << "next index: " << index << endl; 
+          while(index < instructions.size()){
+              Instruction* curr = instructions[index]; 
+              class Instruction_label* currLabel = dynamic_cast<class Instruction_label*>(curr); 
+              if(currLabel != nullptr && &(currLabel->label) == &label){
+                  return currLabel; 
+              }
+              index++; 
+          }
+      }
+  }
     void liveness(Program p) {
         auto f = p.functions[0]; 
         for(auto i : f->instructions) {
@@ -34,6 +52,7 @@ namespace L2 {
             print_vector(gens);
             cout << "kills: "; 
             print_vector(kills);
+            Instruction* s = get_successor(f->instructions, i);
         }
     }
 }
