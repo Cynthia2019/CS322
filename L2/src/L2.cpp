@@ -1,7 +1,9 @@
 #include "L2.h"
 #include "architecture.h"
+#include <iostream>
 
 namespace L2 {
+
   vector<Item *> Instruction_assignment::get_gen_set() {
     vector<Item *> v;
     if (src->get_type() == item_variable || src->get_type() == item_register) {
@@ -13,7 +15,7 @@ namespace L2 {
   vector<Item *> Instruction_assignment::get_kill_set() {
     vector<Item *> v;
     if (dst->get_type() == item_variable || dst->get_type() == item_register) {
-      v.push_back((src));
+      v.push_back((dst));
     }
     return v;
   }
@@ -291,7 +293,7 @@ namespace L2 {
   vector<Item *> Instruction_load_aop::get_kill_set() {
     vector<Item *> v;
     if (dst->get_type() == item_variable || dst->get_type() == item_register) {
-      v.push_back(src);
+      v.push_back(dst);
     }
     return v;
   }
@@ -310,24 +312,5 @@ namespace L2 {
   vector<Item *> Instruction_label::get_kill_set() {
     return {};
   }
-
-  // void print_vector(vector<Item *>& v) {
-  //   for(auto i : v){
-  //     if(i->get_type() == item_variable) {
-  //       Item_variable* a = dynamic_cast<Item_variable*>(i); 
-  //       std::cout << a->variable_name; 
-  //     }
-  //     else if (i->get_type == item_register){
-  //       Item_register* a = dynamic_cast<Item_register*>(i); 
-  //       std::cout  << i->register_name; 
-  //     }
-  //     else if (i->get_type == item_number) {
-  //       Item_number* a = dynamic_cast<Item_number*>(i); 
-  //       std::cout  << i->get_nb(); 
-  //     }
-  //     std::cout  << " "; 
-  //   }
-  //   std::cout  << std::endl; 
-  // }
 
 }
