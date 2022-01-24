@@ -141,7 +141,7 @@ namespace L2 {
   class Instruction_stack : public Instruction{
     public: 
     Item *dst; 
-    Item *constant;
+    Item *src;
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
   };
