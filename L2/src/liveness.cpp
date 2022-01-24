@@ -11,7 +11,8 @@ using namespace std;
 
 namespace L2 {
   void format_vector(const vector<set<string>> in, const vector<set<string>> out) {
-    cout << "((in" << endl;
+    cout << "(" << endl;
+    cout << "(in" << endl;
     for (auto i : in) {
       cout << "(";
       for (auto j : i) {
@@ -19,7 +20,8 @@ namespace L2 {
       }
         cout << ")" << endl;;
     }
-    cout << ") (out" << endl;
+    cout << ")" << endl << endl;
+    cout << "(out" << endl;
     for (auto i : out) {
       cout << "(";
       for (auto j : i) {
@@ -27,7 +29,8 @@ namespace L2 {
       }
         cout << ")" << endl;;
     }
-    cout << "))" << endl;
+    cout << ")" << endl << endl;
+    cout << ")" << endl;
   }
 
     void print_vector(const vector<set<string>> v) {
@@ -92,6 +95,14 @@ namespace L2 {
       return {idx + 1};
   }
 
+  void print(set<string> ss) {
+    cout << "{";
+    for (auto s : ss) {
+      cout << s << ", ";
+    }
+    cout << "}";
+    cout << endl;
+  }
     void liveness(Program p) {
         auto f = p.functions[0]; 
         vector<set<string>> gens;
@@ -112,7 +123,7 @@ namespace L2 {
             }
             gens.push_back(gen_str);
 
-            for (auto k : gen) {
+            for (auto k : kill) {
                 kill_str.insert(k->get_content());
             }
             kills.push_back(kill_str);
@@ -129,7 +140,7 @@ namespace L2 {
 
         bool changed = false; do {
             changed = false;
-            for (int i = 0; i < f->instructions.size(); i++) {
+            for (int i = f->instructions.size() - 1; i >= 0; i--) {
                 auto gen = gens[i];
                 auto kill = kills[i];
                 auto in_before = in[i];
@@ -138,6 +149,13 @@ namespace L2 {
                 set<string> diff;
                 std::set_difference(out[i].begin(), out[i].end(), kill.begin(), kill.end(),
                         std::inserter(diff, diff.end()));
+                
+                // cout << "out===" << endl;
+                // print(out[i]);
+                // cout << "kill===" << endl;
+                // print(kill);
+                // cout << "diff===" << endl;
+                // print(diff);
                 
                 in[i].insert(gen.begin(), gen.end());
                 in[i].insert(diff.begin(), diff.end());
@@ -155,6 +173,10 @@ namespace L2 {
                     changed = true;
                 }
             }
+            // cout << "in===========" << endl;
+            // print_vector(in);
+            // cout << "out===========" << endl;
+            // print_vector(out);
         } while(changed);
         format_vector(in, out);
     }
