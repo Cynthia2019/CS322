@@ -83,15 +83,6 @@ namespace L2 {
         vector<set<string>> kills;
 
         for(auto i : f->instructions) {
-<<<<<<< HEAD
-            vector<Item*> gens = i->get_gen_set(); 
-            vector<Item*> kills = i->get_kill_set(); 
-            cout << "gens: "; 
-            print_vector(gens);
-            cout << "kills: "; 
-            print_vector(kills);
-            Instruction* s = get_successor(f->instructions, i);
-=======
             auto gen = i->get_gen_set();
             auto kill = i->get_kill_set();
             set<string> gen_str;
@@ -108,7 +99,6 @@ namespace L2 {
             kills.push_back(kill_str);
 
             // cout << "instructions: " << i->tostring() << endl; 
->>>>>>> 9c6b307842c7987097ed13d654089521ac42897d
         }
         // cout << "genset" << endl;
         // print_vector(gens);
