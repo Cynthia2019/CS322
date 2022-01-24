@@ -10,6 +10,7 @@ namespace L2 {
   enum Register {rdi, rax, rbx, rbp, r10, r11, r12, r13, r14, r15, rsi, rdx, rcx, r8, r9, rsp};
 
   enum ItemType {item_op, item_label, item_number, item_register, item_variable};
+  
   class Item {
     public:
       // virtual std::string tostring() = 0;
@@ -277,7 +278,6 @@ namespace L2 {
     public:
       std::string name;
       int64_t arguments;
-      int64_t locals;
       std::vector<Instruction *> instructions;
   };
 

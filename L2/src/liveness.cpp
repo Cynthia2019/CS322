@@ -59,12 +59,39 @@ namespace L2 {
     }
     std::cout  << std::endl; 
   }
+  Instruction* get_successor(vector<Instruction*>& instructions, Instruction* i){
+      //two successors
+      Instruction_goto* a = dynamic_cast<Instruction_goto*>(i); 
+      if(a != nullptr){
+          Item* label = a->label; 
+          cout << "curr label: " << label << endl; 
+          int index = find(instructions.begin(), instructions.end(), i) - instructions.begin() + 1; 
+          cout << "next index: " << index << endl; 
+          while(index < instructions.size()){
+              Instruction* curr = instructions[index]; 
+              class Instruction_label* currLabel = dynamic_cast<class Instruction_label*>(curr); 
+              if(currLabel != nullptr && &(currLabel->label) == &label){
+                  return currLabel; 
+              }
+              index++; 
+          }
+      }
+  }
     void liveness(Program p) {
         auto f = p.functions[0]; 
         vector<set<string>> gens;
         vector<set<string>> kills;
 
         for(auto i : f->instructions) {
+<<<<<<< HEAD
+            vector<Item*> gens = i->get_gen_set(); 
+            vector<Item*> kills = i->get_kill_set(); 
+            cout << "gens: "; 
+            print_vector(gens);
+            cout << "kills: "; 
+            print_vector(kills);
+            Instruction* s = get_successor(f->instructions, i);
+=======
             auto gen = i->get_gen_set();
             auto kill = i->get_kill_set();
             set<string> gen_str;
@@ -81,6 +108,7 @@ namespace L2 {
             kills.push_back(kill_str);
 
             // cout << "instructions: " << i->tostring() << endl; 
+>>>>>>> 9c6b307842c7987097ed13d654089521ac42897d
         }
         // cout << "genset" << endl;
         // print_vector(gens);
