@@ -83,28 +83,37 @@ namespace L2 {
   //     inst_increment, inst_decrement, inst_at, inst_goto};
   class Instruction{
     public: 
-    std::string instructionName; 
-    virtual std::string tostring() { return ""; };
-    virtual std::string toL1() { return ""; };
+    // std::string instructionName; 
+    virtual std::string tostring() {return "";};
+    // virtual std::string toL1() = 0;
+    virtual vector<Item *> get_gen_set() = 0;
+    virtual vector<Item *> get_kill_set() = 0;
   };
 
   /*
    * Instructions.
    */
   class Instruction_ret : public Instruction{
+      vector<Item *> get_gen_set();
+      vector<Item *> get_kill_set();
   };
 
   class Instruction_assignment : public Instruction{
     public:
       Item *src, *dst;
+      vector<Item *> get_gen_set();
+      vector<Item *> get_kill_set();
+      std::string tostring() { return src->get_content() + " " + dst->get_content(); }
   };
   
   //load instruction
   class Instruction_load : public Instruction{
     public: 
-    Item *src; 
-    Item *dst; 
-    Item *constant;
+      Item *src; 
+      Item *dst; 
+      Item *constant;
+      vector<Item *> get_gen_set();
+      vector<Item *> get_kill_set();
   };
   
   //shift instruction
@@ -113,6 +122,8 @@ namespace L2 {
     Item *dst; 
     Item *op;
     Item *src; 
+    vector<Item *> get_gen_set();
+    vector<Item *> get_kill_set();
   };
 
 
@@ -122,6 +133,8 @@ namespace L2 {
     Item *src; 
     Item *dst; 
     Item *constant;
+    vector<Item *> get_gen_set();
+    vector<Item *> get_kill_set();
   };
 
   //stack arg instruction
@@ -137,6 +150,8 @@ namespace L2 {
     Item *src; 
     Item *dst; 
     Item *op; 
+    vector<Item *> get_gen_set();
+    vector<Item *> get_kill_set();
   };
 
   //store aop instruction 
@@ -146,6 +161,8 @@ namespace L2 {
     Item *constant; 
     Item *dst; 
     Item *op; 
+    vector<Item *> get_gen_set();
+    vector<Item *> get_kill_set();
   };
 
   //load aop instruction 
@@ -155,6 +172,8 @@ namespace L2 {
     Item *constant; 
     Item *dst; 
     Item *op; 
+    vector<Item *> get_gen_set();
+    vector<Item *> get_kill_set();
   };
 
   class Instruction_compare: public Instruction {
@@ -163,6 +182,8 @@ namespace L2 {
     Item *oprand1;
     Item *op;
     Item *oprand2;
+    vector<Item *> get_gen_set();
+    vector<Item *> get_kill_set();
   };
 
   class Instruction_cjump: public Instruction {
@@ -171,6 +192,8 @@ namespace L2 {
     Item *op;
     Item *oprand2;
     Item *label;
+    vector<Item *> get_gen_set();
+    vector<Item *> get_kill_set();
   };
 
   //call u N instruction 
@@ -178,23 +201,35 @@ namespace L2 {
     public: 
     Item *constant; 
     Item *dst; 
+    vector<Item *> get_gen_set();
+    vector<Item *> get_kill_set();
   }; 
 
   class Instruction_call_print : public Instruction {
+    vector<Item *> get_gen_set();
+    vector<Item *> get_kill_set();
   };
   class Instruction_call_input : public Instruction {
+    vector<Item *> get_gen_set();
+    vector<Item *> get_kill_set();
   };
   class Instruction_call_allocate : public Instruction {
+    vector<Item *> get_gen_set();
+    vector<Item *> get_kill_set();
   };
   class Instruction_call_error : public Instruction {
     public: 
     Item *constant; 
+    vector<Item *> get_gen_set();
+    vector<Item *> get_kill_set();
   };
 
   //label instruction 
   class Instruction_label : public Instruction {
     public: 
     Item *label; 
+    vector<Item *> get_gen_set();
+    vector<Item *> get_kill_set();
   };
 
   /*
@@ -203,10 +238,14 @@ namespace L2 {
   class Instruction_increment : public Instruction {
     public: 
     Item *src;
+    vector<Item *> get_gen_set();
+    vector<Item *> get_kill_set();
   }; 
   class Instruction_decrement : public Instruction {
     public: 
     Item *src;
+    vector<Item *> get_gen_set();
+    vector<Item *> get_kill_set();
   }; 
   class Instruction_at : public Instruction {
     public: 
@@ -214,12 +253,16 @@ namespace L2 {
     Item *src_mult; 
     Item *src_add; 
     Item *dst; 
+    vector<Item *> get_gen_set();
+    vector<Item *> get_kill_set();
   };
 
   //goto instruction 
   class Instruction_goto : public Instruction {
     public:
     Item *label; 
+    vector<Item *> get_gen_set();
+    vector<Item *> get_kill_set();
   };
   /*
    * Function.

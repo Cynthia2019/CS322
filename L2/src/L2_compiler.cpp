@@ -123,7 +123,12 @@ int main(
    */
   if (liveness_only){
     // TODO
-    L2::liveness_test(p)
+    for (auto f : p.functions){
+      for (auto i : f->instructions) {
+        cout << i->tostring() << endl;
+      }
+      //TODO
+    }
     return 0;
   }
 

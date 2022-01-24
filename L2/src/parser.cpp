@@ -451,6 +451,11 @@ namespace L2 {
     pegtl::must< 
       entry_point_rule
     > {};
+  
+  struct function_only :
+    pegtl::must<
+      Function_rule
+    > {};
 
   /* 
    * Actions attached to grammar rules.
@@ -509,7 +514,7 @@ namespace L2 {
 	static void apply( const Input & in, Program & p){
       auto currentF = p.functions.back();
       auto i = new Instruction_ret();
-      i->instructionName = "return";
+      // i->instructionName = "return";
       currentF->instructions.push_back(i);
     }
   };
@@ -571,7 +576,7 @@ namespace L2 {
       auto i = new Instruction_label(); 
       Item_label *item = new Item_label();
       item->labelName = in.string();  
-      i->instructionName = "label";
+      // i->instructionName = "label";
       i->label = item;
 
       currentF->instructions.push_back(i); 
@@ -583,7 +588,7 @@ namespace L2 {
     static void apply( const Input & in, Program & p){
       auto currentF = p.functions.back(); 
       auto i = new Instruction_aop(); 
-      i->instructionName = "aop";
+      // i->instructionName = "aop";
       i->src = parsed_items.back(); 
       parsed_items.pop_back(); 
       i->op = parsed_items.back(); 
@@ -601,7 +606,7 @@ namespace L2 {
     static void apply( const Input & in, Program & p){
       auto currentF = p.functions.back(); 
       auto i = new Instruction_store_aop(); 
-      i->instructionName = "store_aop"; 
+      // i->instructionName = "store_aop"; 
       i->src = parsed_items.back(); 
       parsed_items.pop_back(); 
       i->op = parsed_items.back(); 
@@ -621,7 +626,7 @@ namespace L2 {
     static void apply( const Input & in, Program & p){
       auto currentF = p.functions.back(); 
       auto i = new Instruction_load_aop(); 
-      i->instructionName = "load_aop"; 
+      // i->instructionName = "load_aop"; 
       i->constant = parsed_items.back(); 
       parsed_items.pop_back(); 
       i->src = parsed_items.back(); 
@@ -659,7 +664,7 @@ namespace L2 {
     static void apply( const Input & in, Program & p){
       auto currentF = p.functions.back(); 
       auto i = new Instruction_call(); 
-      i->instructionName = "call"; 
+      // i->instructionName = "call"; 
       i->constant = parsed_items.back(); 
       parsed_items.pop_back(); 
       i->dst = parsed_items.back(); 
@@ -675,7 +680,7 @@ namespace L2 {
     static void apply( const Input & in, Program & p){
       auto currentF = p.functions.back(); 
       auto i = new Instruction_call_print(); 
-      i->instructionName = "call_print"; 
+      // i->instructionName = "call_print"; 
       currentF->instructions.push_back(i); 
     }
   };
@@ -685,7 +690,7 @@ namespace L2 {
     static void apply( const Input & in, Program & p){
       auto currentF = p.functions.back(); 
       auto i = new Instruction_call_input(); 
-      i->instructionName = "call_input"; 
+      // i->instructionName = "call_input"; 
       currentF->instructions.push_back(i); 
     }
   };
@@ -695,7 +700,7 @@ namespace L2 {
     static void apply( const Input & in, Program & p){
       auto currentF = p.functions.back(); 
       auto i = new Instruction_call_allocate(); 
-      i->instructionName = "call_allocate"; 
+      // i->instructionName = "call_allocate"; 
       currentF->instructions.push_back(i); 
     }
   };
@@ -706,7 +711,7 @@ namespace L2 {
     static void apply( const Input & in, Program & p){
       auto currentF = p.functions.back(); 
       auto i = new Instruction_call_error(); 
-      i->instructionName = "call_error"; 
+      // i->instructionName = "call_error"; 
       i->constant = parsed_items.back(); 
       parsed_items.pop_back();
       currentF->instructions.push_back(i); 
@@ -719,7 +724,7 @@ namespace L2 {
     static void apply( const Input & in, Program & p){
       auto currentF = p.functions.back(); 
       auto i = new Instruction_increment(); 
-      i->instructionName = "increment"; 
+      // i->instructionName = "increment"; 
       i->src = parsed_items.back(); 
       parsed_items.pop_back();
       currentF->instructions.push_back(i); 
@@ -731,7 +736,7 @@ namespace L2 {
     static void apply( const Input & in, Program & p){
       auto currentF = p.functions.back(); 
       auto i = new Instruction_decrement(); 
-      i->instructionName = "decrement"; 
+      // i->instructionName = "decrement"; 
       i->src = parsed_items.back(); 
       parsed_items.pop_back();
       currentF->instructions.push_back(i); 
@@ -743,7 +748,7 @@ namespace L2 {
     static void apply( const Input & in, Program & p){
       auto currentF = p.functions.back(); 
       auto i = new Instruction_at(); 
-      i->instructionName = "at"; 
+      // i->instructionName = "at"; 
       i->constant = parsed_items.back(); 
       parsed_items.pop_back();
       i->src_mult = parsed_items.back();
@@ -762,7 +767,7 @@ namespace L2 {
     static void apply( const Input & in, Program & p){
       auto currentF = p.functions.back(); 
       auto i = new Instruction_goto(); 
-      i->instructionName = "goto"; 
+      // i->instructionName = "goto"; 
       i->label = parsed_items.back(); 
       parsed_items.pop_back();
       currentF->instructions.push_back(i); 
@@ -781,7 +786,7 @@ namespace L2 {
        * Create the instruction.
        */ 
       auto i = new Instruction_assignment();
-      i->instructionName = "assignment"; 
+      // i->instructionName = "assignment"; 
       i->src = parsed_items.back();
       parsed_items.pop_back();
       i->dst = parsed_items.back();
@@ -801,7 +806,7 @@ namespace L2 {
       auto currentF = p.functions.back();
 
       auto i = new Instruction_load();
-      i->instructionName = "load"; 
+      // i->instructionName = "load"; 
       i->constant = parsed_items.back();
       parsed_items.pop_back(); 
       i->src = parsed_items.back();
@@ -820,7 +825,7 @@ namespace L2 {
       auto currentF = p.functions.back();
 
       auto i = new Instruction_store();
-      i->instructionName = "store"; 
+      // i->instructionName = "store"; 
       i->src = parsed_items.back();
       parsed_items.pop_back(); 
       i->constant = parsed_items.back();
@@ -851,7 +856,7 @@ namespace L2 {
       auto currentF = p.functions.back();
 
       auto i = new Instruction_shift();
-      i->instructionName = "shift"; 
+      // i->instructionName = "shift"; 
       i->src = parsed_items.back();
       parsed_items.pop_back();
       i->op = parsed_items.back();
@@ -881,7 +886,7 @@ namespace L2 {
       auto currentF = p.functions.back();
 
       auto i = new Instruction_compare();
-      i->instructionName = "compare"; 
+      // i->instructionName = "compare"; 
       i->oprand2 = parsed_items.back();
       parsed_items.pop_back();
       i->op = parsed_items.back();
@@ -902,7 +907,7 @@ namespace L2 {
       auto currentF = p.functions.back();
 
       auto i = new Instruction_cjump();
-      i->instructionName = "cjump"; 
+      // i->instructionName = "cjump"; 
       i->label = parsed_items.back();
       parsed_items.pop_back();
       i->oprand2 = parsed_items.back();
@@ -944,11 +949,14 @@ namespace L2 {
     /* 
      * Check the grammar for some possible issues.
      */
-    pegtl::analyze< grammar >();
+    pegtl::analyze< function_only >();
+
+    /*
+     * Parse.
+     */   
     file_input< > fileInput(fileName);
     Program p;
-    parse< grammar, action >(fileInput, p);
-
+    parse< function_only, action >(fileInput, p);
     return p;
   }
 };
