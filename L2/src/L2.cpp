@@ -12,31 +12,43 @@ namespace L2 {
 
   vector<Item *> Instruction_assignment::get_kill_set() {
     vector<Item *> v;
-    if (dst->get_type() == item_variable || src->get_type() == item_register) {
+    if (dst->get_type() == item_variable || dst->get_type() == item_register) {
       v.push_back((src));
     }
     return v;
   }
 
-  vector<Item *> Instruction_load::get_gen_set() { return {}; }
+  vector<Item *> Instruction_load::get_gen_set() { 
+    vector<Item *> v;
+    if (src->get_type() == item_variable || src->get_type() == item_register) {
+      v.push_back((src));
+    }
+    return v;
+   }
 
   vector<Item *> Instruction_load::get_kill_set() {
     vector<Item *> v;
-    if (dst->get_type() == item_variable) {
-      v.push_back( (src));
+    if (dst->get_type() == item_variable || dst->get_type() == item_register) {
+      v.push_back((dst));
     }
     return v;
   }
 
   vector<Item *> Instruction_store::get_gen_set() {
     vector<Item *> v;
-    if (src->get_type() == item_variable) {
+    if (src->get_type() == item_variable || src->get_type() == item_register) {
       v.push_back( (src));
     }
     return v;
   }
 
-  vector<Item *> Instruction_store::get_kill_set() { return {}; }
+  vector<Item *> Instruction_store::get_kill_set() {
+    vector<Item *> v;
+    if (dst->get_type() == item_variable || dst->get_type() == item_register) {
+      v.push_back((dst));
+    }
+    return v;
+  }
 
   vector<Item *> Instruction_ret::get_gen_set() {
     Item_register *i = new Item_register();
