@@ -107,7 +107,7 @@ namespace L2 {
       Item *src, *dst;
       vector<Item *> get_gen_set();
       vector<Item *> get_kill_set();
-      // std::string tostring() { return src->get_content() + " " + dst->get_content(); }
+      std::string tostring() { return src->get_content() + " " + dst->get_content(); }
   };
   
   //load instruction
