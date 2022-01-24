@@ -1,9 +1,16 @@
-#include <iostream>
 #include <string>
-#include "liveness.h"
+#include <iostream>
+#include <fstream>
+
+#include <liveness.h>
+
+using namespace std;
 
 namespace L2 {
-    void liveness_analysis(Program p) {
-
+    void liveness(Program p) {
+        auto f = p.functions[0]; 
+        for(auto i : f->instructions) {
+            cout << "instructions: " << i->tostring() << endl; 
+        }
     }
 }

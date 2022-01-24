@@ -80,12 +80,6 @@ namespace L2 {
   struct str_shift_right : TAOCPP_PEGTL_STRING( ">>=" ) {};
   struct str_stack_arg : TAOCPP_PEGTL_STRING( "stack-arg" ) {};
 
-  struct variable:
-    pegtl::seq<
-      pegtl::one<'%'>,
-      name
-    >{};
-
   struct comment: 
     pegtl::disable< 
       TAOCPP_PEGTL_STRING( "//" ), 
@@ -98,6 +92,18 @@ namespace L2 {
       name
     > {};
 
+  struct number:
+    pegtl::seq<
+      pegtl::opt<
+        pegtl::sor<
+          pegtl::one< '-' >,
+          pegtl::one< '+' >
+        >
+      >,
+      pegtl::plus< 
+        pegtl::digit
+      >
+    >{};
   struct register_rule:
     pegtl::sor<
       TAOCPP_PEGTL_STRING( "rdi" ),
@@ -117,31 +123,24 @@ namespace L2 {
       TAOCPP_PEGTL_STRING( "r15" ),
       TAOCPP_PEGTL_STRING( "rsp" )
     > {};
-
-  struct number:
-    pegtl::seq<
-      pegtl::opt<
-        pegtl::sor<
-          pegtl::one< '-' >,
-          pegtl::one< '+' >
-        >
-      >,
-      pegtl::plus< 
-        pegtl::digit
-      >
-    >{};
-
   struct function_name:
     label {};
 
   struct argument_number:
     number {};
 
-  struct local_number:
-    number {} ;
-  
   struct number_rule: 
     number {};
+
+  struct variable_rule:
+    pegtl::seq<
+      pegtl::one<'%'>,
+      name
+    >{};
+
+  struct Label_rule:
+    label {};
+
 
   struct seps: 
     pegtl::star< 
@@ -151,9 +150,6 @@ namespace L2 {
       > 
     > {};
 
-  struct Label_rule:
-    label {};
-
   struct Instruction_return_rule:
     pegtl::seq<
       str_return
@@ -161,15 +157,15 @@ namespace L2 {
 
   struct Instruction_assignment_rule:
     pegtl::seq<
-      pegtl::sor<register_rule, variable>,
+      pegtl::sor<register_rule, variable_rule>,
       seps,
       str_arrow,
       seps,
       pegtl::sor<
-        variable,
         register_rule,
         number_rule, 
-        Label_rule
+        Label_rule, 
+        variable_rule
       >
     > {};
 
@@ -178,7 +174,7 @@ namespace L2 {
   
   struct Instruction_shift_rule:
       pegtl::seq<
-        register_rule,
+        pegtl::sor<variable_rule, register_rule>,
         seps,
         shift_op_rule,
         seps,
@@ -187,13 +183,13 @@ namespace L2 {
 
   struct Instruction_load_rule:
      pegtl::seq<
-        register_rule,
+        pegtl::sor<variable_rule, register_rule>,
         seps,
         str_arrow,
         seps,
 	      str_mem,
         seps,
-        register_rule, 
+        pegtl::sor<variable_rule, register_rule>,
         seps, 
         number_rule
         >
@@ -203,7 +199,7 @@ namespace L2 {
      pegtl::seq<
 	      str_mem,
         seps,
-        register_rule, 
+        pegtl::sor<variable_rule, register_rule>,
         seps, 
         number_rule, 
         seps, 
@@ -227,13 +223,14 @@ namespace L2 {
   // w aop t
   struct Instruction_arithmetic_rule: 
     pegtl::seq<
-      register_rule,
+      pegtl::sor<variable_rule, register_rule>,
       seps,  
       aops_rule, 
       seps, 
       pegtl::sor<
         number_rule, 
-        register_rule
+        register_rule,
+        variable_rule
       >
     >{};
 
@@ -245,7 +242,7 @@ namespace L2 {
     pegtl::seq<
       str_mem, 
       seps, 
-      register_rule, 
+      pegtl::sor<variable_rule, register_rule>, 
       seps, 
       number_rule, 
       seps, 
@@ -253,19 +250,20 @@ namespace L2 {
       seps, 
       pegtl::sor<
         number_rule, 
-        register_rule
+        register_rule,
+        variable_rule
       >
     > {};
   //w += mem x M 
   struct Instruction_load_aop_rule: 
     pegtl::seq<
-      register_rule, 
+      pegtl::sor<variable_rule, register_rule>, 
       seps, 
       aops_rule, 
       seps, 
       str_mem, 
       seps, 
-      register_rule, 
+      pegtl::sor<variable_rule, register_rule>, 
       seps, 
       number_rule 
     > {};
@@ -279,30 +277,39 @@ namespace L2 {
 
   struct Instruction_compare_rule:
     pegtl::seq<
-      register_rule,
+      pegtl::sor<variable_rule, register_rule>,
       seps,
       str_arrow,
       seps,
-      pegtl::sor<number_rule, register_rule >,
+      pegtl::sor<number_rule, register_rule, variable_rule>,
       seps,
       compare_op_rule,
       seps,
-      pegtl::sor<number_rule, register_rule>
+      pegtl::sor<number_rule, register_rule, variable_rule>
     > {};
 
   struct Instruction_cjump_rule:
     pegtl::seq<
       TAOCPP_PEGTL_STRING( "cjump" ),
       seps,
-      pegtl::sor<number_rule, register_rule >,
+      pegtl::sor<number_rule, register_rule, variable_rule>,
       seps,
       compare_op_rule,
       seps,
-      pegtl::sor<number_rule, register_rule>,
+      pegtl::sor<number_rule, register_rule, variable_rule>,
       seps,
       Label_rule
     > {};
 
+  //w <- stack_arg M 
+  struct Instruction_stack_rule: 
+    pegtl::seq<
+      pegtl::sor<variable_rule, register_rule>,
+      seps, 
+      str_stack_arg,
+      seps, 
+      number_rule
+    > {};
   /*
   call 
   */
@@ -312,7 +319,8 @@ namespace L2 {
     seps,
     pegtl::sor<
       Label_rule,
-      register_rule
+      register_rule, 
+      variable_rule
     >,
     seps, 
     number_rule
@@ -339,26 +347,26 @@ namespace L2 {
   */
   struct Instruction_increment_rule: 
     pegtl::seq<
-      register_rule, 
+      pegtl::sor<variable_rule, register_rule>, 
       seps,
       TAOCPP_PEGTL_STRING( "++" )
     > {}; 
   struct Instruction_decrement_rule: 
     pegtl::seq<
-      register_rule, 
+      pegtl::sor<variable_rule, register_rule>,
       seps,
       TAOCPP_PEGTL_STRING( "--" )
     > {}; 
 
   struct Instruction_at_rule: 
     pegtl::seq<
-      register_rule, 
+      pegtl::sor<variable_rule, register_rule>,
       seps,
       TAOCPP_PEGTL_STRING( "@" ), 
       seps, 
-      register_rule, 
+      pegtl::sor<variable_rule, register_rule>,
       seps, 
-      register_rule, 
+      pegtl::sor<variable_rule, register_rule>,
       seps, 
       number_rule
     > {}; 
@@ -373,26 +381,27 @@ namespace L2 {
    label {}; 
   struct Instruction_rule:
     pegtl::sor<
-      pegtl::seq< pegtl::at<Instruction_return_rule>            , Instruction_return_rule             >,
-      pegtl::seq< pegtl::at<Instruction_compare_rule>        , Instruction_compare_rule        >,
-      pegtl::seq< pegtl::at<Instruction_store_aop_rule>        , Instruction_store_aop_rule        >,
-      pegtl::seq< pegtl::at<Instruction_load_aop_rule>        , Instruction_load_aop_rule        >,
-      pegtl::seq< pegtl::at<Instruction_assignment_rule>        , Instruction_assignment_rule         >,
-      pegtl::seq< pegtl::at<Instruction_load_rule>        , Instruction_load_rule        >,
-      pegtl::seq< pegtl::at<Instruction_store_rule>        , Instruction_store_rule        >,
-      pegtl::seq< pegtl::at<Instruction_arithmetic_rule>        , Instruction_arithmetic_rule        >,
-      pegtl::seq< pegtl::at<Instruction_shift_rule>        , Instruction_shift_rule        >,
-      pegtl::seq< pegtl::at<Instruction_cjump_rule>        , Instruction_cjump_rule        >,
-      pegtl::seq< pegtl::at<Instruction_call_rule>        , Instruction_call_rule        >,
-      pegtl::seq< pegtl::at<Instruction_call_print_rule>        , Instruction_call_print_rule        >,
-      pegtl::seq< pegtl::at<Instruction_call_input_rule>        , Instruction_call_input_rule        >,
-      pegtl::seq< pegtl::at<Instruction_call_allocate_rule>        , Instruction_call_allocate_rule        >,
-      pegtl::seq< pegtl::at<Instruction_call_error_rule>        , Instruction_call_error_rule        >,
-      pegtl::seq< pegtl::at<Instruction_increment_rule>        , Instruction_increment_rule        >,
-      pegtl::seq< pegtl::at<Instruction_decrement_rule>        , Instruction_decrement_rule        >,
-      pegtl::seq< pegtl::at<Instruction_goto_rule>        , Instruction_goto_rule        >,
-      pegtl::seq< pegtl::at<Instruction_at_rule>        , Instruction_at_rule        >, 
-      pegtl::seq< pegtl::at<Instruction_label_rule>        , Instruction_label_rule        >
+      pegtl::seq< pegtl::at<Instruction_return_rule>            , Instruction_return_rule           >,
+      pegtl::seq< pegtl::at<Instruction_compare_rule>           , Instruction_compare_rule          >,
+      pegtl::seq< pegtl::at<Instruction_store_aop_rule>         , Instruction_store_aop_rule        >,
+      pegtl::seq< pegtl::at<Instruction_load_aop_rule>          , Instruction_load_aop_rule         >,
+      pegtl::seq< pegtl::at<Instruction_assignment_rule>        , Instruction_assignment_rule       >,
+      pegtl::seq< pegtl::at<Instruction_load_rule>              , Instruction_load_rule             >,
+      pegtl::seq< pegtl::at<Instruction_store_rule>             , Instruction_store_rule            >,
+      pegtl::seq< pegtl::at<Instruction_arithmetic_rule>        , Instruction_arithmetic_rule       >,
+      pegtl::seq< pegtl::at<Instruction_shift_rule>             , Instruction_shift_rule            >,
+      pegtl::seq< pegtl::at<Instruction_stack_rule>             , Instruction_stack_rule            >,
+      pegtl::seq< pegtl::at<Instruction_cjump_rule>             , Instruction_cjump_rule            >,
+      pegtl::seq< pegtl::at<Instruction_call_rule>              , Instruction_call_rule             >,
+      pegtl::seq< pegtl::at<Instruction_call_print_rule>        , Instruction_call_print_rule       >,
+      pegtl::seq< pegtl::at<Instruction_call_input_rule>        , Instruction_call_input_rule       >,
+      pegtl::seq< pegtl::at<Instruction_call_allocate_rule>     , Instruction_call_allocate_rule    >,
+      pegtl::seq< pegtl::at<Instruction_call_error_rule>        , Instruction_call_error_rule       >,
+      pegtl::seq< pegtl::at<Instruction_increment_rule>         , Instruction_increment_rule        >,
+      pegtl::seq< pegtl::at<Instruction_decrement_rule>         , Instruction_decrement_rule        >,
+      pegtl::seq< pegtl::at<Instruction_goto_rule>              , Instruction_goto_rule             >,
+      pegtl::seq< pegtl::at<Instruction_at_rule>                , Instruction_at_rule               >, 
+      pegtl::seq< pegtl::at<Instruction_label_rule>             , Instruction_label_rule            >
     > { };
 
   struct Instructions_rule:
@@ -500,14 +509,6 @@ namespace L2 {
     }
   };
 
-  template<> struct action < local_number > {
-    template< typename Input >
-	static void apply( const Input & in, Program & p){
-      auto currentF = p.functions.back();
-      currentF->locals = std::stoll(in.string());
-    }
-  };
-
   template<> struct action < str_return > {
     template< typename Input >
 	static void apply( const Input & in, Program & p){
@@ -534,6 +535,16 @@ namespace L2 {
       if (is_debug) cout << "firing register_rule, str: " << in.string() << endl;
       Item_register *i = new Item_register();
       i->register_name= in.string(); 
+      parsed_items.push_back(i);
+    }
+  };
+
+  template<> struct action < variable_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      if (is_debug) cout << "firing variable_rule, str: " << in.string() << endl;
+      Item_variable *i = new Item_variable();
+      i->variable_name= in.string(); 
       parsed_items.push_back(i);
     }
   };
@@ -629,6 +640,20 @@ namespace L2 {
     }
   }; 
 
+  //action for w <- stack-arg M 
+  template<> struct action < Instruction_stack_rule > {
+    template< typename Input >
+    static void apply( const Input & in, Program & p){
+      auto currentF = p.functions.back(); 
+      auto i = new Instruction_stack(); 
+      i->src = parsed_items.back(); 
+      parsed_items.pop_back(); 
+      i->dst = parsed_items.back(); 
+      parsed_items.pop_back(); 
+
+      currentF->instructions.push_back(i); 
+    }
+  }; 
   /*
    call actions 
   */
@@ -933,4 +958,4 @@ namespace L2 {
     parse< function_only, action >(fileInput, p);
     return p;
   }
-}
+};

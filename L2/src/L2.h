@@ -46,13 +46,11 @@ namespace L2 {
     std::string get_content() {
       return to_string(num);
     }
-
-    int64_t get_nb() {
-      return num;
-    }
-
     ItemType get_type() {
       return item_number;
+    }
+    int64_t get_nb() {
+      return num;
     }
   };
 
@@ -89,7 +87,7 @@ namespace L2 {
   class Instruction{
     public: 
     // std::string instructionName; 
-    virtual std::string tostring() {return "";};
+    // virtual std::string tostring() {return "";};
     // virtual std::string toL1() = 0;
     virtual vector<Item *> get_gen_set() = 0;
     virtual vector<Item *> get_kill_set() = 0;
@@ -101,6 +99,7 @@ namespace L2 {
   class Instruction_ret : public Instruction{
       vector<Item *> get_gen_set();
       vector<Item *> get_kill_set();
+      std::string tostring() { return "return"; };
   };
 
   class Instruction_assignment : public Instruction{
@@ -108,7 +107,7 @@ namespace L2 {
       Item *src, *dst;
       vector<Item *> get_gen_set();
       vector<Item *> get_kill_set();
-      std::string tostring() { return src->get_content() + " " + dst->get_content(); }
+      // std::string tostring() { return src->get_content() + " " + dst->get_content(); }
   };
   
   //load instruction
@@ -138,6 +137,15 @@ namespace L2 {
     Item *src; 
     Item *dst; 
     Item *constant;
+    vector<Item *> get_gen_set();
+    vector<Item *> get_kill_set();
+  };
+
+  //stack arg instruction
+  class Instruction_stack : public Instruction{
+    public: 
+    Item *dst; 
+    Item *src;
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
   };
@@ -283,4 +291,3 @@ namespace L2 {
   };
 
 }
-
