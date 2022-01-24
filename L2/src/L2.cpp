@@ -41,15 +41,14 @@ namespace L2 {
     if (src->get_type() == item_variable || src->get_type() == item_register) {
       v.push_back( (src));
     }
+    if (dst->get_type() == item_variable || dst->get_type() == item_register) {
+      v.push_back( (dst));
+    }
     return v;
   }
 
   vector<Item *> Instruction_store::get_kill_set() {
-    vector<Item *> v;
-    if (dst->get_type() == item_variable || dst->get_type() == item_register) {
-      v.push_back((dst));
-    }
-    return v;
+    return {}; 
   }
 
   vector<Item *> Instruction_ret::get_gen_set() {
@@ -113,11 +112,7 @@ namespace L2 {
   }
 
   vector<Item *> Instruction_store_aop::get_kill_set() {
-    vector<Item *> v;
-    if (dst->get_type() == item_variable || dst->get_type() == item_register) {
-      v.push_back((dst));
-    }
-    return v;
+    return {};
   }
 
   vector<Item *> Instruction_stack::get_gen_set() { 

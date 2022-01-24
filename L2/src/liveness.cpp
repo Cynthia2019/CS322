@@ -98,26 +98,26 @@ namespace L2 {
         vector<set<string>> kills;
 
         for(auto i : f->instructions) {
-            // vector<Instruction*> successors = get_successor(f->instructions, i);
-            // for(auto s : successors) {
-            //     cout << "ins: " << i->tostring()  << "  successor: " << s->tostring() << endl;
-            // }
+            cout << "ins: " << i->tostring() << endl; 
             auto gen = i->get_gen_set();
             auto kill = i->get_kill_set();
             set<string> gen_str;
             set<string> kill_str;
-
+            cout << "gens: "; 
             for (auto g : gen) {
                 gen_str.insert(g->get_content());
+                cout << g->get_content() << " "; 
             }
+            cout << endl; 
             gens.push_back(gen_str);
-
-            for (auto k : gen) {
+            cout << "kills: ";
+            for (auto k : kill) {
                 kill_str.insert(k->get_content());
+                cout << k->get_content() << " ";
             }
+            cout << endl; 
             kills.push_back(kill_str);
 
-            // cout << "instructions: " << i->tostring() << endl; 
         }
         // cout << "genset" << endl;
         // print_vector(gens);
