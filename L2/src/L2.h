@@ -87,7 +87,7 @@ namespace L2 {
   class Instruction{
     public: 
     // std::string instructionName; 
-    // virtual std::string tostring() {return "";};
+    virtual std::string tostring() {return "";};
     // virtual std::string toL1() = 0;
     virtual vector<Item *> get_gen_set() = 0;
     virtual vector<Item *> get_kill_set() = 0;

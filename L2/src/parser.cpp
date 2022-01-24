@@ -958,4 +958,4 @@ namespace L2 {
     parse< function_only, action >(fileInput, p);
     return p;
   }
-};
+}
