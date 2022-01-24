@@ -14,6 +14,7 @@
 
 #include <L2.h>
 #include <parser.h>
+#include <liveness.h>
 
 using namespace std;
 
@@ -123,12 +124,13 @@ int main(
    */
   if (liveness_only){
     // TODO
-    for (auto f : p.functions){
-      for (auto i : f->instructions) {
-        cout << i->tostring() << endl;
-      }
-      //TODO
-    }
+    L2::liveness(p);
+    // for (auto f : p.functions){
+    //   for (auto i : f->instructions) {
+    //     cout << "line: " <<  i->tostring() << endl;
+    //   }
+    //   //TODO
+    // }
     return 0;
   }
 

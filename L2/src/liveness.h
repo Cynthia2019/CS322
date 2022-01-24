@@ -4,6 +4,6 @@
 
 namespace L2{
 
-  void liveness_test(Program p);
+  void liveness(Program p);
 
 }
