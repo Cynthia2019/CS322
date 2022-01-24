@@ -142,6 +142,8 @@ namespace L2 {
     public: 
     Item *dst; 
     Item *constant;
+    vector<Item *> get_gen_set();
+    vector<Item *> get_kill_set();
   };
 
   //aop instruction 

@@ -81,6 +81,13 @@ namespace L2 {
     return {};
   }
 
+  vector<Item *> Instruction_stack::get_gen_set() { 
+    return {};
+  }
+
+  vector<Item *> Instruction_stack::get_kill_set() {
+    return {};
+  }
   vector<Item *> Instruction_compare::get_gen_set() { 
     return {};
   }

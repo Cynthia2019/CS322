@@ -646,7 +646,6 @@ namespace L2 {
     static void apply( const Input & in, Program & p){
       auto currentF = p.functions.back(); 
       auto i = new Instruction_stack(); 
-      i->instructionName = "stack-arg"; 
       i->constant = parsed_items.back(); 
       parsed_items.pop_back(); 
       i->dst = parsed_items.back(); 
