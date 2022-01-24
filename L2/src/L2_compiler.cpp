@@ -123,6 +123,7 @@ int main(
    */
   if (liveness_only){
     // TODO
+    L2::liveness_test(p)
     return 0;
   }
 

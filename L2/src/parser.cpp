@@ -941,7 +941,14 @@ namespace L2 {
   }
 
   Program parse_function_file(char *fileName) {
+    /* 
+     * Check the grammar for some possible issues.
+     */
+    pegtl::analyze< grammar >();
+    file_input< > fileInput(fileName);
     Program p;
+    parse< grammar, action >(fileInput, p);
+
     return p;
   }
 };

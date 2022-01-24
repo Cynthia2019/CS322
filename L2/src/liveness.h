@@ -4,6 +4,6 @@
 
 namespace L2{
 
-  void generate_code(Program p);
+  void liveness_test(Program p);
 
 }
