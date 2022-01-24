@@ -25,6 +25,7 @@ namespace L2 {
     if (src->get_type() == item_variable || src->get_type() == item_register) {
       v.push_back((src));
     }
+    if (src->get_type() == item_register && src->get_content() == "rsp") v.pop_back();
     return v;
    }
 
@@ -44,6 +45,7 @@ namespace L2 {
     if (dst->get_type() == item_variable || dst->get_type() == item_register) {
       v.push_back( (dst));
     }
+    if (dst->get_type() == item_register && dst->get_content() == "rsp") v.pop_back();
     return v;
   }
 
@@ -108,6 +110,7 @@ namespace L2 {
     if (dst->get_type() == item_variable || dst->get_type() == item_register) {
       v.push_back((dst));
     }
+    if (dst->get_type() == item_register && dst->get_content() == "rsp") v.pop_back();
     return v;
   }
 
@@ -279,6 +282,7 @@ namespace L2 {
     if (src->get_type() == item_variable || src->get_type() == item_register) {
       v.push_back(src);
     }
+    if (src->get_type() == item_register && src->get_content() == "rsp") v.pop_back();
     if (dst->get_type() == item_variable || dst->get_type() == item_register) {
       v.push_back(dst);
     }

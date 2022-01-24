@@ -208,7 +208,8 @@ namespace L2 {
         pegtl::sor<
           register_rule, 
           number_rule,
-          Label_rule>
+          Label_rule,
+          variable_rule>
         >
     {};
 
@@ -305,6 +306,8 @@ namespace L2 {
   struct Instruction_stack_rule: 
     pegtl::seq<
       pegtl::sor<variable_rule, register_rule>,
+      seps, 
+      str_arrow,
       seps, 
       str_stack_arg,
       seps, 
