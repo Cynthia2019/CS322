@@ -46,7 +46,7 @@ namespace L2 {
       if(a != nullptr){
           vector<Instruction*> successors; 
           Item* label = a->label; 
-          int index = find(instructions.begin(), instructions.end(), i) - instructions.begin() + 1; 
+          int index = 0; 
           while(index < instructions.size()){
               Instruction* curr = instructions[index]; 
               class Instruction_label* currLabel = dynamic_cast<class Instruction_label*>(curr); 
@@ -63,7 +63,8 @@ namespace L2 {
           vector<Instruction*> successors; 
           Item* label = b->label; 
           int index = find(instructions.begin(), instructions.end(), i) - instructions.begin() + 1;  
-          successors.push_back(instructions[index+1]); 
+          successors.push_back(instructions[index]); 
+          index = 0;
           while(index < instructions.size()){
               Instruction* curr = instructions[index]; 
               class Instruction_label* currLabel = dynamic_cast<class Instruction_label*>(curr); 
