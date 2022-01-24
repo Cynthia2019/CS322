@@ -5,7 +5,8 @@
 
 using namespace L2;
 
-vector<Item *> get_caller_saved_regs() {
+vector<Item *> get_caller_saved_regs()
+{
     vector<std::string> all = {
         "r10",
         "r11",
@@ -15,11 +16,11 @@ vector<Item *> get_caller_saved_regs() {
         "rcx",
         "rdi",
         "rdx",
-        "rsi"
-    };
+        "rsi"};
 
     vector<Item *> res;
-    for (auto s: all) {
+    for (auto s : all)
+    {
         Item_register *r = new Item_register();
         r->register_name = s;
         res.push_back(r);
@@ -28,18 +29,19 @@ vector<Item *> get_caller_saved_regs() {
     return res;
 }
 
-vector<Item *> get_callee_saved_regs() {
+vector<Item *> get_callee_saved_regs()
+{
     vector<std::string> all = {
         "r12",
         "r13",
         "r14",
         "r15",
         "rbp",
-        "rbx"
-    };
+        "rbx"};
 
     vector<Item *> res;
-    for (auto s: all) {
+    for (auto s : all)
+    {
         Item_register *r = new Item_register();
         r->register_name = s;
         res.push_back(r);
@@ -48,18 +50,19 @@ vector<Item *> get_callee_saved_regs() {
     return res;
 }
 
-vector<Item *> get_argument_regs(size_t n) {
+vector<Item *> get_argument_regs(size_t n)
+{
     vector<std::string> all = {
         "rdi",
         "rsi",
         "rdx",
         "rcx",
         "r8",
-        "r9"
-    };
+        "r9"};
 
     vector<Item *> res;
-    for (int i = 0; i < min(n, all.size()); i++) {
+    for (int i = 0; i < min(n, all.size()); i++)
+    {
         Item_register *r = new Item_register();
         r->register_name = all[i];
         res.push_back(r);
