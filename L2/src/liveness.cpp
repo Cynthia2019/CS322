@@ -41,17 +41,18 @@ namespace L2 {
         }
     }
 
-  vector<Instruction*> get_successor(vector<Instruction*>& instructions, Instruction* i){
+  vector<int> get_successor(vector<Instruction*>& instructions, int idx){
+      Instruction *i = instructions[idx];
       Instruction_goto* a = dynamic_cast<Instruction_goto*>(i); 
       if(a != nullptr){
-          vector<Instruction*> successors; 
+          vector<int> successors; 
           Item* label = a->label; 
           int index = 0; 
           while(index < instructions.size()){
               Instruction* curr = instructions[index]; 
               class Instruction_label* currLabel = dynamic_cast<class Instruction_label*>(curr); 
               if(currLabel != nullptr && currLabel->label->get_content() == label->get_content()){
-                  successors.push_back(currLabel); 
+                  successors.push_back(index); 
               }
               index++; 
           }
@@ -60,16 +61,16 @@ namespace L2 {
       //two successors
       Instruction_cjump* b = dynamic_cast<Instruction_cjump*>(i); 
       if(b != nullptr) {
-          vector<Instruction*> successors; 
+          vector<int> successors; 
           Item* label = b->label; 
-          int index = find(instructions.begin(), instructions.end(), i) - instructions.begin() + 1;  
-          successors.push_back(instructions[index]); 
-          index = 0;
+          // int index = find(instructions.begin(), instructions.end(), i) - instructions.begin() + 1;  
+          successors.push_back(idx + 1); 
+          int index = 0;
           while(index < instructions.size()){
               Instruction* curr = instructions[index]; 
               class Instruction_label* currLabel = dynamic_cast<class Instruction_label*>(curr); 
               if(currLabel != nullptr && currLabel->label->get_content() == label->get_content()){
-                  successors.push_back(currLabel); 
+                  successors.push_back(index); 
               }
               index++; 
           }
@@ -85,20 +86,22 @@ namespace L2 {
           return {}; 
       }
       //one successor 
-      int index = find(instructions.begin(), instructions.end(), i) - instructions.begin() + 1; 
-      return {instructions[index]};
-
+      if (idx == instructions.size() - 1) {
+        return {};
+      }
+      return {idx + 1};
   }
+
     void liveness(Program p) {
         auto f = p.functions[0]; 
         vector<set<string>> gens;
         vector<set<string>> kills;
 
         for(auto i : f->instructions) {
-            vector<Instruction*> successors = get_successor(f->instructions, i);
-            for(auto s : successors) {
-                cout << "ins: " << i->tostring()  << "  successor: " << s->tostring() << endl;
-            }
+            // vector<Instruction*> successors = get_successor(f->instructions, i);
+            // for(auto s : successors) {
+            //     cout << "ins: " << i->tostring()  << "  successor: " << s->tostring() << endl;
+            // }
             auto gen = i->get_gen_set();
             auto kill = i->get_kill_set();
             set<string> gen_str;
@@ -142,11 +145,15 @@ namespace L2 {
                     changed = true;
                 }
 
-                // auto out_before = out[i];
-                // out[i] = {};
-                // if (out[i] != out_before) {
-                //     changed = true;
-                // }
+                auto out_before = out[i];
+                out[i] = {};
+                vector<int> idxs = get_successor(f->instructions, i);
+                for (auto t :idxs) {
+                  out[i].insert(in[t].begin(), in[t].end());
+                }
+                if (out[i] != out_before) {
+                    changed = true;
+                }
             }
         } while(changed);
         format_vector(in, out);
