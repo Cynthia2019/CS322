@@ -10,6 +10,26 @@
 using namespace std;
 
 namespace L2 {
+  void format_vector(const vector<set<string>> in, const vector<set<string>> out) {
+    cout << "((in" << endl;
+    for (auto i : in) {
+      cout << "(";
+      for (auto j : i) {
+        cout << j << " ";
+      }
+        cout << ")" << endl;;
+    }
+    cout << ") (out" << endl;
+    for (auto i : out) {
+      cout << "(";
+      for (auto j : i) {
+        cout << j << " ";
+      }
+        cout << ")" << endl;;
+    }
+    cout << "))" << endl;
+  }
+
     void print_vector(const vector<set<string>> v) {
         for (auto i : v) {
             cout << "{ ";
@@ -95,16 +115,15 @@ namespace L2 {
 
             // cout << "instructions: " << i->tostring() << endl; 
         }
-        cout << "genset" << endl;
-        print_vector(gens);
-        cout << "kill set" << endl;
-        print_vector(kills);
+        // cout << "genset" << endl;
+        // print_vector(gens);
+        // cout << "kill set" << endl;
+        // print_vector(kills);
 
         vector<set<string>> in(f->instructions.size());
         vector<set<string>> out(f->instructions.size());
 
-        bool changed = false;
-        do {
+        bool changed = false; do {
             changed = false;
             for (int i = 0; i < f->instructions.size(); i++) {
                 auto gen = gens[i];
@@ -129,5 +148,6 @@ namespace L2 {
                 // }
             }
         } while(changed);
+        format_vector(in, out);
     }
 }
