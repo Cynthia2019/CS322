@@ -178,7 +178,7 @@ namespace L2 {
         seps,
         shift_op_rule,
         seps,
-        pegtl::sor<number_rule, register_rule>
+        pegtl::sor<number_rule, register_rule, variable_rule>
     > {};
 
   struct Instruction_load_rule:
