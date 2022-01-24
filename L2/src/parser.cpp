@@ -75,10 +75,10 @@ namespace L2 {
   struct str_return : TAOCPP_PEGTL_STRING( "return" ) {};
   struct str_mem : TAOCPP_PEGTL_STRING( "mem" ) {};
   struct str_call : TAOCPP_PEGTL_STRING( "call" ) {};
+  struct str_stack_arg : TAOCPP_PEGTL_STRING( "stack-arg" ) {};
   struct str_arrow : TAOCPP_PEGTL_STRING( "<-" ) {};
   struct str_shift_left : TAOCPP_PEGTL_STRING( "<<=" ) {};
   struct str_shift_right : TAOCPP_PEGTL_STRING( ">>=" ) {};
-  struct str_stack_arg : TAOCPP_PEGTL_STRING( "stack-arg" ) {};
 
   struct comment: 
     pegtl::disable< 
