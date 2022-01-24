@@ -133,19 +133,31 @@ namespace L2 {
   }
 
   vector<Item *> Instruction_call::get_gen_set() { 
-    return {};
+    vector<Item *> v;
+    if (constant->get_type() == item_number) {
+      Item_number *c = dynamic_cast<Item_number *>(constant);
+      v = get_argument_regs(c->get_nb());
+    }
+    if (dst->get_type() == item_variable || dst->get_type() == item_register) {
+      v.push_back(dst);
+    }
+    return v;
   }
 
   vector<Item *> Instruction_call::get_kill_set() {
-    return {};
+    vector<Item *> v = get_caller_saved_regs();
+    return v;
   }
 
   vector<Item *> Instruction_call_print::get_gen_set() { 
-    return {};
+    vector<Item *> v;
+    v = get_argument_regs(1);
+    return v;
   }
 
   vector<Item *> Instruction_call_print::get_kill_set() {
-    return {};
+    vector<Item *> v = get_caller_saved_regs();
+    return v;
   }
 
   vector<Item *> Instruction_call_input::get_gen_set() { 
@@ -153,40 +165,66 @@ namespace L2 {
   }
 
   vector<Item *> Instruction_call_input::get_kill_set() {
-    return {};
+    vector<Item *> v = get_caller_saved_regs();
+    return v;
   }
 
   vector<Item *> Instruction_call_allocate::get_gen_set() { 
-    return {};
+    vector<Item *> v;
+    v = get_argument_regs(2);
+    return v;
   }
 
   vector<Item *> Instruction_call_allocate::get_kill_set() {
-    return {};
+    vector<Item *> v = get_caller_saved_regs();
+    return v;
   }
 
 
   vector<Item *> Instruction_call_error::get_gen_set() { 
-    return {};
+    vector<Item *> v;
+    if (constant->get_type() == item_number) {
+      Item_number *c = dynamic_cast<Item_number *>(constant);
+      v = get_argument_regs(c->get_nb());
+    }
+    return v;
   }
 
   vector<Item *> Instruction_call_error::get_kill_set() {
-    return {};
+    vector<Item *> v = get_caller_saved_regs();
+    return v;
   }
 
   vector<Item *> Instruction_increment::get_gen_set() { 
-    return {};
+    vector<Item *> v;
+    if (src->get_type() == item_variable || src->get_type() == item_register) {
+      v.push_back(src);
+    }
+    return v;
   }
 
   vector<Item *> Instruction_increment::get_kill_set() {
-    return {};
+    vector<Item *> v;
+    if (src->get_type() == item_variable || src->get_type() == item_register) {
+      v.push_back(src);
+    }
+    return v;
   }
 
   vector<Item *> Instruction_decrement::get_gen_set() { 
-    return {};
+    vector<Item *> v;
+    if (src->get_type() == item_variable || src->get_type() == item_register) {
+      v.push_back(src);
+    }
+    return v;
   }
 
   vector<Item *> Instruction_decrement::get_kill_set() {
-    return {};
+    vector<Item *> v;
+    if (src->get_type() == item_variable || src->get_type() == item_register) {
+      v.push_back(src);
+    }
+    return v;
   }
 
   vector<Item *> Instruction_at::get_gen_set() { 

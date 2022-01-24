@@ -46,6 +46,11 @@ namespace L2 {
     std::string get_content() {
       return to_string(num);
     }
+
+    int64_t get_nb() {
+      return num;
+    }
+
     ItemType get_type() {
       return item_number;
     }

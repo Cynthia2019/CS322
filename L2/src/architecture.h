@@ -47,3 +47,22 @@ vector<Item *> get_callee_saved_regs() {
 
     return res;
 }
+
+vector<Item *> get_argument_regs(size_t n) {
+    vector<std::string> all = {
+        "rdi",
+        "rsi",
+        "rdx",
+        "rcx",
+        "r8",
+        "r9"
+    };
+
+    vector<Item *> res;
+    for (int i = 0; i < min(n, all.size()); i++) {
+        Item_register *r = new Item_register();
+        r->register_name = all[i];
+        res.push_back(r);
+    }
+    return res;
+}
