@@ -108,7 +108,7 @@ namespace L2 {
       Item *src, *dst;
       vector<Item *> get_gen_set();
       vector<Item *> get_kill_set();
-      std::string tostring() { return src->get_content() + " " + dst->get_content(); }
+      std::string tostring() { return dst->get_content() + " " + src->get_content(); }
   };
   
   //load instruction
@@ -119,6 +119,7 @@ namespace L2 {
       Item *constant;
       vector<Item *> get_gen_set();
       vector<Item *> get_kill_set();
+      std::string tostring() { return dst->get_content() + "<-" + dst->get_content() + constant->get_content(); }
   };
   
   //shift instruction
@@ -129,6 +130,7 @@ namespace L2 {
     Item *src; 
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
+    std::string tostring() { return dst->get_content() + op->get_content() + src->get_content(); }
   };
 
 
@@ -140,6 +142,7 @@ namespace L2 {
     Item *constant;
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
+    std::string tostring() { return dst->get_content() + constant->get_content() + "<-" + src->get_content(); }
   };
 
   //stack arg instruction
@@ -149,6 +152,7 @@ namespace L2 {
     Item *src;
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
+    std::string tostring() { return dst->get_content() + " stack-arg " + src->get_content(); }
   };
 
   //aop instruction 
@@ -159,6 +163,7 @@ namespace L2 {
     Item *op; 
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
+    std::string tostring() { return dst->get_content() + op->get_content() + src->get_content(); }
   };
 
   //store aop instruction 
@@ -170,6 +175,7 @@ namespace L2 {
     Item *op; 
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
+    std::string tostring() { return dst->get_content() + constant->get_content() + op->get_content() + src->get_content(); }
   };
 
   //load aop instruction 
@@ -181,6 +187,7 @@ namespace L2 {
     Item *op; 
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
+    std::string tostring() { return dst->get_content() + op->get_content() + src->get_content() + constant->get_content(); }
   };
 
   class Instruction_compare: public Instruction {
@@ -191,6 +198,7 @@ namespace L2 {
     Item *oprand2;
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
+    std::string tostring() { return dst->get_content() + oprand1->get_content() + op->get_content() + oprand2->get_content(); }
   };
 
   class Instruction_cjump: public Instruction {
@@ -201,6 +209,7 @@ namespace L2 {
     Item *label;
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
+    std::string tostring() { return "cjump " + oprand1->get_content() + op->get_content() + oprand2->get_content() + label->get_content(); }
   };
 
   //call u N instruction 
@@ -210,25 +219,30 @@ namespace L2 {
     Item *dst; 
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
+    std::string tostring() { return dst->get_content() + constant->get_content(); }
   }; 
 
   class Instruction_call_print : public Instruction {
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
+    std::string tostring() {return "print"; }
   };
   class Instruction_call_input : public Instruction {
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
+    std::string tostring() {return "input"; }
   };
   class Instruction_call_allocate : public Instruction {
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
+    std::string tostring() {return "allocate"; }
   };
   class Instruction_call_error : public Instruction {
     public: 
     Item *constant; 
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
+    std::string tostring() {return "error"; }
   };
 
   //label instruction 
@@ -237,6 +251,7 @@ namespace L2 {
     Item *label; 
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
+    std::string tostring() {return label->get_content(); }
   };
 
   /*
@@ -247,12 +262,14 @@ namespace L2 {
     Item *src;
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
+    std::string tostring() {return src->get_content() + "++"; }
   }; 
   class Instruction_decrement : public Instruction {
     public: 
     Item *src;
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
+    std::string tostring() {return src->get_content() + "--"; }
   }; 
   class Instruction_at : public Instruction {
     public: 
@@ -262,6 +279,7 @@ namespace L2 {
     Item *dst; 
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
+    std::string tostring() {return dst->get_content() + src_add->get_content() + src_mult->get_content() + constant->get_content(); }
   };
 
   //goto instruction 
@@ -270,6 +288,7 @@ namespace L2 {
     Item *label; 
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
+    std::string tostring() {return "goto " + label->get_content(); }
   };
   /*
    * Function.
