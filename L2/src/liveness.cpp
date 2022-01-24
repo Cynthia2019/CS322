@@ -10,6 +10,18 @@
 using namespace std;
 
 namespace L2 {
+    void print_vector(const vector<set<string>> v) {
+        for (auto i : v) {
+            cout << "{ ";
+            for (auto j : i) {
+                cout << j << ",";
+            }
+            cout << "}";
+            cout << endl;
+        }
+    }
+
+
     void liveness(Program p) {
         auto f = p.functions[0]; 
         vector<set<string>> gens;
@@ -31,8 +43,12 @@ namespace L2 {
             }
             kills.push_back(kill_str);
 
-            cout << "instructions: " << i->tostring() << endl; 
+            // cout << "instructions: " << i->tostring() << endl; 
         }
+        cout << "genset" << endl;
+        print_vector(gens);
+        cout << "kill set" << endl;
+        print_vector(kills);
 
         vector<set<string>> in(f->instructions.size());
         vector<set<string>> out(f->instructions.size());
