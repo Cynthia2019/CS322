@@ -3,16 +3,26 @@
 #include <fstream>
 #include <algorithm>
 #include <set>
+#include <map>
 #include <iterator>
 
 #include <interference.h>
 #include <liveness.h>
+#include <architecture.h>
 
 using namespace std;
 
 namespace L2
 {
-
+    void print_map(map<string, set<string>>& m){
+        for(auto i : m){
+            cout << i.first << " "; 
+            for(string s : i.second){
+                cout << s << " ";
+            }
+            cout << endl;
+        }
+    }
     vector<vector<set<string>>> liveness_helper(Program p)
     {
         auto f = p.functions[0];
@@ -84,7 +94,69 @@ namespace L2
         vector<set<string>> out = res[1]; 
         vector<set<string>> gens = res[2]; 
         vector<set<string>> kills = res[3]; 
-        
 
+        map<string, set<string>> edges; 
+        int length = p.functions[0]->instructions.size(); 
+        //get all gp registers
+        vector<Item*> caller = get_caller_saved_regs(); 
+        vector<Item*> callee = get_callee_saved_regs(); 
+        vector<Item*> gp = caller; 
+        gp.insert(gp.end(), callee.begin(), callee.end());  
+        //connect gp to all other registers
+        for(auto item1 : gp){
+            for(auto item2 : gp){
+                if(item1 != item2) {
+                    edges[item1->get_content()].insert(item2->get_content()); 
+                    edges[item2->get_content()].insert(item1->get_content()); 
+                }
+            }
+        }
+        for(int idx = 0; idx < length; idx++) {
+            //connect each pair of variables in the same IN set 
+            for(string s1 : in[idx]){
+                for(string s2 : in[idx]){
+                    if(s1 != s2) {
+                        edges[s1].insert(s2); 
+                        edges[s2].insert(s1); 
+                    }
+                }
+            }
+            //connect each pair of variables in the same out set 
+            for(string s1 : out[idx]){
+                for(string s2 : out[idx]){
+                    if(s1 != s2) {
+                        edges[s1].insert(s2); 
+                        edges[s2].insert(s1); 
+                    }
+                }
+            }
+            //connect variables in kill with those in out
+            for(string s1 : kills[idx]){
+                for(string s2 : out[idx]){
+                    if(s1 != s2){
+                        edges[s1].insert(s2); 
+                        edges[s2].insert(s1);
+                    }
+                }
+            }
+            //check restrictions for each instruction
+            //sop 
+            Instruction* i = p.functions[0]->instructions[idx]; 
+            Instruction_shift* a = dynamic_cast<Instruction_shift*>(i); 
+            if(a != nullptr) {
+                //connect every register with dst except rcx
+                Item* src = a->src; 
+                if(src->get_type() == item_variable) {
+                    for(auto item : gp) {
+                        if(item->get_content() != "rcx" && item->get_content() != src->get_content()) {
+                            edges[src->get_content()].insert(item->get_content()); 
+                            edges[item->get_content()].insert(src->get_content()); 
+                        }
+                    }
+                }
+            }
+
+        }
+        print_map(edges); 
     }
 }
