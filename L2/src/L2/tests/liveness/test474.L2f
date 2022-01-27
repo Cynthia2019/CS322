@@ -1,6 +1,0 @@
-(:swissChoice
-	0
-	rdi <- 1
-	call print 1
-	return
-)

@@ -1,8 +1,0 @@
-(:decode
-	1
-	%encoded <- rdi
-	%decoded <- %encoded
-	%decoded >>= 1
-	rax <- %decoded
-	return
-)

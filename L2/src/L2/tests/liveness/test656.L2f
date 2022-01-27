@@ -1,8 +1,0 @@
-(:int_decode
-	1
-	%v <- rdi
-	:call_label_ciao__ciao__ciao_17
-	%v >>= 1
-	rax <- %v
-	return
-)

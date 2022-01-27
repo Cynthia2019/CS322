@@ -1,8 +1,0 @@
-(:plus_10
-	1
-	%v <- rdi
-	:call_label_ciao_1
-	%v += 10
-	rax <- %v
-	return
-)

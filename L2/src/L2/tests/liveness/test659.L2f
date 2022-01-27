@@ -1,8 +1,0 @@
-(:double
-	1
-	%v <- rdi
-	:call_label0
-	%v *= 2
-	rax <- %v
-	return
-)

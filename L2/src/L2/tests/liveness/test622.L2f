@@ -1,9 +1,0 @@
-(:divide
-	1
-	%a <- rdi
-	:call_label_ciao__ciao_4
-	%res <- %a
-	%res >>= 2
-	rax <- %res
-	return
-)

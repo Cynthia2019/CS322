@@ -1,9 +1,0 @@
-(:plus
-	3
-	%x <- rsi
-	%y <- rdx
-	%ans <- %x
-	%ans += %y
-	rax <- %ans
-	return
-)
