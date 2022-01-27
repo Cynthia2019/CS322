@@ -6,5 +6,5 @@ namespace L2
 {
 
   void liveness(Program p);
-
+  vector<int> get_successor(vector<Instruction *> &instructions, int idx); 
 }

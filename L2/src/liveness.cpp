@@ -177,13 +177,6 @@ namespace L2
                 std::set_difference(out[i].begin(), out[i].end(), kill.begin(), kill.end(),
                                     std::inserter(diff, diff.end()));
 
-                // cout << "out===" << endl;
-                // print(out[i]);
-                // cout << "kill===" << endl;
-                // print(kill);
-                // cout << "diff===" << endl;
-                // print(diff);
-
                 in[i].insert(gen.begin(), gen.end());
                 in[i].insert(diff.begin(), diff.end());
                 if (in[i] != in_before)
@@ -203,10 +196,6 @@ namespace L2
                     changed = true;
                 }
             }
-            // cout << "in===========" << endl;
-            // print_vector(in);
-            // cout << "out===========" << endl;
-            // print_vector(out);
         } while (changed);
         format_vector(in, out);
     }

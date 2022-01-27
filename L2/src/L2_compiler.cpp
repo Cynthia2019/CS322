@@ -15,6 +15,7 @@
 #include <L2.h>
 #include <parser.h>
 #include <liveness.h>
+#include <interference.h>
 
 using namespace std;
 
@@ -144,6 +145,7 @@ int main(
   if (interference_only)
   {
     // TODO
+    L2::interference(p); 
     return 0;
   }
 
