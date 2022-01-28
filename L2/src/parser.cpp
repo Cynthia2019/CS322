@@ -537,7 +537,7 @@ namespace L2
     static void apply(const Input &in, Program &p)
     {
       if (is_debug)
-        cout << "firing spill_prefix, str: " << in.string() << endl;
+        cout << "firing spill_variable, str: " << in.string() << endl;
       p.spill_variable = in.string();
     }
   };
@@ -1079,7 +1079,7 @@ namespace L2
     pegtl::analyze<spill_only_rule>();
     file_input<> fileInput(fileName);
     Program p;
-    parse<function_only, action>(fileInput, p);
+    parse<spill_only_rule, action>(fileInput, p);
     return p;
   }
 

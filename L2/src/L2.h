@@ -146,7 +146,7 @@ namespace L2
     Item *src, *dst;
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
-    std::string tostring() { return dst->get_content() + " " + src->get_content(); }
+    std::string tostring() { return dst->get_content() + " <- " + src->get_content(); }
     void spill(Spiller &s) override;
   };
 
@@ -159,7 +159,10 @@ namespace L2
     Item *constant;
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
-    std::string tostring() { return dst->get_content() + "<-" + dst->get_content() + constant->get_content(); }
+    std::string tostring() { 
+      return dst->get_content() + " <- mem "
+          + dst->get_content() + " " + constant->get_content();
+    }
     void spill(Spiller &s) override;
   };
 
@@ -172,7 +175,7 @@ namespace L2
     Item *src;
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
-    std::string tostring() { return dst->get_content() + op->get_content() + src->get_content(); }
+    std::string tostring() { return dst->get_content() +" "+ op->get_content() + " " + src->get_content(); }
     void spill(Spiller &s) override;
   };
 
@@ -185,7 +188,9 @@ namespace L2
     Item *constant;
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
-    std::string tostring() { return dst->get_content() + constant->get_content() + "<-" + src->get_content(); }
+
+    std::string tostring() { return "mem " + dst->get_content() + " " + constant->get_content() + " <- " + src->get_content(); }
+  
     void spill(Spiller &s) override;
   };
 
@@ -276,7 +281,7 @@ namespace L2
     Item *dst;
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
-    std::string tostring() { return dst->get_content() + constant->get_content(); }
+    std::string tostring() { return "call " + dst->get_content() +" "+ constant->get_content(); }
     void spill(Spiller &s) override;
   };
 
