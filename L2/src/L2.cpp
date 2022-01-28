@@ -389,4 +389,26 @@ namespace L2
     return {};
   }
 
+
+  void Instruction_ret::spill(Spiller &s) { s.visit(this); }
+  void Instruction_assignment::spill(Spiller &s) { s.visit(this); }
+  void Instruction_load::spill(Spiller &s) {s.visit(this); }
+  void Instruction_shift::spill(Spiller &s) {s.visit(this); }
+  void Instruction_store::spill(Spiller &s) {s.visit(this); }
+  void Instruction_stack::spill(Spiller &s) {s.visit(this); }
+  void Instruction_aop::spill(Spiller &s) {s.visit(this); }
+  void Instruction_store_aop::spill(Spiller &s) {s.visit(this); }
+  void Instruction_load_aop::spill(Spiller &s) {s.visit(this); }
+  void Instruction_compare::spill(Spiller &s) {s.visit(this); }
+  void Instruction_cjump::spill(Spiller &s) {s.visit(this); }
+  void Instruction_call::spill(Spiller &s) {s.visit(this); }
+  void Instruction_call_print::spill(Spiller &s) {s.visit(this); }
+  void Instruction_call_input::spill(Spiller &s) {s.visit(this); }
+  void Instruction_call_allocate::spill(Spiller &s) {s.visit(this); }
+  void Instruction_call_error::spill(Spiller &s) {s.visit(this); }
+  void Instruction_label::spill(Spiller &s) {s.visit(this); }
+  void Instruction_increment::spill(Spiller &s) {s.visit(this); }
+  void Instruction_decrement::spill(Spiller &s) {s.visit(this); }
+  void Instruction_at::spill(Spiller &s) {s.visit(this); }
+  void Instruction_goto::spill(Spiller &s) {s.visit(this); }
 }

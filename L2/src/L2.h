@@ -8,6 +8,8 @@ using namespace std;
 namespace L2
 {
 
+  class Spiller;
+
   enum Register
   {
     rdi,rax,rbx,rbp,
@@ -123,6 +125,7 @@ namespace L2
     // virtual std::string toL1() = 0;
     virtual vector<Item *> get_gen_set() = 0;
     virtual vector<Item *> get_kill_set() = 0;
+    virtual void spill(Spiller &s) = 0;
   };
 
   /*
@@ -130,9 +133,11 @@ namespace L2
    */
   class Instruction_ret : public Instruction
   {
-    vector<Item *> get_gen_set();
-    vector<Item *> get_kill_set();
-    std::string tostring() { return "return"; };
+    public:
+      vector<Item *> get_gen_set();
+      vector<Item *> get_kill_set();
+      std::string tostring() { return "return"; };
+      void spill(Spiller &s) override;
   };
 
   class Instruction_assignment : public Instruction
@@ -142,6 +147,7 @@ namespace L2
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
     std::string tostring() { return dst->get_content() + " " + src->get_content(); }
+    void spill(Spiller &s) override;
   };
 
   // load instruction
@@ -154,6 +160,7 @@ namespace L2
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
     std::string tostring() { return dst->get_content() + "<-" + dst->get_content() + constant->get_content(); }
+    void spill(Spiller &s) override;
   };
 
   // shift instruction
@@ -166,6 +173,7 @@ namespace L2
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
     std::string tostring() { return dst->get_content() + op->get_content() + src->get_content(); }
+    void spill(Spiller &s) override;
   };
 
   // store instruction
@@ -178,6 +186,7 @@ namespace L2
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
     std::string tostring() { return dst->get_content() + constant->get_content() + "<-" + src->get_content(); }
+    void spill(Spiller &s) override;
   };
 
   // stack arg instruction
@@ -189,6 +198,7 @@ namespace L2
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
     std::string tostring() { return dst->get_content() + " stack-arg " + src->get_content(); }
+    void spill(Spiller &s) override;
   };
 
   // aop instruction
@@ -201,6 +211,7 @@ namespace L2
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
     std::string tostring() { return dst->get_content() + op->get_content() + src->get_content(); }
+    void spill(Spiller &s) override;
   };
 
   // store aop instruction
@@ -214,6 +225,7 @@ namespace L2
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
     std::string tostring() { return dst->get_content() + constant->get_content() + op->get_content() + src->get_content(); }
+    void spill(Spiller &s) override;
   };
 
   // load aop instruction
@@ -227,6 +239,7 @@ namespace L2
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
     std::string tostring() { return dst->get_content() + op->get_content() + src->get_content() + constant->get_content(); }
+    void spill(Spiller &s) override;
   };
 
   class Instruction_compare : public Instruction
@@ -239,6 +252,7 @@ namespace L2
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
     std::string tostring() { return dst->get_content() + oprand1->get_content() + op->get_content() + oprand2->get_content(); }
+    void spill(Spiller &s) override;
   };
 
   class Instruction_cjump : public Instruction
@@ -251,6 +265,7 @@ namespace L2
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
     std::string tostring() { return "cjump " + oprand1->get_content() + op->get_content() + oprand2->get_content() + label->get_content(); }
+    void spill(Spiller &s) override;
   };
 
   // call u N instruction
@@ -262,25 +277,32 @@ namespace L2
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
     std::string tostring() { return dst->get_content() + constant->get_content(); }
+    void spill(Spiller &s) override;
   };
 
   class Instruction_call_print : public Instruction
   {
+    public:
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
-    std::string tostring() { return "print"; }
+    std::string tostring() { return "call print 1"; }
+    void spill(Spiller &s) override;
   };
   class Instruction_call_input : public Instruction
   {
+    public:
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
-    std::string tostring() { return "input"; }
+    std::string tostring() { return "call input 0"; }
+    void spill(Spiller &s) override;
   };
   class Instruction_call_allocate : public Instruction
   {
+    public:
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
     std::string tostring() { return "allocate"; }
+    void spill(Spiller &s) override;
   };
   class Instruction_call_error : public Instruction
   {
@@ -289,6 +311,7 @@ namespace L2
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
     std::string tostring() { return "error"; }
+    void spill(Spiller &s) override;
   };
 
   // label instruction
@@ -299,6 +322,7 @@ namespace L2
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
     std::string tostring() { return label->get_content(); }
+    void spill(Spiller &s) override;
   };
 
   /*
@@ -311,6 +335,7 @@ namespace L2
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
     std::string tostring() { return src->get_content() + "++"; }
+    void spill(Spiller &s) override;
   };
   class Instruction_decrement : public Instruction
   {
@@ -319,6 +344,7 @@ namespace L2
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
     std::string tostring() { return src->get_content() + "--"; }
+    void spill(Spiller &s) override;
   };
   class Instruction_at : public Instruction
   {
@@ -330,6 +356,7 @@ namespace L2
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
     std::string tostring() { return dst->get_content() + src_add->get_content() + src_mult->get_content() + constant->get_content(); }
+    void spill(Spiller &s) override;
   };
 
   // goto instruction
@@ -340,6 +367,7 @@ namespace L2
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
     std::string tostring() { return "goto " + label->get_content(); }
+    void spill(Spiller &s) override;
   };
   /*
    * Function.
@@ -360,6 +388,33 @@ namespace L2
   public:
     std::string entryPointLabel;
     std::vector<Function *> functions;
+    std::string spill_prefix;
+    std::string spill_variable;
+  };
+
+  class Spiller {
+    public: 
+      virtual void visit(Instruction_ret *i) = 0;
+      virtual void visit(Instruction_assignment *i) = 0;
+      virtual void visit(Instruction_load *i) = 0;
+      virtual void visit(Instruction_shift *i) = 0;
+      virtual void visit(Instruction_store *i) = 0;
+      virtual void visit(Instruction_stack *i) = 0;
+      virtual void visit(Instruction_aop *i) = 0;
+      virtual void visit(Instruction_store_aop *i) = 0;
+      virtual void visit(Instruction_load_aop *i) = 0;
+      virtual void visit(Instruction_compare *i) = 0;
+      virtual void visit(Instruction_cjump *i) = 0;
+      virtual void visit(Instruction_call *i) = 0;
+      virtual void visit(Instruction_call_print *i) = 0;
+      virtual void visit(Instruction_call_input *i) = 0;
+      virtual void visit(Instruction_call_allocate *i) = 0;
+      virtual void visit(Instruction_call_error *i) = 0;
+      virtual void visit(Instruction_label *i) = 0;
+      virtual void visit(Instruction_increment *i) = 0;
+      virtual void visit(Instruction_decrement *i) = 0;
+      virtual void visit(Instruction_at *i) = 0;
+      virtual void visit(Instruction_goto *i) = 0;
   };
 
 }

@@ -446,6 +446,21 @@ namespace L2
   {
   };
 
+  struct spill_prefix_rule :
+    variable_rule {};
+
+  struct spill_variable_rule :
+    variable_rule {};
+
+  struct spill_only_rule:
+    pegtl::seq<
+      Function_rule,
+      seps,
+      spill_variable_rule,
+      seps,
+      spill_prefix_rule
+      > {};
+
   /*
    * Actions attached to grammar rules.
    */
@@ -500,6 +515,30 @@ namespace L2
       auto newF = new Function();
       newF->name = in.string();
       p.functions.push_back(newF);
+    }
+  };
+
+  template <>
+  struct action<spill_prefix_rule>
+  {
+    template <typename Input>
+    static void apply(const Input &in, Program &p)
+    {
+      if (is_debug)
+        cout << "firing spill_prefix, str: " << in.string() << endl;
+        p.spill_prefix = in.string();
+    }
+  };
+
+  template <>
+  struct action<spill_variable_rule>
+  {
+    template <typename Input>
+    static void apply(const Input &in, Program &p)
+    {
+      if (is_debug)
+        cout << "firing spill_prefix, str: " << in.string() << endl;
+      p.spill_variable = in.string();
     }
   };
 
@@ -1037,7 +1076,10 @@ namespace L2
 
   Program parse_spill_file(char *fileName)
   {
+    pegtl::analyze<spill_only_rule>();
+    file_input<> fileInput(fileName);
     Program p;
+    parse<function_only, action>(fileInput, p);
     return p;
   }
 

@@ -16,6 +16,7 @@
 #include <parser.h>
 #include <liveness.h>
 #include <interference.h>
+#include "spill.h"
 
 using namespace std;
 
@@ -126,6 +127,7 @@ int main(
   if (spill_only)
   {
     // TODO
+    L2::spill(p);
     return 0;
   }
 
