@@ -16,7 +16,7 @@ namespace L2 {
 
     void visit(Instruction_assignment *i) {
       bool use = should_spill(i->src), define = should_spill(i->dst);
-      if (use && counter != 0)
+      if (use)
         load();
 
       string s = i->tostring();
@@ -33,8 +33,7 @@ namespace L2 {
       outputstream << "\t";
       outputstream << replace_all(i->tostring());
 
-      cout << "hello" << endl;
-      if (i->dst->get_type() == item_variable) {
+      if (define) {
         store();
         counter++;
       }
@@ -57,20 +56,36 @@ namespace L2 {
     }
 
     void visit(Instruction_aop *i) {
-      outputstream << "\t" << i->tostring() << endl;
+      bool use = should_spill(i->src) || should_spill(i->dst);
+      bool define = should_spill(i->dst);
+      if (use) load();
+      outputstream << "\t" << replace_all(i->tostring()) << endl;
+      if (define) store();
+      if (use || define) counter++;
     }
 
     void visit(Instruction_store_aop *i) { outputstream << "\t" << i->tostring() << endl; }
     void visit(Instruction_load_aop *i) { outputstream << "\t" << i->tostring() << endl; }
     void visit(Instruction_compare *i) { outputstream << "\t" << i->tostring() << endl; }
-    void visit(Instruction_cjump *i) { outputstream << "\t" << i->tostring() << endl; }
+    void visit(Instruction_cjump *i) {
+      bool use = should_spill(i->label) || should_spill(i->oprand1) || should_spill(i->oprand2);
+      if (use) load();
+      outputstream << "\t" << replace_all(i->tostring()) << endl;
+      if (use) counter++;
+    }
     void visit(Instruction_call *i) { outputstream << "\t" << i->tostring() << endl; }
     void visit(Instruction_call_print *i) { outputstream << "\t" << i->tostring() << endl; }
     void visit(Instruction_call_input *i) { outputstream << "\t" << i->tostring() << endl; }
     void visit(Instruction_call_allocate *i) { outputstream << "\t" << i->tostring() << endl; }
     void visit(Instruction_call_error *i) { outputstream << "\t" << i->tostring() << endl; }
     void visit(Instruction_label *i) { outputstream << "\t" << i->tostring() << endl; }
-    void visit(Instruction_increment *i) { outputstream << "\t" << i->tostring() << endl; }
+    void visit(Instruction_increment *i) { 
+      bool spill = should_spill(i->src);
+      if (spill) load();
+      outputstream << "\t" << replace_all(i->tostring()) << endl;
+      if (spill) store();
+      if (spill) counter++;
+      }
     void visit(Instruction_decrement *i) { outputstream << "\t" << i->tostring() << endl; }
     void visit(Instruction_at *i) { outputstream << "\t" << i->tostring() << endl; }
     void visit(Instruction_goto *i) { outputstream << "\t" << i->tostring() << endl; }

@@ -215,7 +215,7 @@ namespace L2
     Item *op;
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
-    std::string tostring() { return dst->get_content() + op->get_content() + src->get_content(); }
+    std::string tostring() { return dst->get_content() + " "+ op->get_content() + " " + src->get_content(); }
     void spill(Spiller &s) override;
   };
 
@@ -269,7 +269,7 @@ namespace L2
     Item *label;
     vector<Item *> get_gen_set();
     vector<Item *> get_kill_set();
-    std::string tostring() { return "cjump " + oprand1->get_content() + op->get_content() + oprand2->get_content() + label->get_content(); }
+    std::string tostring() { return "cjump " + oprand1->get_content() + " " + op->get_content()+ " " + oprand2->get_content() + label->get_content(); }
     void spill(Spiller &s) override;
   };
 
