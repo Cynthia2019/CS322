@@ -134,9 +134,9 @@ namespace L2
   class Instruction_ret : public Instruction
   {
     public:
-      vector<Item *> get_gen_set();
-      vector<Item *> get_kill_set();
-      std::string tostring() { return "return"; };
+      vector<Item *> get_gen_set() override;
+      vector<Item *> get_kill_set() override;
+      std::string tostring() override { return "return"; }
       void spill(Spiller &s) override;
   };
 
@@ -144,9 +144,9 @@ namespace L2
   {
   public:
     Item *src, *dst;
-    vector<Item *> get_gen_set();
-    vector<Item *> get_kill_set();
-    std::string tostring() { return dst->get_content() + " <- " + src->get_content(); }
+    vector<Item *> get_gen_set() override;
+    vector<Item *> get_kill_set() override;
+    std::string tostring() override { return dst->get_content() + " <- " + src->get_content(); }
     void spill(Spiller &s) override;
   };
 
@@ -157,9 +157,9 @@ namespace L2
     Item *src;
     Item *dst;
     Item *constant;
-    vector<Item *> get_gen_set();
-    vector<Item *> get_kill_set();
-    std::string tostring() { 
+    vector<Item *> get_gen_set() override;
+    vector<Item *> get_kill_set() override;
+    std::string tostring() override { 
       return dst->get_content() + " <- mem "
           + dst->get_content() + " " + constant->get_content();
     }
@@ -173,9 +173,9 @@ namespace L2
     Item *dst;
     Item *op;
     Item *src;
-    vector<Item *> get_gen_set();
-    vector<Item *> get_kill_set();
-    std::string tostring() { return dst->get_content() +" "+ op->get_content() + " " + src->get_content(); }
+    vector<Item *> get_gen_set() override;
+    vector<Item *> get_kill_set() override;
+    std::string tostring() override { return dst->get_content() +" "+ op->get_content() + " " + src->get_content(); }
     void spill(Spiller &s) override;
   };
 
@@ -186,10 +186,10 @@ namespace L2
     Item *src;
     Item *dst;
     Item *constant;
-    vector<Item *> get_gen_set();
-    vector<Item *> get_kill_set();
+    vector<Item *> get_gen_set() override;
+    vector<Item *> get_kill_set() override;
 
-    std::string tostring() { return "mem " + dst->get_content() + " " + constant->get_content() + " <- " + src->get_content(); }
+    std::string tostring() override { return "mem " + dst->get_content() + " " + constant->get_content() + " <- " + src->get_content(); }
   
     void spill(Spiller &s) override;
   };
@@ -200,9 +200,9 @@ namespace L2
   public:
     Item *dst;
     Item *src;
-    vector<Item *> get_gen_set();
-    vector<Item *> get_kill_set();
-    std::string tostring() { return dst->get_content() + " stack-arg " + src->get_content(); }
+    vector<Item *> get_gen_set() override;
+    vector<Item *> get_kill_set() override;
+    std::string tostring() override { return dst->get_content() + " stack-arg " + src->get_content(); }
     void spill(Spiller &s) override;
   };
 
@@ -213,9 +213,9 @@ namespace L2
     Item *src;
     Item *dst;
     Item *op;
-    vector<Item *> get_gen_set();
-    vector<Item *> get_kill_set();
-    std::string tostring() { return dst->get_content() + " "+ op->get_content() + " " + src->get_content(); }
+    vector<Item *> get_gen_set() override;
+    vector<Item *> get_kill_set() override;
+    std::string tostring() override { return dst->get_content() + " "+ op->get_content() + " " + src->get_content(); }
     void spill(Spiller &s) override;
   };
 
@@ -227,9 +227,9 @@ namespace L2
     Item *constant;
     Item *dst;
     Item *op;
-    vector<Item *> get_gen_set();
-    vector<Item *> get_kill_set();
-    std::string tostring() { return dst->get_content() + constant->get_content() + op->get_content() + src->get_content(); }
+    vector<Item *> get_gen_set() override;
+    vector<Item *> get_kill_set() override;
+    std::string tostring() override { return "mem " + dst->get_content() + " " + constant->get_content() + " " + op->get_content() + " " + src->get_content(); }
     void spill(Spiller &s) override;
   };
 
@@ -241,9 +241,9 @@ namespace L2
     Item *constant;
     Item *dst;
     Item *op;
-    vector<Item *> get_gen_set();
-    vector<Item *> get_kill_set();
-    std::string tostring() { return dst->get_content() + op->get_content() + src->get_content() + constant->get_content(); }
+    vector<Item *> get_gen_set() override;
+    vector<Item *> get_kill_set() override;
+    std::string tostring() override { return dst->get_content() + op->get_content() + src->get_content() + constant->get_content(); }
     void spill(Spiller &s) override;
   };
 
@@ -254,9 +254,9 @@ namespace L2
     Item *oprand1;
     Item *op;
     Item *oprand2;
-    vector<Item *> get_gen_set();
-    vector<Item *> get_kill_set();
-    std::string tostring() { return dst->get_content() + oprand1->get_content() + op->get_content() + oprand2->get_content(); }
+    vector<Item *> get_gen_set() override;
+    vector<Item *> get_kill_set() override;
+    std::string tostring() override { return dst->get_content() + oprand1->get_content() + op->get_content() + oprand2->get_content(); }
     void spill(Spiller &s) override;
   };
 
@@ -267,9 +267,9 @@ namespace L2
     Item *op;
     Item *oprand2;
     Item *label;
-    vector<Item *> get_gen_set();
-    vector<Item *> get_kill_set();
-    std::string tostring() { return "cjump " + oprand1->get_content() + " " + op->get_content()+ " " + oprand2->get_content() + label->get_content(); }
+    vector<Item *> get_gen_set() override;
+    vector<Item *> get_kill_set() override;
+    std::string tostring() override { return "cjump " + oprand1->get_content() + " " + op->get_content()+ " " + oprand2->get_content() + " " + label->get_content(); }
     void spill(Spiller &s) override;
   };
 
@@ -279,43 +279,43 @@ namespace L2
   public:
     Item *constant;
     Item *dst;
-    vector<Item *> get_gen_set();
-    vector<Item *> get_kill_set();
-    std::string tostring() { return "call " + dst->get_content() +" "+ constant->get_content(); }
+    vector<Item *> get_gen_set() override;
+    vector<Item *> get_kill_set() override;
+    std::string tostring() override { return "call " + dst->get_content() +" "+ constant->get_content(); }
     void spill(Spiller &s) override;
   };
 
   class Instruction_call_print : public Instruction
   {
     public:
-    vector<Item *> get_gen_set();
-    vector<Item *> get_kill_set();
-    std::string tostring() { return "call print 1"; }
+    vector<Item *> get_gen_set() override;
+    vector<Item *> get_kill_set() override;
+    std::string tostring() override { return "call print 1"; }
     void spill(Spiller &s) override;
   };
   class Instruction_call_input : public Instruction
   {
     public:
-    vector<Item *> get_gen_set();
-    vector<Item *> get_kill_set();
-    std::string tostring() { return "call input 0"; }
+    vector<Item *> get_gen_set() override;
+    vector<Item *> get_kill_set() override;
+    std::string tostring() override { return "call input 0"; }
     void spill(Spiller &s) override;
   };
   class Instruction_call_allocate : public Instruction
   {
     public:
-    vector<Item *> get_gen_set();
-    vector<Item *> get_kill_set();
-    std::string tostring() { return "allocate"; }
+    vector<Item *> get_gen_set() override;
+    vector<Item *> get_kill_set() override;
+    std::string tostring() override { return "allocate"; }
     void spill(Spiller &s) override;
   };
   class Instruction_call_error : public Instruction
   {
   public:
     Item *constant;
-    vector<Item *> get_gen_set();
-    vector<Item *> get_kill_set();
-    std::string tostring() { return "error"; }
+    vector<Item *> get_gen_set() override;
+    vector<Item *> get_kill_set() override;
+    std::string tostring() override { return "error"; }
     void spill(Spiller &s) override;
   };
 
@@ -324,9 +324,9 @@ namespace L2
   {
   public:
     Item *label;
-    vector<Item *> get_gen_set();
-    vector<Item *> get_kill_set();
-    std::string tostring() { return label->get_content(); }
+    vector<Item *> get_gen_set() override;
+    vector<Item *> get_kill_set() override;
+    std::string tostring() override { return label->get_content(); }
     void spill(Spiller &s) override;
   };
 
@@ -337,18 +337,18 @@ namespace L2
   {
   public:
     Item *src;
-    vector<Item *> get_gen_set();
-    vector<Item *> get_kill_set();
-    std::string tostring() { return src->get_content() + "++"; }
+    vector<Item *> get_gen_set() override;
+    vector<Item *> get_kill_set() override;
+    std::string tostring() override { return src->get_content() + "++"; }
     void spill(Spiller &s) override;
   };
   class Instruction_decrement : public Instruction
   {
   public:
     Item *src;
-    vector<Item *> get_gen_set();
-    vector<Item *> get_kill_set();
-    std::string tostring() { return src->get_content() + "--"; }
+    vector<Item *> get_gen_set() override;
+    vector<Item *> get_kill_set() override;
+    std::string tostring() override { return src->get_content() + "--"; }
     void spill(Spiller &s) override;
   };
   class Instruction_at : public Instruction
@@ -358,9 +358,9 @@ namespace L2
     Item *src_mult;
     Item *src_add;
     Item *dst;
-    vector<Item *> get_gen_set();
-    vector<Item *> get_kill_set();
-    std::string tostring() { return dst->get_content() + src_add->get_content() + src_mult->get_content() + constant->get_content(); }
+    vector<Item *> get_gen_set() override;
+    vector<Item *> get_kill_set() override;
+    std::string tostring() override { return dst->get_content() + src_add->get_content() + src_mult->get_content() + constant->get_content(); }
     void spill(Spiller &s) override;
   };
 
@@ -369,9 +369,9 @@ namespace L2
   {
   public:
     Item *label;
-    vector<Item *> get_gen_set();
-    vector<Item *> get_kill_set();
-    std::string tostring() { return "goto " + label->get_content(); }
+    vector<Item *> get_gen_set() override;
+    vector<Item *> get_kill_set() override;
+    std::string tostring() override { return "goto " + label->get_content(); }
     void spill(Spiller &s) override;
   };
   /*

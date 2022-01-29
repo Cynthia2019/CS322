@@ -45,10 +45,13 @@ namespace L2 {
 
 
     void visit(Instruction_store *i) {
-      if (i->src->get_type() == item_variable) {
-        load();
-      }
-      outputstream << "\t" << i->tostring() << endl;
+      bool use = should_spill(i->src) || should_spill(i->dst);
+      if (use) load();
+      outputstream << "\t" << replace_all(i->tostring()) << endl;
+      // if (i->src->get_type() == item_variable) {
+      //   load();
+      // }
+      // outputstream << "\t" << i->tostring() << endl;
     }
 
     void visit(Instruction_stack *i) {
@@ -64,7 +67,11 @@ namespace L2 {
       if (use || define) counter++;
     }
 
-    void visit(Instruction_store_aop *i) { outputstream << "\t" << i->tostring() << endl; }
+    void visit(Instruction_store_aop *i) { 
+      bool use = should_spill(i->src) || should_spill(i->dst);
+      if (use) load();
+      outputstream << "\t" << replace_all(i->tostring()) << endl;
+     }
     void visit(Instruction_load_aop *i) { outputstream << "\t" << i->tostring() << endl; }
     void visit(Instruction_compare *i) { outputstream << "\t" << i->tostring() << endl; }
     void visit(Instruction_cjump *i) {
@@ -73,7 +80,11 @@ namespace L2 {
       outputstream << "\t" << replace_all(i->tostring()) << endl;
       if (use) counter++;
     }
-    void visit(Instruction_call *i) { outputstream << "\t" << i->tostring() << endl; }
+    void visit(Instruction_call *i) { 
+      bool use = should_spill(i->dst); 
+      if(use) load();
+      outputstream << "\t" << replace_all(i->tostring()) << endl;
+     }
     void visit(Instruction_call_print *i) { outputstream << "\t" << i->tostring() << endl; }
     void visit(Instruction_call_input *i) { outputstream << "\t" << i->tostring() << endl; }
     void visit(Instruction_call_allocate *i) { outputstream << "\t" << i->tostring() << endl; }
@@ -89,7 +100,6 @@ namespace L2 {
     void visit(Instruction_decrement *i) { outputstream << "\t" << i->tostring() << endl; }
     void visit(Instruction_at *i) { outputstream << "\t" << i->tostring() << endl; }
     void visit(Instruction_goto *i) { outputstream << "\t" << i->tostring() << endl; }
-
 
     private:
       int counter = 0;
@@ -120,10 +130,18 @@ namespace L2 {
 
   };
 
-  const int spill_variable_nb = 1;
+  bool checkVariablePresent(string spill_variable, Function* f){
+    for(auto i: f->instructions){
+      size_t n = i->tostring().find(spill_variable); 
+      if(n != string::npos) return true;
+    }
+    return false; 
+  }
   void spill(Program &p) {
+    int spill_variable_nb = 1;
     Function *f = p.functions[0];
     // cout << p.spill_variable << endl;
+    if(!checkVariablePresent(p.spill_variable, f)) spill_variable_nb = 0;
     ostream &os = ::cout;
     Spiller_single spiller(os, p.spill_prefix, p.spill_variable);
     
