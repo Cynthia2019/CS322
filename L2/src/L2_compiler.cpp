@@ -16,7 +16,7 @@
 #include <parser.h>
 #include <liveness.h>
 #include <interference.h>
-#include "spill.h"
+//#include "spill.h"
 
 using namespace std;
 
@@ -94,7 +94,7 @@ int main(
     /*
      * Parse an L2 function and the spill arguments.
      */
-    p = L2::parse_spill_file(argv[optind]);
+   // p = L2::parse_spill_file(argv[optind]);
   }
   else if (liveness_only)
   {
@@ -127,7 +127,7 @@ int main(
   if (spill_only)
   {
     // TODO
-    L2::spill(p);
+    //L2::spill(p);
     return 0;
   }
 
@@ -137,7 +137,7 @@ int main(
   if (liveness_only)
   {
     // TODO
-    L2::liveness(p);
+    //L2::liveness(p);
     return 0;
   }
 
@@ -147,7 +147,7 @@ int main(
   if (interference_only)
   {
     // TODO
-    L2::interference(p); 
+    //L2::interference(p); 
     return 0;
   }
 

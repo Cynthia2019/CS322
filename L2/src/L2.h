@@ -2,6 +2,9 @@
 
 #include <vector>
 #include <string>
+#include <set>
+
+#include <architecture.h>
 
 using namespace std;
 
@@ -10,105 +13,108 @@ namespace L2
 
   class Spiller;
 
-  enum Register
-  {
-    rdi,rax,rbx,rbp,
-    r10,r11,r12,r13,
-    r14,r15,rsi,rdx,
-    rcx,r8,r9,rsp
-  };
+  // enum Operation
+  // {
+  //   op_nope,op_plus,op_minus,op_mul,
+  //   op_and, op_left_shift,op_right_shift,op_at,
+  //   op_inc,op_dec
+  // };
+
+  // enum CompareOperation
+  // {
+  //   cmp_nope,cmp_l, cmp_le, cmp_eq, cmp_ge, cmp_g};
+  // };
+
+  class Visitor;
 
   enum ItemType
   {
-    item_op,
     item_label,
     item_number,
     item_register,
     item_variable
   };
 
+  //Item = Register, Variable, Number, Label, Memory reference
+
   class Item
   {
   public:
-    // virtual std::string tostring() = 0;
-    virtual std::string get_content() = 0;
-    virtual ItemType get_type() = 0;
+    virtual string toString(void) = 0;
   };
 
-  class Item_op : public Item
+  class Number : public Item
   {
   public:
-    std::string op;
-    std::string get_content()
-    {
-      return op;
-    }
-    ItemType get_type()
-    {
-      return item_op;
-    }
-  };
-
-  class Item_register : public Item
-  {
-  public:
-    std::string register_name;
-    std::string get_content()
-    {
-      return register_name;
-    }
-
-    ItemType get_type()
-    {
-      return item_register;
-    }
-  };
-
-  class Item_number : public Item
-  {
-  public:
+    Number(int64_t n); 
+    int64_t get (void); 
+    bool operator == (const Number &other); 
+    std::string toString(void) override; 
+  private: 
     int64_t num;
-    std::string get_content()
-    {
-      return to_string(num);
-    }
-    ItemType get_type()
-    {
-      return item_number;
-    }
-    int64_t get_nb()
-    {
-      return num;
-    }
   };
 
-  class Item_label : public Item
+  class Label : public Item
   {
   public:
-    std::string labelName;
-    std::string get_content()
-    {
-      return labelName;
-    }
-    ItemType get_type()
-    {
-      return item_label;
-    }
+    Label(string l); 
+    string get(); 
+    bool operator== (const Label &other); 
+    string toString(void) override; 
+  private: 
+    string labelname;
   };
 
-  class Item_variable : public Item
+  class Variable : public Item
   {
   public:
-    std::string variable_name;
-    std::string get_content()
-    {
-      return variable_name;
-    }
-    ItemType get_type()
-    {
-      return item_variable;
-    }
+    Variable(string varName); 
+    string get (void); 
+    bool operator == (const Variable &other); 
+    string toString(void) override;
+  private: 
+    string variableName;
   };
+
+class Register : public Variable
+  {
+  public:
+    Register(Architecture::RegisterID rid); 
+    Architecture::RegisterID get (void); 
+    bool operator == (const Register &other); 
+    std::string toString(void) override;
+  private: 
+    Architecture::RegisterID rid;
+  };
+class Operation : public Item
+  {
+  public:
+    Operation(string op); 
+    string get (void); 
+    // bool operator == (const Operation &other) const; 
+    string toString(void) override;
+  private: 
+    string op;
+  };
+class Memory : public Item
+  {
+  public:
+    Memory(Variable *s, Number *o); 
+    Variable* getStartAddress(); 
+    // Item** getStartAddressPtr(); 
+    int64_t getOffset(); 
+    bool operator == (const Memory &other); 
+    string toString(void) override;
+  protected: 
+    Variable* startAddress; 
+    Number* offset; 
+  };
+
+class StackArgument : public Memory {
+  public: 
+    StackArgument(Register* rsp, Number* o);
+    string toString(void) override;
+};
 
   /*
    * Instruction interface.
@@ -120,12 +126,12 @@ namespace L2
   class Instruction
   {
   public:
-    // std::string instructionName;
-    virtual std::string tostring() { return ""; };
-    // virtual std::string toL1() = 0;
     virtual vector<Item *> get_gen_set() = 0;
     virtual vector<Item *> get_kill_set() = 0;
     virtual void spill(Spiller &s) = 0;
+
+    virtual void accept(Visitor* visitor) = 0; 
+    virtual std::string toString() = 0; //for debug
   };
 
   /*
@@ -136,17 +142,20 @@ namespace L2
     public:
       vector<Item *> get_gen_set() override;
       vector<Item *> get_kill_set() override;
-      std::string tostring() override { return "return"; }
+      std::string toString() override { return "return"; }
       void spill(Spiller &s) override;
+      void accept(Visitor *v) override; 
   };
 
   class Instruction_assignment : public Instruction
   {
   public:
-    Item *src, *dst;
+    Item* dst;
+    Item* src;
+    std::string toString() override { return this->dst->toString() + " <- " + this->src->toString(); }
+    void accept(Visitor *v) override; 
     vector<Item *> get_gen_set() override;
     vector<Item *> get_kill_set() override;
-    std::string tostring() override { return dst->get_content() + " <- " + src->get_content(); }
     void spill(Spiller &s) override;
   };
 
@@ -154,16 +163,17 @@ namespace L2
   class Instruction_load : public Instruction
   {
   public:
-    Item *src;
-    Item *dst;
-    Item *constant;
+    Item* dst;
+    Item* src;
+    Item* m;
     vector<Item *> get_gen_set() override;
     vector<Item *> get_kill_set() override;
-    std::string tostring() override { 
-      return dst->get_content() + " <- mem "
-          + dst->get_content() + " " + constant->get_content();
+    std::string toString() override { 
+      return this->dst->toString() + " <- mem "
+          + this->dst->toString() + " " + this->m->toString();
     }
     void spill(Spiller &s) override;
+    void accept(Visitor *v) override; 
   };
 
   // shift instruction
@@ -175,8 +185,9 @@ namespace L2
     Item *src;
     vector<Item *> get_gen_set() override;
     vector<Item *> get_kill_set() override;
-    std::string tostring() override { return dst->get_content() +" "+ op->get_content() + " " + src->get_content(); }
+    std::string toString() override { return dst->toString() +" "+ op->toString() + " " + src->toString(); }
     void spill(Spiller &s) override;
+    void accept(Visitor *v) override; 
   };
 
   // store instruction
@@ -189,9 +200,10 @@ namespace L2
     vector<Item *> get_gen_set() override;
     vector<Item *> get_kill_set() override;
 
-    std::string tostring() override { return "mem " + dst->get_content() + " " + constant->get_content() + " <- " + src->get_content(); }
+    std::string toString() override { return "mem " + dst->toString() + " " + constant->toString() + " <- " + src->toString(); }
   
     void spill(Spiller &s) override;
+    void accept(Visitor *v) override; 
   };
 
   // stack arg instruction
@@ -202,8 +214,9 @@ namespace L2
     Item *src;
     vector<Item *> get_gen_set() override;
     vector<Item *> get_kill_set() override;
-    std::string tostring() override { return dst->get_content() + " stack-arg " + src->get_content(); }
+    std::string toString() override { return dst->toString() + " stack-arg " + src->toString(); }
     void spill(Spiller &s) override;
+    void accept(Visitor *v) override; 
   };
 
   // aop instruction
@@ -215,8 +228,9 @@ namespace L2
     Item *op;
     vector<Item *> get_gen_set() override;
     vector<Item *> get_kill_set() override;
-    std::string tostring() override { return dst->get_content() + " "+ op->get_content() + " " + src->get_content(); }
+    std::string toString() override { return dst->toString() + " "+ op->toString() + " " + src->toString(); }
     void spill(Spiller &s) override;
+    void accept(Visitor *v) override; 
   };
 
   // store aop instruction
@@ -229,8 +243,9 @@ namespace L2
     Item *op;
     vector<Item *> get_gen_set() override;
     vector<Item *> get_kill_set() override;
-    std::string tostring() override { return "mem " + dst->get_content() + " " + constant->get_content() + " " + op->get_content() + " " + src->get_content(); }
+    std::string toString() override { return "mem " + dst->toString() + " " + constant->toString() + " " + op->toString() + " " + src->toString(); }
     void spill(Spiller &s) override;
+    void accept(Visitor *v) override; 
   };
 
   // load aop instruction
@@ -243,8 +258,9 @@ namespace L2
     Item *op;
     vector<Item *> get_gen_set() override;
     vector<Item *> get_kill_set() override;
-    std::string tostring() override { return dst->get_content() + op->get_content() + src->get_content() + constant->get_content(); }
+    std::string toString() override { return dst->toString() + op->toString() + src->toString() + constant->toString(); }
     void spill(Spiller &s) override;
+    void accept(Visitor *v) override; 
   };
 
   class Instruction_compare : public Instruction
@@ -256,8 +272,9 @@ namespace L2
     Item *oprand2;
     vector<Item *> get_gen_set() override;
     vector<Item *> get_kill_set() override;
-    std::string tostring() override { return dst->get_content() + oprand1->get_content() + op->get_content() + oprand2->get_content(); }
+    std::string toString() override { return dst->toString() + oprand1->toString() + op->toString() + oprand2->toString(); }
     void spill(Spiller &s) override;
+    void accept(Visitor *v) override; 
   };
 
   class Instruction_cjump : public Instruction
@@ -269,8 +286,9 @@ namespace L2
     Item *label;
     vector<Item *> get_gen_set() override;
     vector<Item *> get_kill_set() override;
-    std::string tostring() override { return "cjump " + oprand1->get_content() + " " + op->get_content()+ " " + oprand2->get_content() + " " + label->get_content(); }
+    std::string toString() override { return "cjump " + oprand1->toString() + " " + op->toString()+ " " + oprand2->toString() + " " + label->toString(); }
     void spill(Spiller &s) override;
+    void accept(Visitor *v) override; 
   };
 
   // call u N instruction
@@ -281,8 +299,9 @@ namespace L2
     Item *dst;
     vector<Item *> get_gen_set() override;
     vector<Item *> get_kill_set() override;
-    std::string tostring() override { return "call " + dst->get_content() +" "+ constant->get_content(); }
+    std::string toString() override { return "call " + dst->toString() +" "+ constant->toString(); }
     void spill(Spiller &s) override;
+    void accept(Visitor *v) override; 
   };
 
   class Instruction_call_print : public Instruction
@@ -290,24 +309,27 @@ namespace L2
     public:
     vector<Item *> get_gen_set() override;
     vector<Item *> get_kill_set() override;
-    std::string tostring() override { return "call print 1"; }
+    std::string toString() override { return "call print 1"; }
     void spill(Spiller &s) override;
+    void accept(Visitor *v) override; 
   };
   class Instruction_call_input : public Instruction
   {
     public:
     vector<Item *> get_gen_set() override;
     vector<Item *> get_kill_set() override;
-    std::string tostring() override { return "call input 0"; }
+    std::string toString() override { return "call input 0"; }
     void spill(Spiller &s) override;
+    void accept(Visitor *v) override; 
   };
   class Instruction_call_allocate : public Instruction
   {
     public:
     vector<Item *> get_gen_set() override;
     vector<Item *> get_kill_set() override;
-    std::string tostring() override { return "allocate"; }
+    std::string toString() override { return "allocate"; }
     void spill(Spiller &s) override;
+    void accept(Visitor *v) override; 
   };
   class Instruction_call_error : public Instruction
   {
@@ -315,8 +337,9 @@ namespace L2
     Item *constant;
     vector<Item *> get_gen_set() override;
     vector<Item *> get_kill_set() override;
-    std::string tostring() override { return "error"; }
+    std::string toString() override { return "error"; }
     void spill(Spiller &s) override;
+    void accept(Visitor *v) override; 
   };
 
   // label instruction
@@ -326,8 +349,9 @@ namespace L2
     Item *label;
     vector<Item *> get_gen_set() override;
     vector<Item *> get_kill_set() override;
-    std::string tostring() override { return label->get_content(); }
+    std::string toString() override { return label->toString(); }
     void spill(Spiller &s) override;
+    void accept(Visitor *v) override; 
   };
 
   /*
@@ -339,8 +363,9 @@ namespace L2
     Item *src;
     vector<Item *> get_gen_set() override;
     vector<Item *> get_kill_set() override;
-    std::string tostring() override { return src->get_content() + "++"; }
+    std::string toString() override { return src->toString() + "++"; }
     void spill(Spiller &s) override;
+    void accept(Visitor *v) override; 
   };
   class Instruction_decrement : public Instruction
   {
@@ -348,8 +373,9 @@ namespace L2
     Item *src;
     vector<Item *> get_gen_set() override;
     vector<Item *> get_kill_set() override;
-    std::string tostring() override { return src->get_content() + "--"; }
+    std::string toString() override { return src->toString() + "--"; }
     void spill(Spiller &s) override;
+    void accept(Visitor *v) override; 
   };
   class Instruction_at : public Instruction
   {
@@ -360,8 +386,9 @@ namespace L2
     Item *dst;
     vector<Item *> get_gen_set() override;
     vector<Item *> get_kill_set() override;
-    std::string tostring() override { return dst->get_content() + src_add->get_content() + src_mult->get_content() + constant->get_content(); }
+    std::string toString() override { return dst->toString() + src_add->toString() + src_mult->toString() + constant->toString(); }
     void spill(Spiller &s) override;
+    void accept(Visitor *v) override; 
   };
 
   // goto instruction
@@ -371,8 +398,9 @@ namespace L2
     Item *label;
     vector<Item *> get_gen_set() override;
     vector<Item *> get_kill_set() override;
-    std::string tostring() override { return "goto " + label->get_content(); }
+    std::string toString() override { return "goto " + label->toString(); }
     void spill(Spiller &s) override;
+    void accept(Visitor *v) override; 
   };
   /*
    * Function.
@@ -397,6 +425,30 @@ namespace L2
     std::string spill_variable;
   };
 
+  class Visitor {
+    public: 
+      virtual void visit(Instruction_ret *i) = 0;
+      virtual void visit(Instruction_assignment *i) = 0;
+      virtual void visit(Instruction_load *i) = 0;
+      virtual void visit(Instruction_shift *i) = 0;
+      virtual void visit(Instruction_store *i) = 0;
+      virtual void visit(Instruction_stack *i) = 0;
+      virtual void visit(Instruction_aop *i) = 0;
+      virtual void visit(Instruction_store_aop *i) = 0;
+      virtual void visit(Instruction_load_aop *i) = 0;
+      virtual void visit(Instruction_compare *i) = 0;
+      virtual void visit(Instruction_cjump *i) = 0;
+      virtual void visit(Instruction_call *i) = 0;
+      virtual void visit(Instruction_call_print *i) = 0;
+      virtual void visit(Instruction_call_input *i) = 0;
+      virtual void visit(Instruction_call_allocate *i) = 0;
+      virtual void visit(Instruction_call_error *i) = 0;
+      virtual void visit(Instruction_label *i) = 0;
+      virtual void visit(Instruction_increment *i) = 0;
+      virtual void visit(Instruction_decrement *i) = 0;
+      virtual void visit(Instruction_at *i) = 0;
+      virtual void visit(Instruction_goto *i) = 0;
+  };
   class Spiller {
     public: 
       virtual void visit(Instruction_ret *i) = 0;

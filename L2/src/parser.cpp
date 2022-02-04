@@ -29,6 +29,7 @@
 
 #include <L2.h>
 #include <parser.h>
+#include <architecture.h>
 
 namespace pegtl = tao::TAO_PEGTL_NAMESPACE;
 
@@ -45,10 +46,52 @@ namespace L2
   std::vector<Item *> parsed_items;
 
   /*
-   *map from string to register
+   *map from string to registerid
    */
-  std::map<std::string, Register> string_to_r;
+  std::map<std::string, Architecture::RegisterID> string_to_r = {
+        {"rax", Architecture::rax}, 
+        {"rbx", Architecture::rbx}, 
+        {"rcx", Architecture::rcx}, 
+        {"rdx", Architecture::rdx}, 
+        {"rdi", Architecture::rdi}, 
+        {"rsi", Architecture::rsi}, 
+        {"rbp", Architecture::rbp}, 
+        {"r8", Architecture::r8}, 
+        {"r9", Architecture::r9}, 
+        {"r10", Architecture::r10}, 
+        {"r11", Architecture::r11}, 
+        {"r12", Architecture::r12}, 
+        {"r13", Architecture::r13}, 
+        {"r14", Architecture::r14}, 
+        {"r15", Architecture::r15}, 
+        {"rsp", Architecture::rsp}
+  };
 
+  /*
+   map from string to op
+  */
+  // std::map<std::string, Operation> string_to_op = {
+  //   {"+", op_plus}, 
+  //   {"-", op_minus}, 
+  //   {"*", op_mul}, 
+  //   {"&", op_and}, 
+  //   {"<<=", op_left_shift}, 
+  //   {">>=", op_right_shift}, 
+  //   {"@", op_at}, 
+  //   {"++", op_inc}, 
+  //   {"--", op_dec}
+  // };
+
+  /*
+   map from string to op
+  */
+  // std::map<std::string, Operation> string_to_cop = {
+  //   {"<", cmp_l}, 
+  //   {">", cmp_g}, 
+  //   {"<=", cmp_le}, 
+  //   {">=", cmp_ge}, 
+  //   {"=", cmp_eq}
+  // }
   /*
    * Grammar rules from now on.
    */
@@ -480,22 +523,6 @@ namespace L2
       if (p.entryPointLabel.empty())
       {
         p.entryPointLabel = in.string();
-        string_to_r["rax"] = rax;
-        string_to_r["rbx"] = rbx;
-        string_to_r["rcx"] = rcx;
-        string_to_r["rdx"] = rdx;
-        string_to_r["rdi"] = rdi;
-        string_to_r["rsi"] = rsi;
-        string_to_r["rbp"] = rbp;
-        string_to_r["r8"] = r8;
-        string_to_r["r9"] = r9;
-        string_to_r["r10"] = r10;
-        string_to_r["r11"] = r11;
-        string_to_r["r12"] = r12;
-        string_to_r["r13"] = r13;
-        string_to_r["r14"] = r14;
-        string_to_r["r15"] = r15;
-        string_to_r["rsp"] = rsp;
       }
       else
       {
@@ -561,7 +588,6 @@ namespace L2
     {
       auto currentF = p.functions.back();
       auto i = new Instruction_ret();
-      // i->instructionName = "return";
       currentF->instructions.push_back(i);
     }
   };
@@ -574,8 +600,7 @@ namespace L2
     {
       if (is_debug)
         cout << "firing Label_rule, str: " << in.string() << endl;
-      Item_label *i = new Item_label();
-      i->labelName = in.string();
+      Label *i = new Label(in.string());
       parsed_items.push_back(i);
     }
   };
@@ -588,8 +613,7 @@ namespace L2
     {
       if (is_debug)
         cout << "firing register_rule, str: " << in.string() << endl;
-      Item_register *i = new Item_register();
-      i->register_name = in.string();
+      Register *i = new Register(string_to_r[in.string()]);
       parsed_items.push_back(i);
     }
   };
@@ -602,8 +626,7 @@ namespace L2
     {
       if (is_debug)
         cout << "firing variable_rule, str: " << in.string() << endl;
-      Item_variable *i = new Item_variable();
-      i->variable_name = in.string();
+      Variable *i = new Variable(in.string());
       parsed_items.push_back(i);
     }
   };
@@ -615,8 +638,7 @@ namespace L2
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
-      Item_op *i = new Item_op();
-      i->op = in.string();
+      Operation *i = new Operation(in.string());
       parsed_items.push_back(i);
     }
   };
@@ -627,8 +649,7 @@ namespace L2
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
-      Item_number *i = new Item_number();
-      i->num = std::stoll(in.string());
+      Number *i = new Number(std::stoll(in.string()));
       parsed_items.push_back(i);
     }
   };
@@ -642,9 +663,7 @@ namespace L2
     {
       auto currentF = p.functions.back();
       auto i = new Instruction_label();
-      Item_label *item = new Item_label();
-      item->labelName = in.string();
-      // i->instructionName = "label";
+      Label *item = new Label(in.string());
       i->label = item;
 
       currentF->instructions.push_back(i);
@@ -659,7 +678,6 @@ namespace L2
     {
       auto currentF = p.functions.back();
       auto i = new Instruction_aop();
-      // i->instructionName = "aop";
       i->src = parsed_items.back();
       parsed_items.pop_back();
       i->op = parsed_items.back();
@@ -873,7 +891,6 @@ namespace L2
     {
       auto currentF = p.functions.back();
       auto i = new Instruction_goto();
-      // i->instructionName = "goto";
       i->label = parsed_items.back();
       parsed_items.pop_back();
       currentF->instructions.push_back(i);
@@ -895,7 +912,6 @@ namespace L2
        * Create the instruction.
        */
       auto i = new Instruction_assignment();
-      // i->instructionName = "assignment";
       i->src = parsed_items.back();
       parsed_items.pop_back();
       i->dst = parsed_items.back();
@@ -918,8 +934,7 @@ namespace L2
       auto currentF = p.functions.back();
 
       auto i = new Instruction_load();
-      // i->instructionName = "load";
-      i->constant = parsed_items.back();
+      i->m = parsed_items.back();
       parsed_items.pop_back();
       i->src = parsed_items.back();
       parsed_items.pop_back();
@@ -961,8 +976,7 @@ namespace L2
     {
       if (is_debug)
         cout << "firing shift_op_rule, str: " << in.string() << endl;
-      Item_op *i = new Item_op();
-      i->op = in.string();
+      Operation *i = new Operation(in.string());
       parsed_items.push_back(i);
     }
   };
@@ -999,8 +1013,7 @@ namespace L2
     {
       if (is_debug)
         cout << "firing compare_op_rule, str: " << in.string() << endl;
-      Item_op *i = new Item_op();
-      i->op = in.string();
+      Operation *i = new Operation(in.string());
       parsed_items.push_back(i);
     }
   };
@@ -1042,7 +1055,6 @@ namespace L2
       auto currentF = p.functions.back();
 
       auto i = new Instruction_cjump();
-      // i->instructionName = "cjump";
       i->label = parsed_items.back();
       parsed_items.pop_back();
       i->oprand2 = parsed_items.back();

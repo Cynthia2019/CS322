@@ -1,14 +1,21 @@
 #pragma once
-
+#include <string> 
 #include <vector>
-#include "L2.h"
 
-using namespace L2;
+using namespace std;
 
 namespace L2 {
-    vector<Item *> get_caller_saved_regs();
-
-    vector<Item *> get_callee_saved_regs();
-
-    vector<Item *> get_argument_regs(size_t n);
+    class Architecture {
+        public: 
+        enum RegisterID {rdi, rax, rbx, rbp, r10, r11, r12, r13, r14, r15, rsi, rdx, rcx, r8, r9, rsp};
+        static const int64_t GPRegisters = 15; 
+        static string fromRegisterToString(RegisterID r); 
+        static bool isGeneralPurpose(RegisterID r); 
+        static bool isCallerSaved(RegisterID r); 
+        static bool isCalleeSaved(RegisterID r); 
+        static bool isArgument(RegisterID r); 
+        // static vector<Architecture::RegisterID> get_caller_saved_regs();
+        // static vector<Architecture::RegisterID> get_callee_saved_regs();
+        // static vector<Architecture::RegisterID> get_argument_regs();
+    };
 }
