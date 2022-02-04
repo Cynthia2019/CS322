@@ -1,6 +1,7 @@
 #pragma once
 #include <string> 
 #include <vector>
+#include <unordered_map>
 
 using namespace std;
 
@@ -14,8 +15,8 @@ namespace L2 {
         static bool isCallerSaved(RegisterID r); 
         static bool isCalleeSaved(RegisterID r); 
         static bool isArgument(RegisterID r); 
-        // static vector<Architecture::RegisterID> get_caller_saved_regs();
-        // static vector<Architecture::RegisterID> get_callee_saved_regs();
-        // static vector<Architecture::RegisterID> get_argument_regs();
+        static vector<Architecture::RegisterID> get_caller_saved_regs();
+        static vector<Architecture::RegisterID> get_callee_saved_regs();
+        static vector<Architecture::RegisterID> get_argument_regs();
     };
 }

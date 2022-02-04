@@ -1,6 +1,7 @@
 #include <architecture.h>
 #include <string> 
 #include <unordered_map>
+#include <algorithm>
 
 using namespace std;
 
@@ -50,9 +51,9 @@ namespace L2 {
         Architecture::r14,
         Architecture::r15
          };
-    static std::string fromRegisterToString(Architecture::RegisterID r) {
+    std::string Architecture::fromRegisterToString(Architecture::RegisterID r) {
         return register_to_string[r]; 
-    };
+    }
     bool Architecture::isArgument(Architecture::RegisterID r){
         if(find(argument_regs.begin(), argument_regs.end(), r) != argument_regs.end()) return true; 
         return false;
@@ -70,13 +71,13 @@ namespace L2 {
         if(find(callee_saved_regs.begin(), callee_saved_regs.end(), r) != callee_saved_regs.end()) return true; 
         return false;
     }
-    static vector<Architecture::RegisterID> get_caller_saved_regs() {
+    vector<Architecture::RegisterID> Architecture::get_caller_saved_regs() {
         return caller_saved_regs;
     }
-    static vector<Architecture::RegisterID> get_callee_saved_regs() {
+    vector<Architecture::RegisterID> Architecture::get_callee_saved_regs() {
         return callee_saved_regs;
     }
-    static vector<Architecture::RegisterID> get_argument_regs() {
+    vector<Architecture::RegisterID> Architecture::get_argument_regs() {
         return argument_regs;
     }
 }

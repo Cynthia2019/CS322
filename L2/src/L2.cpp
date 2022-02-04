@@ -8,33 +8,6 @@ using namespace std;
 namespace L2
 {
 
-
-vector<Architecture::RegisterID> argument_regs = {
-    Architecture::rdi, 
-    Architecture::rsi, 
-    Architecture::rdx,
-    Architecture::rcx,
-    Architecture::r8,
-    Architecture::r9 };
-vector<Architecture::RegisterID> caller_saved_regs = {
-    Architecture::rdi, 
-    Architecture::rsi, 
-    Architecture::rdx,
-    Architecture::rcx,
-    Architecture::r8,
-    Architecture::r9,
-    Architecture::r10,
-    Architecture::r11,
-    Architecture::rax
-      };
-vector<Architecture::RegisterID> callee_saved_regs = {
-    Architecture::rbp, 
-    Architecture::rbx, 
-    Architecture::r12,
-    Architecture::r13,
-    Architecture::r14,
-    Architecture::r15
-      };
   // Label Item
   Label::Label(string l){
       this->labelname = l;
@@ -145,7 +118,7 @@ string Memory::toString() {
   return this->startAddress->toString() + " " + this->offset->toString();
 }
 StackArgument::StackArgument(Register* rsp, Number* o) : Memory(rsp, o)
-{};
+{}
 string StackArgument::toString() {
   return this->startAddress->toString() + " " + this->offset->toString();
 }
@@ -204,7 +177,7 @@ void Instruction_ret::accept(Visitor* v) {
 vector<Item *> Instruction_ret::get_gen_set()
 {
   vector<Item*> v;
-  auto callee = callee_saved_regs; 
+  auto callee = Architecture::get_callee_saved_regs(); 
   for(auto i : callee){
     Register* r = new Register(i); 
     v.push_back(r); 
@@ -336,7 +309,7 @@ vector<Item *> Instruction_call::get_gen_set()
   vector<Item*> v;
   Number* n = dynamic_cast<Number*>(constant); 
   Variable* i = dynamic_cast<Variable*>(dst); 
-  auto args = argument_regs; 
+  auto args = Architecture::get_argument_regs(); 
   for(int i = 0; i < n->get(); i++){
     Register* r = new Register(args[i]); 
     v.push_back(r); 
@@ -347,7 +320,8 @@ vector<Item *> Instruction_call::get_gen_set()
 vector<Item *> Instruction_call::get_kill_set()
 {
   vector<Item *> v;
-  for(auto i : caller_saved_regs){
+  auto caller_regs = Architecture::get_caller_saved_regs();
+  for(auto i : caller_regs){
     Register* r = new Register(i); 
     v.push_back(r); 
   }
@@ -358,7 +332,7 @@ void Instruction_call_print::accept(Visitor* v) {
 }
 vector<Item *> Instruction_call_print::get_gen_set()
 {
-  Architecture::RegisterID arg = argument_regs[0]; 
+  Architecture::RegisterID arg = Architecture::get_argument_regs()[0]; 
   Register* r = new Register(arg); 
   return {r};
 }
@@ -366,7 +340,7 @@ vector<Item *> Instruction_call_print::get_gen_set()
 vector<Item *> Instruction_call_print::get_kill_set()
 {
   vector<Item *> v;
-  vector<Architecture::RegisterID> caller = caller_saved_regs; 
+  vector<Architecture::RegisterID> caller = Architecture::get_caller_saved_regs(); 
   for(auto i : caller){
     Register* r = new Register(i); 
     v.push_back(r); 
@@ -379,7 +353,7 @@ void Instruction_call_allocate::accept(Visitor* v) {
 vector<Item *> Instruction_call_allocate::get_gen_set()
 {
   vector<Item *> v;
-  vector<Architecture::RegisterID> args = argument_regs; 
+  vector<Architecture::RegisterID> args = Architecture::get_argument_regs(); 
   for(int i = 0; i < 2; i++){
     Register* r = new Register(args[i]); 
     v.push_back(r); 
@@ -389,7 +363,7 @@ vector<Item *> Instruction_call_allocate::get_gen_set()
 vector<Item *> Instruction_call_allocate::get_kill_set()
 {
   vector<Item *> v;
-  auto caller =  caller_saved_regs; 
+  auto caller =  Architecture::get_caller_saved_regs(); 
   for(auto i : caller){
     Register* r = new Register(i); 
     v.push_back(r); 
@@ -403,7 +377,7 @@ vector<Item *> Instruction_call_error::get_gen_set()
 {
   vector<Item *> v;
   Number* n = dynamic_cast<Number*>(constant); 
-  auto args = argument_regs; 
+  auto args = Architecture::get_argument_regs(); 
   for(int i = 0; i < n->get(); i++){
     Register* r = new Register(args[i]); 
     v.push_back(r); 
@@ -414,7 +388,7 @@ vector<Item *> Instruction_call_error::get_gen_set()
 vector<Item *> Instruction_call_error::get_kill_set()
 {
   vector<Item *> v;
-  auto caller = caller_saved_regs; 
+  auto caller = Architecture::get_caller_saved_regs(); 
   for(auto i : caller){
     Register* r = new Register(i); 
     v.push_back(r); 
@@ -514,6 +488,20 @@ vector<Item *> Instruction_label::get_gen_set()
 vector<Item *> Instruction_label::get_kill_set()
 {
   return {};
+}
+
+vector<Item *> Instruction_call_input::get_gen_set()
+{
+  return {};
+}
+
+vector<Item *>  Instruction_call_input::get_kill_set()
+{
+  return {};
+}
+
+void Instruction_call_input::accept(Visitor *v) {
+  v->visit(this);
 }
 
 
