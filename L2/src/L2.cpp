@@ -7,6 +7,10 @@ using namespace std;
 
 namespace L2
 {
+  Program::Program(void) {};
+  Register* Program::getRegister(Architecture::RegisterID rid){
+    return Program::registers[rid];
+  }
 
   // Label Item
   Label::Label(string l){
@@ -179,7 +183,7 @@ vector<Item *> Instruction_ret::get_gen_set()
   vector<Item*> v;
   auto callee = Architecture::get_callee_saved_regs(); 
   for(auto i : callee){
-    Register* r = new Register(i); 
+    Register* r = new Register(i);
     v.push_back(r); 
   }
   Register* rax = new Register(Architecture::RegisterID::rax);
@@ -266,12 +270,12 @@ vector<Item *> Instruction_compare::get_gen_set()
     Variable* op1 = dynamic_cast<Variable*>(oprand1);
     if (op1 != nullptr)
     {
-      v.push_back(oprand1);
+      v.push_back(op1);
     }
     Variable* op2 = dynamic_cast<Variable*>(oprand2);
     if (op2 != nullptr)
     {
-      v.push_back((oprand2));
+      v.push_back(op2);
     }
     return v;
   }
@@ -288,12 +292,12 @@ vector<Item *> Instruction_cjump::get_gen_set()
     Variable* op1 = dynamic_cast<Variable*>(oprand1);
     if (op1 != nullptr)
     {
-      v.push_back(oprand1);
+      v.push_back(op1);
     }
     Variable* op2 = dynamic_cast<Variable*>(oprand2);
     if (op2 != nullptr)
     {
-      v.push_back((oprand2));
+      v.push_back(op2);
     }
     return v;
 }
@@ -456,7 +460,7 @@ vector<Item *> Instruction_load_aop::get_gen_set()
   Variable* i = dynamic_cast<Variable*>(src);
   if (i != nullptr)
   {
-    if(i->toString() != "rsp") v.push_back(src); 
+    if(i->toString() != "rsp") v.push_back(i); 
   }
   v.push_back(dst);
   return v;

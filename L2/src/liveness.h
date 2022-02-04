@@ -1,10 +1,10 @@
-// #pragma once
+#pragma once
 
-// #include <L2.h>
+#include <L2.h>
 
-// namespace L2
-// {
+namespace L2
+{
 
-//   void liveness(Program p);
-//   vector<int> get_successor(vector<Instruction *> &instructions, int idx); 
-// }
+  void liveness(Program p);
+  vector<int> get_successor(vector<Instruction *> &instructions, int idx); 
+}

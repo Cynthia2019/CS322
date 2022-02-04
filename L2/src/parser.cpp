@@ -22,6 +22,7 @@
 #include <cstdlib>
 #include <stdint.h>
 #include <assert.h>
+#include <map>
 
 #include <tao/pegtl.hpp>
 #include <tao/pegtl/analyze.hpp>
@@ -39,7 +40,6 @@ using namespace std;
 extern bool is_debug;
 namespace L2
 {
-
   /*
    * Data required to parse
    */

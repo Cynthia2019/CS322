@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <set>
+#include <map>
 
 #include <architecture.h>
 
@@ -411,6 +412,7 @@ class StackArgument : public Memory {
     std::string name;
     int64_t arguments;
     std::vector<Instruction *> instructions;
+    Variable* newVariable(std::string variableName);
   };
 
   /*
@@ -423,6 +425,9 @@ class StackArgument : public Memory {
     std::vector<Function *> functions;
     std::string spill_prefix;
     std::string spill_variable;
+    Program();
+    std::map<Architecture::RegisterID, Register*> registers; 
+    Register* getRegister(Architecture::RegisterID rid); 
   };
 
   class Visitor {
