@@ -50,13 +50,13 @@ namespace L2
         if (a != nullptr)
         {
             vector<int> successors;
-            Label *label = dynamic_cast<Label*>(a->label);
+            Item* label = a->label;
             int index = 0;
             while (index < instructions.size())
             {
                 Instruction *curr = instructions[index];
                 class Instruction_label *currLabel = dynamic_cast<class Instruction_label *>(curr);
-                if (currLabel != nullptr && currLabel->label == label)
+                if (currLabel != nullptr && currLabel->label->toString() == label->toString())
                 {
                     successors.push_back(index);
                 }
@@ -69,14 +69,14 @@ namespace L2
         if (b != nullptr)
         {
             vector<int> successors;
-            Label *label = dynamic_cast<Label*>(b->label);
+            Item *label = b->label;
             successors.push_back(idx + 1);
             int index = 0;
             while (index < instructions.size())
             {
                 Instruction *curr = instructions[index];
                 class Instruction_label *currLabel = dynamic_cast<class Instruction_label *>(curr);
-                if (currLabel != nullptr && currLabel->label== label)
+                if (currLabel != nullptr && currLabel->label->toString() == label->toString())
                 {
                     successors.push_back(index);
                 }
@@ -102,11 +102,9 @@ namespace L2
         }
         return {idx + 1};
     }
-
-    void liveness(Program p)
-    {
+    std::pair<AnalysisResult*, vector<vector<set<Item*>>>> computeLiveness(Program& p) {
+        AnalysisResult* res = new AnalysisResult();
         auto f = p.functions[0];
-
         vector<set<Item*>> gens; 
         vector<set<Item*>> kills; 
 
@@ -116,22 +114,15 @@ namespace L2
             auto kill = i->get_kill_set(p.registers);
             set<Item*> gen_var;
             set<Item*> kill_var;
-            cout << "gens : " << gen.size() << endl; 
             for (int i = 0; i < gen.size(); i++)
             {
-                //Variable* v = dynamic_cast<Variable*>(g); 
-                cout << gen[i]->toString() << " "; 
                 gen_var.insert(gen[i]); 
             }
             gens.push_back(gen_var);
-            cout << endl << "kill: ";
             for (int i = 0; i < kill.size(); i++)
             {
-                //Variable* v = dynamic_cast<Variable*>(k); 
-                cout << kill[i]->toString() << " "; 
                 kill_var.insert(kill[i]);
             }
-            cout << endl;
             kills.push_back(kill_var);
         }
 
@@ -152,7 +143,6 @@ namespace L2
                 set<Item*> diff;
                 std::set_difference(out[i].begin(), out[i].end(), kill.begin(), kill.end(),
                                     std::inserter(diff, diff.end()));
-
                 in[i].insert(gen.begin(), gen.end());
                 in[i].insert(diff.begin(), diff.end());
                 if (in[i] != in_before)
@@ -171,8 +161,20 @@ namespace L2
                 {
                     changed = true;
                 }
+                Instruction* iptr = f->instructions[i];
+                res->gens[iptr] = gen; 
+                res->kills[iptr] = kill; 
+                res->ins[iptr] = in[i];
+                res->outs[iptr] = out[i];
             }
         } while (changed);
+        return {res, {in, out}}; 
+    }
+    void liveness(Program p)
+    {
+        std::pair<AnalysisResult*, vector<vector<set<Item*>>>> res = computeLiveness(p); 
+        vector<set<Item*>> in = res.second[0]; 
+        vector<set<Item*>> out = res.second[1];
         format_vector(in, out);
     }
 }

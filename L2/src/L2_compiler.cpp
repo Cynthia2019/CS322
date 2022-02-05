@@ -144,7 +144,7 @@ int main(
   if (interference_only)
   {
     // TODO
-    //L2::interference(p); 
+    L2::interference(p); 
     return 0;
   }
 

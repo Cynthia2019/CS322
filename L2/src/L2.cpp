@@ -28,10 +28,8 @@ namespace L2
     {L2::Architecture::rsp, new L2::Register(L2::Architecture::rsp)}
   };
     registers = registersPtr;
-  };
+  }
   Register* Program::getRegister(Architecture::RegisterID rid){
-    cout << "rid: " << rid << " " << endl;
-    cout <<Program::registers[rid]->toString() << endl;
     return Program::registers[rid];
   }
   //Function 
@@ -164,16 +162,17 @@ void Instruction_assignment::accept(Visitor* v) {
 vector<Item *> Instruction_assignment::get_gen_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   vector<Item *> v;
-  Number* i = dynamic_cast<Number*>(src);
-  if(i == nullptr) {
+  Variable* i = dynamic_cast<Variable*>(src);
+  if(i != nullptr) {
     v.push_back(src);
   }
   return v;
 }
 vector<Item *> Instruction_assignment::get_kill_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
-  cout << "dst: " << dst->toString() << endl;
-  return {dst};
+  Variable* i = dynamic_cast<Variable*>(dst); 
+  if(i != nullptr) return {dst}; 
+  return {};
 }
 //load 
 void Instruction_load::accept(Visitor* v) {
@@ -186,7 +185,9 @@ vector<Item *> Instruction_load::get_gen_set(std::map<Architecture::RegisterID, 
 }
 vector<Item *> Instruction_load::get_kill_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
-  return {dst};
+  Variable* i = dynamic_cast<Variable*>(dst); 
+  if(i != nullptr) return {dst}; 
+  return {};
 }
 void Instruction_store::accept(Visitor* v) {
   v->visit(this);
@@ -215,10 +216,10 @@ vector<Item *> Instruction_ret::get_gen_set(std::map<Architecture::RegisterID, R
   vector<Item*> v;
   auto callee = Architecture::get_callee_saved_regs(); 
   for(auto i : callee){
-    Register* r = new Register(i);
+    Register* r = registers[i];
     v.push_back(r); 
   }
-  Register* rax = new Register(Architecture::RegisterID::rax);
+  Register* rax = registers[Architecture::rax];
   v.push_back(rax);
   return v;
 }
@@ -347,7 +348,7 @@ vector<Item *> Instruction_call::get_gen_set(std::map<Architecture::RegisterID, 
   Variable* i = dynamic_cast<Variable*>(dst); 
   auto args = Architecture::get_argument_regs(); 
   for(int i = 0; i < n->get(); i++){
-    Register* r = new Register(args[i]); 
+    Register* r = registers[args[i]]; 
     v.push_back(r); 
   }
   if(i != nullptr) v.push_back(i);
@@ -358,7 +359,7 @@ vector<Item *> Instruction_call::get_kill_set(std::map<Architecture::RegisterID,
   vector<Item *> v;
   auto caller_regs = Architecture::get_caller_saved_regs();
   for(auto i : caller_regs){
-    Register* r = new Register(i); 
+    Register* r = registers[i]; 
     v.push_back(r); 
   }
   return v;
@@ -369,7 +370,7 @@ void Instruction_call_print::accept(Visitor* v) {
 vector<Item *> Instruction_call_print::get_gen_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   Architecture::RegisterID arg = Architecture::get_argument_regs()[0]; 
-  Register* r = new Register(arg); 
+  Register* r = registers[arg]; 
   return {r};
 }
 
@@ -378,7 +379,7 @@ vector<Item *> Instruction_call_print::get_kill_set(std::map<Architecture::Regis
   vector<Item *> v;
   vector<Architecture::RegisterID> caller = Architecture::get_caller_saved_regs(); 
   for(auto i : caller){
-    Register* r = new Register(i); 
+    Register* r = registers[i]; 
     v.push_back(r); 
   }
   return v;
@@ -391,7 +392,7 @@ vector<Item *> Instruction_call_allocate::get_gen_set(std::map<Architecture::Reg
   vector<Item *> v;
   vector<Architecture::RegisterID> args = Architecture::get_argument_regs(); 
   for(int i = 0; i < 2; i++){
-    Register* r = new Register(args[i]); 
+    Register* r = registers[args[i]]; 
     v.push_back(r); 
   }
   return v;
@@ -401,7 +402,7 @@ vector<Item *> Instruction_call_allocate::get_kill_set(std::map<Architecture::Re
   vector<Item *> v;
   auto caller =  Architecture::get_caller_saved_regs(); 
   for(auto i : caller){
-    Register* r = new Register(i); 
+    Register* r = registers[i]; 
     v.push_back(r); 
   }
   return v;
@@ -415,7 +416,7 @@ vector<Item *> Instruction_call_error::get_gen_set(std::map<Architecture::Regist
   Number* n = dynamic_cast<Number*>(constant); 
   auto args = Architecture::get_argument_regs(); 
   for(int i = 0; i < n->get(); i++){
-    Register* r = new Register(args[i]); 
+    Register* r = registers[args[i]]; 
     v.push_back(r); 
   }
   return v;
@@ -426,7 +427,7 @@ vector<Item *> Instruction_call_error::get_kill_set(std::map<Architecture::Regis
   vector<Item *> v;
   auto caller = Architecture::get_caller_saved_regs(); 
   for(auto i : caller){
-    Register* r = new Register(i); 
+    Register* r = registers[i]; 
     v.push_back(r); 
   }
   return v;
