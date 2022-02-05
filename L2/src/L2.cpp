@@ -12,7 +12,7 @@ namespace L2
     return Program::registers[rid];
   }
   //Function 
-  Function::Function(void) {}; 
+  Function::Function(void) {}
   Variable* Function::newVariable(std::string variableName){
     if(Function::variables.find(variableName) != Function::variables.end()){
       return Function::variables[variableName];
