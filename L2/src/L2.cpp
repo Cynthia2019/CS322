@@ -9,36 +9,44 @@ namespace L2
 {
   //Program 
   Program::Program(void) {
-      std::map<L2::Architecture::RegisterID, L2::Register*> registersPtr = {
-    {L2::Architecture::rax, new L2::Register(L2::Architecture::rax)},
-    {L2::Architecture::rbx, new L2::Register(L2::Architecture::rbx)},
-    {L2::Architecture::rcx, new L2::Register(L2::Architecture::rcx)},
-    {L2::Architecture::rdx, new L2::Register(L2::Architecture::rdx)},
-    {L2::Architecture::rdi, new L2::Register(L2::Architecture::rdi)},
-    {L2::Architecture::rsi, new L2::Register(L2::Architecture::rsi)},
-    {L2::Architecture::rbp, new L2::Register(L2::Architecture::rbp)},
-    {L2::Architecture::r8, new L2::Register(L2::Architecture::r8)},
-    {L2::Architecture::r9, new L2::Register(L2::Architecture::r9)},
-    {L2::Architecture::r10, new L2::Register(L2::Architecture::r10)},
-    {L2::Architecture::r11, new L2::Register(L2::Architecture::r11)},
-    {L2::Architecture::r12, new L2::Register(L2::Architecture::r12)},
-    {L2::Architecture::r13, new L2::Register(L2::Architecture::r13)},
-    {L2::Architecture::r14, new L2::Register(L2::Architecture::r14)},
-    {L2::Architecture::r15, new L2::Register(L2::Architecture::r15)},
-    {L2::Architecture::rsp, new L2::Register(L2::Architecture::rsp)}
-  };
-    registers = registersPtr;
+      this->registers = {
+      {L2::Architecture::rax, new L2::Register(L2::Architecture::rax)},
+      {L2::Architecture::rbx, new L2::Register(L2::Architecture::rbx)},
+      {L2::Architecture::rcx, new L2::Register(L2::Architecture::rcx)},
+      {L2::Architecture::rdx, new L2::Register(L2::Architecture::rdx)},
+      {L2::Architecture::rdi, new L2::Register(L2::Architecture::rdi)},
+      {L2::Architecture::rsi, new L2::Register(L2::Architecture::rsi)},
+      {L2::Architecture::rbp, new L2::Register(L2::Architecture::rbp)},
+      {L2::Architecture::r8, new L2::Register(L2::Architecture::r8)},
+      {L2::Architecture::r9, new L2::Register(L2::Architecture::r9)},
+      {L2::Architecture::r10, new L2::Register(L2::Architecture::r10)},
+      {L2::Architecture::r11, new L2::Register(L2::Architecture::r11)},
+      {L2::Architecture::r12, new L2::Register(L2::Architecture::r12)},
+      {L2::Architecture::r13, new L2::Register(L2::Architecture::r13)},
+      {L2::Architecture::r14, new L2::Register(L2::Architecture::r14)},
+      {L2::Architecture::r15, new L2::Register(L2::Architecture::r15)},
+      {L2::Architecture::rsp, new L2::Register(L2::Architecture::rsp)}
+    };
   }
   Register* Program::getRegister(Architecture::RegisterID rid){
     return Program::registers[rid];
   }
   //Function 
   Function::Function(void) {}
+
   Variable* Function::newVariable(std::string variableName){
     if(Function::variables.find(variableName) != Function::variables.end()){
       return Function::variables[variableName];
     }
-    return new Variable(variableName);
+    Function::variables[variableName] = new Variable(variableName);
+    return Function::variables[variableName];
+  }
+
+  void Function::format_function() {
+    // ::cout << "(" << this->name << endl;
+    // ::cout << "\t" << this->arguments << " " << spill_variable_nb << endl;
+
+    // os << ")" << endl;
   }
 
   // Label Item
@@ -175,6 +183,14 @@ vector<Item *> Instruction_assignment::get_kill_set(std::map<Architecture::Regis
   return {};
 }
 //load 
+Instruction_load::Instruction_load(Memory *m, Item *item) {
+  this->src = m->getStartAddress();
+  this->m = new Number(m->getOffset());
+  this->dst = item;
+}
+
+Instruction_load::Instruction_load() {}
+
 void Instruction_load::accept(Visitor* v) {
   v->visit(this);
 }
@@ -189,6 +205,15 @@ vector<Item *> Instruction_load::get_kill_set(std::map<Architecture::RegisterID,
   if(i != nullptr) return {dst}; 
   return {};
 }
+
+Instruction_store::Instruction_store(Memory *m, Item *item) {
+  this->dst = m->getStartAddress();
+  this->constant = new Number(m->getOffset());
+  this->src = item;
+}
+
+Instruction_store::Instruction_store() {}
+
 void Instruction_store::accept(Visitor* v) {
   v->visit(this);
 }
