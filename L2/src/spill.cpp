@@ -5,11 +5,9 @@ namespace L2 {
 
   class Spiller_single : public Visitor {
     public:
-    Spiller_single(std::ostream &os, ::string prefix, ::string spill_var) 
-    :outputstream(os), prefix(prefix) {
-      // cout << spill_var << endl;
-      this->spill_var = new Variable(spill_var);
-      // cout << this->spill_var->toString() << endl;
+    Spiller_single(std::ostream &os, ::string prefix, ::string spill_var, Function *f, int64_t &lineno) 
+    :outputstream(os), prefix(prefix), func(f), lineno(lineno){
+      this->spill_var = func->newVariable(spill_var);
     }
 
     void visit(Instruction_ret *i) {
@@ -17,7 +15,10 @@ namespace L2 {
     }
 
     void visit(Instruction_assignment *i) {
-      bool use = should_spill(i->src), define = should_spill(i->dst);
+      bool use = should_spill(&i->src);
+      
+      // cout << lineno << endl;
+      bool define = should_spill(&i->dst);
       if (use)
         load();
 
@@ -31,7 +32,7 @@ namespace L2 {
     }
 
     void visit(Instruction_load *i) {
-      bool define = should_spill(i->dst);
+      bool define = should_spill(&i->dst);
       outputstream << "\t";
       outputstream << replace_all(i->toString());
 
@@ -47,10 +48,12 @@ namespace L2 {
 
 
     void visit(Instruction_store *i) {
-      bool use = should_spill(i->src) || should_spill(i->dst);
+      bool src = should_spill(&i->src);
+      bool dst = should_spill(&i->dst);
+      bool use = src || dst;
       if (use) load();
       outputstream << "\t" << replace_all(i->toString()) << endl;
-      // if (i->src->get_type() == item_variable) {
+      // if (&i->src->get_type() == item_variable) {
       //   load();
       // }
       // outputstream << "\t" << i->toString() << endl;
@@ -61,8 +64,11 @@ namespace L2 {
     }
 
     void visit(Instruction_aop *i) {
-      bool use = should_spill(i->src) || should_spill(i->dst);
-      bool define = should_spill(i->dst);
+      bool src = should_spill(&i->src);
+      bool dst = should_spill(&i->dst);
+      bool use = src || dst;
+      bool define = dst;
+
       if (use) load();
       outputstream << "\t" << replace_all(i->toString()) << endl;
       if (define) store();
@@ -70,20 +76,25 @@ namespace L2 {
     }
 
     void visit(Instruction_store_aop *i) { 
-      bool use = should_spill(i->src) || should_spill(i->dst);
+      bool src = should_spill(&i->src);
+      bool dst = should_spill(&i->dst);
+      bool use = src || dst;
       if (use) load();
       outputstream << "\t" << replace_all(i->toString()) << endl;
      }
     void visit(Instruction_load_aop *i) { outputstream << "\t" << i->toString() << endl; }
     void visit(Instruction_compare *i) { outputstream << "\t" << i->toString() << endl; }
     void visit(Instruction_cjump *i) {
-      bool use = should_spill(i->label) || should_spill(i->oprand1) || should_spill(i->oprand2);
+      bool label = should_spill(&i->label);
+      bool opr1 = should_spill(&i->oprand1);
+      bool opr2 = should_spill(&i->oprand2);
+      bool use = label || opr1 || opr2;
       if (use) load();
       outputstream << "\t" << replace_all(i->toString()) << endl;
       if (use) counter++;
     }
     void visit(Instruction_call *i) { 
-      bool use = should_spill(i->dst); 
+      bool use = should_spill(&i->dst); 
       if(use) load();
       outputstream << "\t" << replace_all(i->toString()) << endl;
      }
@@ -93,7 +104,7 @@ namespace L2 {
     void visit(Instruction_call_error *i) { outputstream << "\t" << i->toString() << endl; }
     void visit(Instruction_label *i) { outputstream << "\t" << i->toString() << endl; }
     void visit(Instruction_increment *i) { 
-      bool spill = should_spill(i->src);
+      bool spill = should_spill(&i->src);
       if (spill) load();
       outputstream << "\t" << replace_all(i->toString()) << endl;
       if (spill) store();
@@ -108,7 +119,9 @@ namespace L2 {
       ::string prefix;
       std::ostream &outputstream;
       // ::string spill_var;
+      int64_t &lineno;
       Variable *spill_var;
+      Function *func;
       void load() {
         outputstream << "\t" << prefix + to_string(counter) << " <- mem rsp 0" << endl;
       }
@@ -117,10 +130,13 @@ namespace L2 {
         outputstream << "\t" << "mem rsp 0 <- " << prefix + to_string(counter) << endl;
       }
 
-      bool should_spill(Item *item) {
-        Variable *v = dynamic_cast<Variable *>(item);
+      bool should_spill(Item **item) {
+        Variable *v = dynamic_cast<Variable *>(*item);
         if (v == nullptr) return false;
-        if (v == spill_var) return true;
+        if (v == spill_var) {
+          *item = func->newVariable(prefix + to_string(counter));
+          return true;
+        }
         return false;
       }
 
@@ -149,12 +165,14 @@ namespace L2 {
     // cout << p.spill_variable << endl;
     if(!checkVariablePresent(p.spill_variable, f)) spill_variable_nb = 0;
     ostream &os = ::cout;
-    Spiller_single spiller(os, p.spill_prefix, p.spill_variable);
+    int64_t lineno = 0;
+    Spiller_single spiller(os, p.spill_prefix, p.spill_variable, f, lineno);
     
     os << "(" << f->name << endl;
     os << "\t" << f->arguments << " " << spill_variable_nb << endl;
     for (auto i: f->instructions) {
       i->accept(&spiller);
+      lineno++;
     }
     os << ")" << endl;
   }
