@@ -144,7 +144,7 @@ int main(
   if (spill_only)
   {
     // TODO
-    //L2::spill(p);
+    L2::spill(p);
     return 0;
   }
 
