@@ -2,6 +2,7 @@
 #include <string> 
 #include <unordered_map>
 #include <algorithm>
+#include <map>
 
 using namespace std;
 
@@ -51,8 +52,29 @@ namespace L2 {
         Architecture::r14,
         Architecture::r15
          };
+
+    std::map<Architecture::RegisterID, Architecture::Color> r_to_color = {
+        {Architecture::rax, Architecture::red}, 
+        {Architecture::rbx, Architecture::orange}, 
+        {Architecture::rcx, Architecture::yellow}, 
+        {Architecture::rdx, Architecture::green}, 
+        {Architecture::rdi, Architecture::blue}, 
+        {Architecture::rsi, Architecture::purple}, 
+        {Architecture::rbp, Architecture::pink}, 
+        {Architecture::r8, Architecture::black}, 
+        {Architecture::r9, Architecture::white}, 
+        {Architecture::r10, Architecture::grey}, 
+        {Architecture::r11, Architecture::brown}, 
+        {Architecture::r12, Architecture::lime}, 
+        {Architecture::r13, Architecture::bronze}, 
+        {Architecture::r14, Architecture::golden}, 
+        {Architecture::r15, Architecture::silver}
+    };
     std::string Architecture::fromRegisterToString(Architecture::RegisterID r) {
         return register_to_string[r]; 
+    }
+    Architecture::Color Architecture::fromRegisterToColor(Architecture::RegisterID r){
+        return r_to_color[r];
     }
     bool Architecture::isArgument(Architecture::RegisterID r){
         if(find(argument_regs.begin(), argument_regs.end(), r) != argument_regs.end()) return true; 

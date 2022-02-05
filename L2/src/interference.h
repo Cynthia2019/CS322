@@ -7,7 +7,6 @@
 
 namespace L2
 {
-
   void interference(Program p);
   class Node {
     public: 
@@ -15,6 +14,7 @@ namespace L2
       Node(Variable* v); 
       Variable* get(); 
       Architecture::Color color;
+      bool isVariable = true;
     private: 
       Variable* var; 
   };
@@ -26,8 +26,8 @@ namespace L2
      void addEdge(Node *n1, Node *n2); 
      bool doesNodeExist(Node *n); 
      void removeNode(Node *n); 
-     std::vector<Node*> getNodes() const; 
+     std::vector<Node*> getNodes(); 
      int32_t size; 
   };
-
+    pair<Graph*, map<Item*, set<Item*>>> computeInterference(Program& p);
 }

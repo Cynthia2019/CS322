@@ -22,6 +22,8 @@ namespace L2
     }
     void Graph::addNode(Node* node){
         nodes[node->get()] = node; 
+        node->degree++;
+        Graph::size++;
     }
     void Graph::addEdge(Node* n1, Node* n2){
         g[n1].insert(n2); 
@@ -33,6 +35,22 @@ namespace L2
         }
         return true;
     }
+    void Graph::removeNode(Node* node){
+        set<Node*> connected = g[node]; 
+        for(Node* i : connected){
+            i->degree--;
+        }
+        g.erase(node); 
+        nodes.erase(node->get());
+        Graph::size--;
+    }
+    vector<Node*> Graph::getNodes() {
+        vector<Node*> all; 
+        for(auto m : g){
+            all.push_back(m.first); 
+        }
+        return all;
+    }
     void print_map(map<Item*, set<Item*>>& m){
         for(auto i : m){
             cout << i.first->toString() << " "; 
@@ -42,7 +60,8 @@ namespace L2
             cout << endl;
         }
     }
-    map<Item*, set<Item*>> computeInterference(Program& p, AnalysisResult* res){
+    pair<Graph*, map<Item*, set<Item*>>> computeInterference(Program& p){
+        AnalysisResult* res = computeLiveness(p).first;
         std::map<Instruction*, std::set<Item*>> in = res->ins; 
         std::map<Instruction*, std::set<Item*>> out = res->outs; 
         std::map<Instruction*, std::set<Item*>> gens = res->gens; 
@@ -112,15 +131,17 @@ namespace L2
                 
             }
         }
-        return edges;
-    } 
-    void interference(Program p) {
-        AnalysisResult* res = computeLiveness(p).first;
-        map<Item*, set<Item*>> edges = computeInterference(p, res); 
+        //complete graph
         Graph* graph = new Graph();
         //contains all the nodes in the graph
         for(auto m : edges){
             Variable* v = dynamic_cast<Variable*>(m.first); 
+            Node* n = new Node(v);
+            Register* r = dynamic_cast<Register*>(v); 
+            if(r != nullptr) {
+                n->color = Architecture::fromRegisterToColor(r->get());
+                n->isVariable = false;
+            }
             graph->addNode(new Node(v)); 
         }
         for(auto m : edges){
@@ -132,6 +153,13 @@ namespace L2
                 graph->addEdge(nv, nu); 
             }
         }
+        return {graph, edges};
+    }
+     
+    void interference(Program p) {
+        pair<Graph*, map<Item*, set<Item*>>> graphRes = computeInterference(p); 
+        Graph* g = graphRes.first; 
+        map<Item*, set<Item*>> edges = graphRes.second; 
         print_map(edges); 
     }
 }
