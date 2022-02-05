@@ -33,12 +33,20 @@ namespace L2
   }
   //Function 
   Function::Function(void) {}
+
   Variable* Function::newVariable(std::string variableName){
     if(Function::variables.find(variableName) != Function::variables.end()){
       return Function::variables[variableName];
     }
     Function::variables[variableName] = new Variable(variableName);
     return Function::variables[variableName];
+  }
+
+  void Function::format_function() {
+    // ::cout << "(" << this->name << endl;
+    // ::cout << "\t" << this->arguments << " " << spill_variable_nb << endl;
+
+    // os << ")" << endl;
   }
 
   // Label Item
@@ -174,6 +182,14 @@ vector<Item *> Instruction_assignment::get_kill_set(std::map<Architecture::Regis
   return {dst};
 }
 //load 
+Instruction_load::Instruction_load(Memory *m, Item *item) {
+  this->src = m->getStartAddress();
+  this->m = new Number(m->getOffset());
+  this->dst = item;
+}
+
+Instruction_load::Instruction_load() {}
+
 void Instruction_load::accept(Visitor* v) {
   v->visit(this);
 }
@@ -186,6 +202,15 @@ vector<Item *> Instruction_load::get_kill_set(std::map<Architecture::RegisterID,
 {
   return {dst};
 }
+
+Instruction_store::Instruction_store(Memory *m, Item *item) {
+  this->dst = m->getStartAddress();
+  this->constant = new Number(m->getOffset());
+  this->src = item;
+}
+
+Instruction_store::Instruction_store() {}
+
 void Instruction_store::accept(Visitor* v) {
   v->visit(this);
 }
