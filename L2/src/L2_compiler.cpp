@@ -83,29 +83,10 @@ int main(
       return 1;
     }
   }
-
   /*
    * Parse the input file.
    */
   L2::Program p;
-  std::map<L2::Architecture::RegisterID, L2::Register*> registersPtr = {
-    {L2::Architecture::rax, new L2::Register(L2::Architecture::rax)},
-    {L2::Architecture::rbx, new L2::Register(L2::Architecture::rbx)},
-    {L2::Architecture::rcx, new L2::Register(L2::Architecture::rcx)},
-    {L2::Architecture::rdx, new L2::Register(L2::Architecture::rdx)},
-    {L2::Architecture::rdi, new L2::Register(L2::Architecture::rdi)},
-    {L2::Architecture::rsi, new L2::Register(L2::Architecture::rsi)},
-    {L2::Architecture::r8, new L2::Register(L2::Architecture::r8)},
-    {L2::Architecture::r9, new L2::Register(L2::Architecture::r9)},
-    {L2::Architecture::r10, new L2::Register(L2::Architecture::r10)},
-    {L2::Architecture::r11, new L2::Register(L2::Architecture::r11)},
-    {L2::Architecture::r12, new L2::Register(L2::Architecture::r12)},
-    {L2::Architecture::r13, new L2::Register(L2::Architecture::r13)},
-    {L2::Architecture::r14, new L2::Register(L2::Architecture::r14)},
-    {L2::Architecture::r15, new L2::Register(L2::Architecture::r15)},
-    {L2::Architecture::rsp, new L2::Register(L2::Architecture::rsp)}
-  };
-    p.registers = registersPtr;
   if (spill_only)
   {
 
@@ -116,7 +97,6 @@ int main(
   }
   else if (liveness_only)
   {
-
     /*
      * Parse an L2 function.
      */

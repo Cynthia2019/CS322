@@ -127,8 +127,8 @@ class StackArgument : public Memory {
   class Instruction
   {
   public:
-    virtual vector<Item *> get_gen_set() = 0;
-    virtual vector<Item *> get_kill_set() = 0;
+    virtual vector<Item *> get_gen_set(std::map<Architecture::RegisterID, Register*> &registers) = 0;
+    virtual vector<Item *> get_kill_set(std::map<Architecture::RegisterID, Register*> &registers) = 0;
     virtual void spill(Spiller &s) = 0;
 
     virtual void accept(Visitor* visitor) = 0; 
@@ -141,8 +141,8 @@ class StackArgument : public Memory {
   class Instruction_ret : public Instruction
   {
     public:
-      vector<Item *> get_gen_set() override;
-      vector<Item *> get_kill_set() override;
+      vector<Item *> get_gen_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
+      vector<Item *> get_kill_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
       std::string toString() override { return "return"; }
       void spill(Spiller &s) override;
       void accept(Visitor *v) override; 
@@ -155,8 +155,8 @@ class StackArgument : public Memory {
     Item* src;
     std::string toString() override { return this->dst->toString() + " <- " + this->src->toString(); }
     void accept(Visitor *v) override; 
-    vector<Item *> get_gen_set() override;
-    vector<Item *> get_kill_set() override;
+    vector<Item *> get_gen_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
+    vector<Item *> get_kill_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
     void spill(Spiller &s) override;
   };
 
@@ -167,8 +167,8 @@ class StackArgument : public Memory {
     Item* dst;
     Item* src;
     Item* m;
-    vector<Item *> get_gen_set() override;
-    vector<Item *> get_kill_set() override;
+    vector<Item *> get_gen_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
+    vector<Item *> get_kill_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
     std::string toString() override { 
       return this->dst->toString() + " <- mem "
           + this->dst->toString() + " " + this->m->toString();
@@ -184,8 +184,8 @@ class StackArgument : public Memory {
     Item *dst;
     Item *op;
     Item *src;
-    vector<Item *> get_gen_set() override;
-    vector<Item *> get_kill_set() override;
+    vector<Item *> get_gen_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
+    vector<Item *> get_kill_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
     std::string toString() override { return dst->toString() +" "+ op->toString() + " " + src->toString(); }
     void spill(Spiller &s) override;
     void accept(Visitor *v) override; 
@@ -198,8 +198,8 @@ class StackArgument : public Memory {
     Item *src;
     Item *dst;
     Item *constant;
-    vector<Item *> get_gen_set() override;
-    vector<Item *> get_kill_set() override;
+    vector<Item *> get_gen_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
+    vector<Item *> get_kill_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
 
     std::string toString() override { return "mem " + dst->toString() + " " + constant->toString() + " <- " + src->toString(); }
   
@@ -213,8 +213,8 @@ class StackArgument : public Memory {
   public:
     Item *dst;
     Item *src;
-    vector<Item *> get_gen_set() override;
-    vector<Item *> get_kill_set() override;
+    vector<Item *> get_gen_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
+    vector<Item *> get_kill_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
     std::string toString() override { return dst->toString() + " stack-arg " + src->toString(); }
     void spill(Spiller &s) override;
     void accept(Visitor *v) override; 
@@ -227,8 +227,8 @@ class StackArgument : public Memory {
     Item *src;
     Item *dst;
     Item *op;
-    vector<Item *> get_gen_set() override;
-    vector<Item *> get_kill_set() override;
+    vector<Item *> get_gen_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
+    vector<Item *> get_kill_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
     std::string toString() override { return dst->toString() + " "+ op->toString() + " " + src->toString(); }
     void spill(Spiller &s) override;
     void accept(Visitor *v) override; 
@@ -242,8 +242,8 @@ class StackArgument : public Memory {
     Item *constant;
     Item *dst;
     Item *op;
-    vector<Item *> get_gen_set() override;
-    vector<Item *> get_kill_set() override;
+    vector<Item *> get_gen_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
+    vector<Item *> get_kill_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
     std::string toString() override { return "mem " + dst->toString() + " " + constant->toString() + " " + op->toString() + " " + src->toString(); }
     void spill(Spiller &s) override;
     void accept(Visitor *v) override; 
@@ -257,8 +257,8 @@ class StackArgument : public Memory {
     Item *constant;
     Item *dst;
     Item *op;
-    vector<Item *> get_gen_set() override;
-    vector<Item *> get_kill_set() override;
+    vector<Item *> get_gen_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
+    vector<Item *> get_kill_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
     std::string toString() override { return dst->toString() + op->toString() + src->toString() + constant->toString(); }
     void spill(Spiller &s) override;
     void accept(Visitor *v) override; 
@@ -271,8 +271,8 @@ class StackArgument : public Memory {
     Item *oprand1;
     Item *op;
     Item *oprand2;
-    vector<Item *> get_gen_set() override;
-    vector<Item *> get_kill_set() override;
+    vector<Item *> get_gen_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
+    vector<Item *> get_kill_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
     std::string toString() override { return dst->toString() + oprand1->toString() + op->toString() + oprand2->toString(); }
     void spill(Spiller &s) override;
     void accept(Visitor *v) override; 
@@ -285,8 +285,8 @@ class StackArgument : public Memory {
     Item *op;
     Item *oprand2;
     Item *label;
-    vector<Item *> get_gen_set() override;
-    vector<Item *> get_kill_set() override;
+    vector<Item *> get_gen_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
+    vector<Item *> get_kill_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
     std::string toString() override { return "cjump " + oprand1->toString() + " " + op->toString()+ " " + oprand2->toString() + " " + label->toString(); }
     void spill(Spiller &s) override;
     void accept(Visitor *v) override; 
@@ -298,8 +298,8 @@ class StackArgument : public Memory {
   public:
     Item *constant;
     Item *dst;
-    vector<Item *> get_gen_set() override;
-    vector<Item *> get_kill_set() override;
+    vector<Item *> get_gen_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
+    vector<Item *> get_kill_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
     std::string toString() override { return "call " + dst->toString() +" "+ constant->toString(); }
     void spill(Spiller &s) override;
     void accept(Visitor *v) override; 
@@ -308,8 +308,8 @@ class StackArgument : public Memory {
   class Instruction_call_print : public Instruction
   {
     public:
-    vector<Item *> get_gen_set() override;
-    vector<Item *> get_kill_set() override;
+    vector<Item *> get_gen_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
+    vector<Item *> get_kill_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
     std::string toString() override { return "call print 1"; }
     void spill(Spiller &s) override;
     void accept(Visitor *v) override; 
@@ -317,8 +317,8 @@ class StackArgument : public Memory {
   class Instruction_call_input : public Instruction
   {
     public:
-    vector<Item *> get_gen_set() override;
-    vector<Item *> get_kill_set() override;
+    vector<Item *> get_gen_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
+    vector<Item *> get_kill_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
     std::string toString() override { return "call input 0"; }
     void spill(Spiller &s) override;
     void accept(Visitor *v) override; 
@@ -326,8 +326,8 @@ class StackArgument : public Memory {
   class Instruction_call_allocate : public Instruction
   {
     public:
-    vector<Item *> get_gen_set() override;
-    vector<Item *> get_kill_set() override;
+    vector<Item *> get_gen_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
+    vector<Item *> get_kill_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
     std::string toString() override { return "allocate"; }
     void spill(Spiller &s) override;
     void accept(Visitor *v) override; 
@@ -336,8 +336,8 @@ class StackArgument : public Memory {
   {
   public:
     Item *constant;
-    vector<Item *> get_gen_set() override;
-    vector<Item *> get_kill_set() override;
+    vector<Item *> get_gen_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
+    vector<Item *> get_kill_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
     std::string toString() override { return "error"; }
     void spill(Spiller &s) override;
     void accept(Visitor *v) override; 
@@ -348,8 +348,8 @@ class StackArgument : public Memory {
   {
   public:
     Item *label;
-    vector<Item *> get_gen_set() override;
-    vector<Item *> get_kill_set() override;
+    vector<Item *> get_gen_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
+    vector<Item *> get_kill_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
     std::string toString() override { return label->toString(); }
     void spill(Spiller &s) override;
     void accept(Visitor *v) override; 
@@ -362,8 +362,8 @@ class StackArgument : public Memory {
   {
   public:
     Item *src;
-    vector<Item *> get_gen_set() override;
-    vector<Item *> get_kill_set() override;
+    vector<Item *> get_gen_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
+    vector<Item *> get_kill_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
     std::string toString() override { return src->toString() + "++"; }
     void spill(Spiller &s) override;
     void accept(Visitor *v) override; 
@@ -372,8 +372,8 @@ class StackArgument : public Memory {
   {
   public:
     Item *src;
-    vector<Item *> get_gen_set() override;
-    vector<Item *> get_kill_set() override;
+    vector<Item *> get_gen_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
+    vector<Item *> get_kill_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
     std::string toString() override { return src->toString() + "--"; }
     void spill(Spiller &s) override;
     void accept(Visitor *v) override; 
@@ -385,8 +385,8 @@ class StackArgument : public Memory {
     Item *src_mult;
     Item *src_add;
     Item *dst;
-    vector<Item *> get_gen_set() override;
-    vector<Item *> get_kill_set() override;
+    vector<Item *> get_gen_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
+    vector<Item *> get_kill_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
     std::string toString() override { return dst->toString() + src_add->toString() + src_mult->toString() + constant->toString(); }
     void spill(Spiller &s) override;
     void accept(Visitor *v) override; 
@@ -397,8 +397,8 @@ class StackArgument : public Memory {
   {
   public:
     Item *label;
-    vector<Item *> get_gen_set() override;
-    vector<Item *> get_kill_set() override;
+    vector<Item *> get_gen_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
+    vector<Item *> get_kill_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
     std::string toString() override { return "goto " + label->toString(); }
     void spill(Spiller &s) override;
     void accept(Visitor *v) override; 

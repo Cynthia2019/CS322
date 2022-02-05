@@ -8,8 +8,30 @@ using namespace std;
 namespace L2
 {
   //Program 
-  Program::Program(void) {};
+  Program::Program(void) {
+      std::map<L2::Architecture::RegisterID, L2::Register*> registersPtr = {
+    {L2::Architecture::rax, new L2::Register(L2::Architecture::rax)},
+    {L2::Architecture::rbx, new L2::Register(L2::Architecture::rbx)},
+    {L2::Architecture::rcx, new L2::Register(L2::Architecture::rcx)},
+    {L2::Architecture::rdx, new L2::Register(L2::Architecture::rdx)},
+    {L2::Architecture::rdi, new L2::Register(L2::Architecture::rdi)},
+    {L2::Architecture::rsi, new L2::Register(L2::Architecture::rsi)},
+    {L2::Architecture::rbp, new L2::Register(L2::Architecture::rbp)},
+    {L2::Architecture::r8, new L2::Register(L2::Architecture::r8)},
+    {L2::Architecture::r9, new L2::Register(L2::Architecture::r9)},
+    {L2::Architecture::r10, new L2::Register(L2::Architecture::r10)},
+    {L2::Architecture::r11, new L2::Register(L2::Architecture::r11)},
+    {L2::Architecture::r12, new L2::Register(L2::Architecture::r12)},
+    {L2::Architecture::r13, new L2::Register(L2::Architecture::r13)},
+    {L2::Architecture::r14, new L2::Register(L2::Architecture::r14)},
+    {L2::Architecture::r15, new L2::Register(L2::Architecture::r15)},
+    {L2::Architecture::rsp, new L2::Register(L2::Architecture::rsp)}
+  };
+    registers = registersPtr;
+  };
   Register* Program::getRegister(Architecture::RegisterID rid){
+    cout << "rid: " << rid << " " << endl;
+    cout <<Program::registers[rid]->toString() << endl;
     return Program::registers[rid];
   }
   //Function 
@@ -139,7 +161,7 @@ string StackArgument::toString() {
 void Instruction_assignment::accept(Visitor* v) {
   v->visit(this);
 }
-vector<Item *> Instruction_assignment::get_gen_set()
+vector<Item *> Instruction_assignment::get_gen_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   vector<Item *> v;
   Number* i = dynamic_cast<Number*>(src);
@@ -148,27 +170,28 @@ vector<Item *> Instruction_assignment::get_gen_set()
   }
   return v;
 }
-vector<Item *> Instruction_assignment::get_kill_set()
+vector<Item *> Instruction_assignment::get_kill_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
+  cout << "dst: " << dst->toString() << endl;
   return {dst};
 }
 //load 
 void Instruction_load::accept(Visitor* v) {
   v->visit(this);
 }
-vector<Item *> Instruction_load::get_gen_set()
+vector<Item *> Instruction_load::get_gen_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   if(src->toString() != "rsp") return {src};
   return {};
 }
-vector<Item *> Instruction_load::get_kill_set()
+vector<Item *> Instruction_load::get_kill_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   return {dst};
 }
 void Instruction_store::accept(Visitor* v) {
   v->visit(this);
 }
-vector<Item *> Instruction_store::get_gen_set()
+vector<Item *> Instruction_store::get_gen_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   vector<Item *> v;
   Variable* i = dynamic_cast<Variable*>(src);
@@ -180,14 +203,14 @@ vector<Item *> Instruction_store::get_gen_set()
   return v;
 }
 
-vector<Item *> Instruction_store::get_kill_set()
+vector<Item *> Instruction_store::get_kill_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   return {};
 }
 void Instruction_ret::accept(Visitor* v) {
   v->visit(this);
 }
-vector<Item *> Instruction_ret::get_gen_set()
+vector<Item *> Instruction_ret::get_gen_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   vector<Item*> v;
   auto callee = Architecture::get_callee_saved_regs(); 
@@ -199,12 +222,12 @@ vector<Item *> Instruction_ret::get_gen_set()
   v.push_back(rax);
   return v;
 }
-vector<Item *> Instruction_ret::get_kill_set() { return {}; }
+vector<Item *> Instruction_ret::get_kill_set(std::map<Architecture::RegisterID, Register*> &registers)  { return {}; }
 
 void Instruction_shift::accept(Visitor* v) {
   v->visit(this);
 }
-vector<Item *> Instruction_shift::get_gen_set()
+vector<Item *> Instruction_shift::get_gen_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   vector<Item *> v;
   Variable* i = dynamic_cast<Variable*>(src);
@@ -216,14 +239,14 @@ vector<Item *> Instruction_shift::get_gen_set()
   return v;
 }
 
-vector<Item *> Instruction_shift::get_kill_set()
+vector<Item *> Instruction_shift::get_kill_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   return {dst};
 }
 void Instruction_aop::accept(Visitor* v) {
   v->visit(this);
 }
-vector<Item *> Instruction_aop::get_gen_set()
+vector<Item *> Instruction_aop::get_gen_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   vector<Item *> v;
   Variable* i = dynamic_cast<Variable*>(src);
@@ -235,14 +258,14 @@ vector<Item *> Instruction_aop::get_gen_set()
   return v;
 }
 
-vector<Item *> Instruction_aop::get_kill_set()
+vector<Item *> Instruction_aop::get_kill_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   return {dst};
 }
 void Instruction_store_aop::accept(Visitor* v) {
   v->visit(this);
 }
-vector<Item *> Instruction_store_aop::get_gen_set()
+vector<Item *> Instruction_store_aop::get_gen_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   vector<Item *> v;
   Variable* i = dynamic_cast<Variable*>(src);
@@ -254,26 +277,26 @@ vector<Item *> Instruction_store_aop::get_gen_set()
   return v;
 }
 
-vector<Item *> Instruction_store_aop::get_kill_set()
+vector<Item *> Instruction_store_aop::get_kill_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   return {};
 }
 void Instruction_stack::accept(Visitor* v) {
   v->visit(this);
 }
-vector<Item *> Instruction_stack::get_gen_set()
+vector<Item *> Instruction_stack::get_gen_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   return {};
 }
 
-vector<Item *> Instruction_stack::get_kill_set()
+vector<Item *> Instruction_stack::get_kill_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   return {dst};
 }
 void Instruction_compare::accept(Visitor* v) {
   v->visit(this);
 }
-vector<Item *> Instruction_compare::get_gen_set()
+vector<Item *> Instruction_compare::get_gen_set(std::map<Architecture::RegisterID, Register*> &registers) 
   {
     vector<Item *> v;
     Variable* op1 = dynamic_cast<Variable*>(oprand1);
@@ -288,14 +311,14 @@ vector<Item *> Instruction_compare::get_gen_set()
     }
     return v;
   }
-vector<Item *> Instruction_compare::get_kill_set()
+vector<Item *> Instruction_compare::get_kill_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   return {dst};
 }
 void Instruction_cjump::accept(Visitor* v) {
   v->visit(this);
 }
-vector<Item *> Instruction_cjump::get_gen_set()
+vector<Item *> Instruction_cjump::get_gen_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
     vector<Item *> v;
     Variable* op1 = dynamic_cast<Variable*>(oprand1);
@@ -310,14 +333,14 @@ vector<Item *> Instruction_cjump::get_gen_set()
     }
     return v;
 }
-vector<Item *> Instruction_cjump::get_kill_set()
+vector<Item *> Instruction_cjump::get_kill_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   return {};
 }
 void Instruction_call::accept(Visitor* v) {
   v->visit(this);
 }
-vector<Item *> Instruction_call::get_gen_set()
+vector<Item *> Instruction_call::get_gen_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   vector<Item*> v;
   Number* n = dynamic_cast<Number*>(constant); 
@@ -330,7 +353,7 @@ vector<Item *> Instruction_call::get_gen_set()
   if(i != nullptr) v.push_back(i);
   return v;
 }
-vector<Item *> Instruction_call::get_kill_set()
+vector<Item *> Instruction_call::get_kill_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   vector<Item *> v;
   auto caller_regs = Architecture::get_caller_saved_regs();
@@ -343,14 +366,14 @@ vector<Item *> Instruction_call::get_kill_set()
 void Instruction_call_print::accept(Visitor* v) {
   v->visit(this);
 }
-vector<Item *> Instruction_call_print::get_gen_set()
+vector<Item *> Instruction_call_print::get_gen_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   Architecture::RegisterID arg = Architecture::get_argument_regs()[0]; 
   Register* r = new Register(arg); 
   return {r};
 }
 
-vector<Item *> Instruction_call_print::get_kill_set()
+vector<Item *> Instruction_call_print::get_kill_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   vector<Item *> v;
   vector<Architecture::RegisterID> caller = Architecture::get_caller_saved_regs(); 
@@ -363,7 +386,7 @@ vector<Item *> Instruction_call_print::get_kill_set()
 void Instruction_call_allocate::accept(Visitor* v) {
   v->visit(this);
 }
-vector<Item *> Instruction_call_allocate::get_gen_set()
+vector<Item *> Instruction_call_allocate::get_gen_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   vector<Item *> v;
   vector<Architecture::RegisterID> args = Architecture::get_argument_regs(); 
@@ -373,7 +396,7 @@ vector<Item *> Instruction_call_allocate::get_gen_set()
   }
   return v;
 }
-vector<Item *> Instruction_call_allocate::get_kill_set()
+vector<Item *> Instruction_call_allocate::get_kill_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   vector<Item *> v;
   auto caller =  Architecture::get_caller_saved_regs(); 
@@ -386,7 +409,7 @@ vector<Item *> Instruction_call_allocate::get_kill_set()
 void Instruction_call_error::accept(Visitor* v) {
   v->visit(this);
 }
-vector<Item *> Instruction_call_error::get_gen_set()
+vector<Item *> Instruction_call_error::get_gen_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   vector<Item *> v;
   Number* n = dynamic_cast<Number*>(constant); 
@@ -398,7 +421,7 @@ vector<Item *> Instruction_call_error::get_gen_set()
   return v;
 }
 
-vector<Item *> Instruction_call_error::get_kill_set()
+vector<Item *> Instruction_call_error::get_kill_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   vector<Item *> v;
   auto caller = Architecture::get_caller_saved_regs(); 
@@ -411,7 +434,7 @@ vector<Item *> Instruction_call_error::get_kill_set()
 void Instruction_increment::accept(Visitor* v) {
   v->visit(this);
 }
-vector<Item *> Instruction_increment::get_gen_set()
+vector<Item *> Instruction_increment::get_gen_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   vector<Item *> v;
   Variable* i = dynamic_cast<Variable*>(src);
@@ -419,7 +442,7 @@ vector<Item *> Instruction_increment::get_gen_set()
   return v;
 }
 
-vector<Item *> Instruction_increment::get_kill_set()
+vector<Item *> Instruction_increment::get_kill_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   vector<Item *> v;
   Variable* i = dynamic_cast<Variable*>(src);
@@ -429,7 +452,7 @@ vector<Item *> Instruction_increment::get_kill_set()
 void Instruction_decrement::accept(Visitor* v) {
   v->visit(this);
 }
-vector<Item *> Instruction_decrement::get_gen_set()
+vector<Item *> Instruction_decrement::get_gen_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   vector<Item *> v;
   Variable* i = dynamic_cast<Variable*>(src);
@@ -437,7 +460,7 @@ vector<Item *> Instruction_decrement::get_gen_set()
   return v;
 }
 
-vector<Item *> Instruction_decrement::get_kill_set()
+vector<Item *> Instruction_decrement::get_kill_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   vector<Item *> v;
   Variable* i = dynamic_cast<Variable*>(src);
@@ -447,7 +470,7 @@ vector<Item *> Instruction_decrement::get_kill_set()
 void Instruction_at::accept(Visitor* v) {
   v->visit(this);
 }
-vector<Item *> Instruction_at::get_gen_set()
+vector<Item *> Instruction_at::get_gen_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   vector<Item *> v;
   v.push_back(src_mult);
@@ -455,14 +478,14 @@ vector<Item *> Instruction_at::get_gen_set()
   return v;
 }
 
-vector<Item *> Instruction_at::get_kill_set()
+vector<Item *> Instruction_at::get_kill_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   return {dst};
 }
 void Instruction_load_aop::accept(Visitor* v) {
   v->visit(this);
 }
-vector<Item *> Instruction_load_aop::get_gen_set()
+vector<Item *> Instruction_load_aop::get_gen_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   vector<Item *> v;
 
@@ -474,41 +497,41 @@ vector<Item *> Instruction_load_aop::get_gen_set()
   v.push_back(dst);
   return v;
 }
-vector<Item *> Instruction_load_aop::get_kill_set()
+vector<Item *> Instruction_load_aop::get_kill_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   return {dst};
 }
 void Instruction_goto::accept(Visitor* v) {
   v->visit(this);
 }
-vector<Item *> Instruction_goto::get_gen_set()
+vector<Item *> Instruction_goto::get_gen_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   return {};
 }
 
-vector<Item *> Instruction_goto::get_kill_set()
+vector<Item *> Instruction_goto::get_kill_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   return {};
 }
 void Instruction_label::accept(Visitor* v) {
   v->visit(this);
 }
-vector<Item *> Instruction_label::get_gen_set()
+vector<Item *> Instruction_label::get_gen_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   return {};
 }
 
-vector<Item *> Instruction_label::get_kill_set()
+vector<Item *> Instruction_label::get_kill_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   return {};
 }
 
-vector<Item *> Instruction_call_input::get_gen_set()
+vector<Item *> Instruction_call_input::get_gen_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   return {};
 }
 
-vector<Item *>  Instruction_call_input::get_kill_set()
+vector<Item *>  Instruction_call_input::get_kill_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
   return {};
 }

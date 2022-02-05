@@ -613,7 +613,9 @@ namespace L2
     {
       if (is_debug)
         cout << "firing register_rule, str: " << in.string() << endl;
+      cout << "get register " << string_to_r[in.string()] << endl;
       Register *i = p.getRegister(string_to_r[in.string()]);
+      cout << "register pointer: " << i->get() << endl;
       parsed_items.push_back(i);
     }
   };
@@ -916,6 +918,7 @@ namespace L2
       i->src = parsed_items.back();
       parsed_items.pop_back();
       i->dst = parsed_items.back();
+      cout << "parse dst: " << endl;
       parsed_items.pop_back();
 
       /*

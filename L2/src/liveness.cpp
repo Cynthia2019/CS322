@@ -112,24 +112,24 @@ namespace L2
 
         for (auto i : f->instructions)
         {
-            auto gen = i->get_gen_set();
-            auto kill = i->get_kill_set();
+            auto gen = i->get_gen_set(p.registers);
+            auto kill = i->get_kill_set(p.registers);
             set<Item*> gen_var;
             set<Item*> kill_var;
-            cout << "gens : "; 
-            for (auto g : gen)
+            cout << "gens : " << gen.size() << endl; 
+            for (int i = 0; i < gen.size(); i++)
             {
                 //Variable* v = dynamic_cast<Variable*>(g); 
-                cout << g->toString() << " "; 
-                gen_var.insert(g); 
+                cout << gen[i]->toString() << " "; 
+                gen_var.insert(gen[i]); 
             }
             gens.push_back(gen_var);
-            cout << endl << "kills : ";
-            for (auto k : kill)
+            cout << endl << "kill: ";
+            for (int i = 0; i < kill.size(); i++)
             {
                 //Variable* v = dynamic_cast<Variable*>(k); 
-                cout << k->toString() << " "; 
-                kill_var.insert(k);
+                cout << kill[i]->toString() << " "; 
+                kill_var.insert(kill[i]);
             }
             cout << endl;
             kills.push_back(kill_var);
