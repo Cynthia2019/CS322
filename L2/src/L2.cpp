@@ -559,7 +559,13 @@ vector<Item *> Instruction_call_input::get_gen_set(std::map<Architecture::Regist
 
 vector<Item *>  Instruction_call_input::get_kill_set(std::map<Architecture::RegisterID, Register*> &registers) 
 {
-  return {};
+  vector<Item *> v;
+  vector<Architecture::RegisterID> caller = Architecture::get_caller_saved_regs(); 
+  for(auto i : caller){
+    Register* r = registers[i]; 
+    v.push_back(r); 
+  }
+  return v;
 }
 
 void Instruction_call_input::accept(Visitor *v) {

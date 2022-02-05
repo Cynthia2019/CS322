@@ -79,16 +79,17 @@ namespace L2
             Instruction_shift* a = dynamic_cast<Instruction_shift*>(inst); 
             if(a != nullptr) {
                 //connect every register with dst except rcx
-                Item* src = a->src; 
-                for(Architecture::RegisterID item : gp) {
-                    if(item != Architecture::rcx && p.getRegister(item) != src) {
-                        edges[src].insert(p.getRegister(item)); 
-                        edges[p.getRegister(item)].insert(src); 
+                Variable* src = dynamic_cast<Variable*>(a->src); 
+                if(src != nullptr){
+                    for(Architecture::RegisterID item : gp) {
+                        if(item != Architecture::rcx && p.getRegister(item) != src) {
+                            edges[src].insert(p.getRegister(item)); 
+                            edges[p.getRegister(item)].insert(src); 
+                        }
                     }
                 }
                 
             }
-
         }
         print_map(edges); 
     }
