@@ -1,7 +1,7 @@
-// #pragma once
+#pragma once
 
-// #include "L2.h"
+#include "L2.h"
 
-// namespace L2 {
-//     void spill(Program &p);
-// }
+namespace L2 {
+    void spill(Program &p);
+}
