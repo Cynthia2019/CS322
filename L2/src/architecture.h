@@ -9,6 +9,8 @@ namespace L2 {
     class Architecture {
         public: 
         enum RegisterID {rdi, rax, rbx, rbp, r10, r11, r12, r13, r14, r15, rsi, rdx, rcx, r8, r9, rsp};
+        enum Color {red, orange, yellow, green, blue, purple, pink, black, white, grey, 
+                    brown, lime, bronze, golden, silver};
         static const int64_t GPRegisters = 15; 
         static string fromRegisterToString(RegisterID r); 
         static bool isGeneralPurpose(RegisterID r); 

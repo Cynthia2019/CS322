@@ -14,6 +14,25 @@ using namespace std;
 
 namespace L2
 {
+    Node::Node(Variable* var) {
+        this->var = var; 
+    } 
+    Variable* Node::get() {
+        return this->var; 
+    }
+    void Graph::addNode(Node* node){
+        nodes[node->get()] = node; 
+    }
+    void Graph::addEdge(Node* n1, Node* n2){
+        g[n1].insert(n2); 
+        g[n2].insert(n1);
+    }
+    bool Graph::doesNodeExist(Node* node){
+        if(g.find(node) == g.end()){
+            return false; 
+        }
+        return true;
+    }
     void print_map(map<Item*, set<Item*>>& m){
         for(auto i : m){
             cout << i.first->toString() << " "; 
@@ -23,14 +42,14 @@ namespace L2
             cout << endl;
         }
     }
-    void interference(Program p) {
-        AnalysisResult* res = computeLiveness(p).first;
+    map<Item*, set<Item*>> computeInterference(Program& p, AnalysisResult* res){
         std::map<Instruction*, std::set<Item*>> in = res->ins; 
         std::map<Instruction*, std::set<Item*>> out = res->outs; 
         std::map<Instruction*, std::set<Item*>> gens = res->gens; 
         std::map<Instruction*, std::set<Item*>> kills = res->kills; 
 
         map<Item*, set<Item*>> edges; 
+        Graph* g = new Graph();
         int length = p.functions[0]->instructions.size(); 
         //get all gp registers
         vector<Architecture::RegisterID> caller = Architecture::get_caller_saved_regs(); 
@@ -41,8 +60,10 @@ namespace L2
         for(auto item1 : gp){
             for(auto item2 : gp){
                 if(item1 != item2) {
-                    edges[p.getRegister(item1)].insert(p.getRegister(item2)); 
-                    edges[p.getRegister(item2)].insert(p.getRegister(item1)); 
+                    Register* r1 = p.getRegister(item1); 
+                    Register* r2 = p.getRegister(item2); 
+                    edges[r1].insert(r2); 
+                    edges[r2].insert(r1); 
                 }
             }
         }
@@ -89,6 +110,26 @@ namespace L2
                     }
                 }
                 
+            }
+        }
+        return edges;
+    } 
+    void interference(Program p) {
+        AnalysisResult* res = computeLiveness(p).first;
+        map<Item*, set<Item*>> edges = computeInterference(p, res); 
+        Graph* graph = new Graph();
+        //contains all the nodes in the graph
+        for(auto m : edges){
+            Variable* v = dynamic_cast<Variable*>(m.first); 
+            graph->addNode(new Node(v)); 
+        }
+        for(auto m : edges){
+            Variable* v = dynamic_cast<Variable*>(m.first); 
+            Node* nv = graph->nodes[v];
+            for(Item* i : m.second){
+                Variable* u = dynamic_cast<Variable*>(i);
+                Node* nu = graph->nodes[u]; 
+                graph->addEdge(nv, nu); 
             }
         }
         print_map(edges); 
