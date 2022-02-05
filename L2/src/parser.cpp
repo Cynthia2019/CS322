@@ -613,7 +613,7 @@ namespace L2
     {
       if (is_debug)
         cout << "firing register_rule, str: " << in.string() << endl;
-      Register *i = p->getRegister(string_to_r[in.string()]);
+      Register *i = p.getRegister(string_to_r[in.string()]);
       parsed_items.push_back(i);
     }
   };

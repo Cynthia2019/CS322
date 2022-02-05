@@ -15,7 +15,7 @@ namespace L2
   //Function 
   Function::Function(void) {}; 
   Variable* Function::newVariable(std::string variableName){
-    if(Function::variables.find(variableName) != Function::variables.end){
+    if(Function::variables.find(variableName) != Function::variables.end()){
       return Function::variables[variableName];
     }
     return new Variable(variableName);
