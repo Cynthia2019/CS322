@@ -24,12 +24,11 @@ namespace L2
         }
     }
     void interference(Program p) {
-        liveness(p);
-        AnalysisResult res; 
-        std::map<Instruction*, std::set<Item*>> in = res.ins; 
-        std::map<Instruction*, std::set<Item*>> out = res.outs; 
-        std::map<Instruction*, std::set<Item*>> gens = res.gens; 
-        std::map<Instruction*, std::set<Item*>> kills = res.kills; 
+        AnalysisResult* res = computeLiveness(p).first;
+        std::map<Instruction*, std::set<Item*>> in = res->ins; 
+        std::map<Instruction*, std::set<Item*>> out = res->outs; 
+        std::map<Instruction*, std::set<Item*>> gens = res->gens; 
+        std::map<Instruction*, std::set<Item*>> kills = res->kills; 
 
         map<Item*, set<Item*>> edges; 
         int length = p.functions[0]->instructions.size(); 

@@ -372,7 +372,7 @@ vector<Item *> Instruction_call::get_gen_set(std::map<Architecture::RegisterID, 
   Number* n = dynamic_cast<Number*>(constant); 
   Variable* i = dynamic_cast<Variable*>(dst); 
   auto args = Architecture::get_argument_regs(); 
-  for(int i = 0; i < n->get(); i++){
+  for(int i = 0; i < min((int)n->get(), 6); i++){
     Register* r = registers[args[i]]; 
     v.push_back(r); 
   }

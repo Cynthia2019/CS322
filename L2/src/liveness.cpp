@@ -114,15 +114,20 @@ namespace L2
             auto kill = i->get_kill_set(p.registers);
             set<Item*> gen_var;
             set<Item*> kill_var;
+           // cout << "gen: ";
             for (int i = 0; i < gen.size(); i++)
             {
+                //cout << gen[i]->toString() << " "; 
                 gen_var.insert(gen[i]); 
             }
             gens.push_back(gen_var);
+           // cout << endl << "kill: ";
             for (int i = 0; i < kill.size(); i++)
             {
+              //  cout << kill[i]->toString() << " ";
                 kill_var.insert(kill[i]);
             }
+          //  cout << endl;
             kills.push_back(kill_var);
         }
 
