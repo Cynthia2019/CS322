@@ -7,9 +7,18 @@ using namespace std;
 
 namespace L2
 {
+  //Program 
   Program::Program(void) {};
   Register* Program::getRegister(Architecture::RegisterID rid){
     return Program::registers[rid];
+  }
+  //Function 
+  Function::Function(void) {}; 
+  Variable* Function::newVariable(std::string variableName){
+    if(Function::variables.find(variableName) != Function::variables.end){
+      return Function::variables[variableName];
+    }
+    return new Variable(variableName);
   }
 
   // Label Item

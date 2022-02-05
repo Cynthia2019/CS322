@@ -613,7 +613,7 @@ namespace L2
     {
       if (is_debug)
         cout << "firing register_rule, str: " << in.string() << endl;
-      Register *i = new Register(string_to_r[in.string()]);
+      Register *i = p->getRegister(string_to_r[in.string()]);
       parsed_items.push_back(i);
     }
   };
@@ -624,9 +624,10 @@ namespace L2
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
+      auto currentF = p.functions.back();
       if (is_debug)
         cout << "firing variable_rule, str: " << in.string() << endl;
-      Variable *i = new Variable(in.string());
+      Variable *i = currentF->newVariable(in.string());
       parsed_items.push_back(i);
     }
   };

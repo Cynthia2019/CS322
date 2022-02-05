@@ -412,7 +412,9 @@ class StackArgument : public Memory {
     std::string name;
     int64_t arguments;
     std::vector<Instruction *> instructions;
+    std::map<std::string, Variable*> variables; 
     Variable* newVariable(std::string variableName);
+    Function(); 
   };
 
   /*
