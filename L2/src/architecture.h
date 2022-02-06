@@ -10,7 +10,7 @@ namespace L2 {
         public: 
         enum RegisterID {rdi, rax, rbx, rbp, r10, r11, r12, r13, r14, r15, rsi, rdx, rcx, r8, r9, rsp};
         enum Color {red, orange, yellow, green, blue, purple, pink, black, white, grey, 
-                    brown, lime, bronze, golden, silver};
+                    brown, lime, bronze, golden, silver, nocolor};
         static Color fromRegisterToColor(RegisterID r);
         static const int64_t GPRegisters = 15; 
         static string fromRegisterToString(RegisterID r); 

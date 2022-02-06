@@ -5,8 +5,22 @@
 #include <set> 
 #include <liveness.h>
 #include <interference.h>
+#include "architecture.h"
 
 namespace L2
 {
-    void coloring(Program p);
+    class Colorer {
+        public:
+        Colorer(Program *p);
+        void registerAllocate(Function *);
+
+        private:
+        Graph *graph;
+        Program *prog;
+        stack<Node *> st;
+        stack<set<Node *>> neighborst;
+        void removeNodeToStack();
+        Architecture::Color selectColor(Node *);
+        vector<Variable *> selectNodeToSpill();
+    };
 }

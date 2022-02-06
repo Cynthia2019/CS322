@@ -25,6 +25,16 @@ namespace L2
         node->degree++;
         Graph::size++;
     }
+
+    void Graph::addNode(Node *node, set<Node *> neighbor) {
+        g[node] = neighbor;
+        for (Node* i : neighbor) {
+            i->degree++;
+        }
+        nodes[node->get()] = node;
+        Graph::size++;
+    }
+
     void Graph::addEdge(Node* n1, Node* n2){
         g[n1].insert(n2); 
         g[n2].insert(n1);
@@ -35,7 +45,8 @@ namespace L2
         }
         return true;
     }
-    void Graph::removeNode(Node* node){
+    // we return node set for reconstructing
+    set<Node *> Graph::removeNode(Node* node){
         set<Node*> connected = g[node]; 
         for(Node* i : connected){
             i->degree--;
@@ -43,7 +54,9 @@ namespace L2
         g.erase(node); 
         nodes.erase(node->get());
         Graph::size--;
+        return connected;
     }
+
     vector<Node*> Graph::getNodes() {
         vector<Node*> all; 
         for(auto m : g){
