@@ -1,0 +1,54 @@
+define :main() {
+    %input <- call input()
+    %input <- %input - 1
+    %input <- %input >> 1
+    %ans <- 0
+    %i <- 2
+    %smaller <- %input < %i
+    br %smaller :ret_ans
+
+    :loop
+    %out <- %i >= %input
+    br %out :ret_ans
+    %prime <- call :isPrime(%i)
+    %check_true <- %prime = 1
+    br %check_true :addOne
+    %i <- %i + 1
+    br:loop
+
+    :addOne
+    %ans <- %ans + 1
+    %i <- %i + 1
+    br :loop
+    
+    :ret_ans
+    call print(%ans)
+    return %ans
+}
+
+define :isPrime(%x) {
+   %i <- 2
+   :loop
+   %square <- %i * %i
+   %check <- %square > %x
+   br %check :ret_true
+   %start <- 1
+
+   :mod
+   %mult <- %start * %i
+   %same <- %mult = %x
+   br %same :ret_false
+   %smaller <- %mult < %x
+   %start <- %start + 1
+   br %smaller :mod
+   %i <- %i + 1
+   br :loop   
+
+   :ret_true
+   %res <- 1
+   return %res
+
+   :ret_false
+   %res <- 0
+   return %res
+}

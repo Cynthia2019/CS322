@@ -1,35 +1,32 @@
 define :main(){
-    %in <- call input(1)
+    %in <- call input()
     %in <- %in - 1
     %in <- %in >> 1
     %ret <- call :fib(%in)
     return %ret
 }
-define :fib(%in) {
-    %smaller <- %in < 2 
-    br %smaller :fid_end
 
+define :fib(%in) {
+    %smaller <- %in < 2
+    br %smaller :fib_end
     %p <- 0
     %q <- 0
     %r <- 1
     %i <- 2
-
     %out <- %i = %in
     br %out :fib_loop_next
     :fib_loop
     %p <- %q
     %q <- %r
-    %r <- %q + %p
-    %i = %i + 1
-    %check <- %i <= %in 
+    %r <- %p + %q
+    %i <- %i + 1
+    %check <- %i <= %in
     br %check :fib_loop
-
     :fib_loop_next
     %res <- %r << 1 
     %res <- %res + 1
     call print(%res)
     return %res
-
     :fib_end
     %res <- %in << 1 
     %res <- %res + 1

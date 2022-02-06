@@ -1,7 +1,10 @@
 define :main() {
-    %input <- call input (1)
+    %input <- call input()
+    %input <- %input - 1
+    %input <- %input >> 1
     %ret <- call :perfect(%input)
-    return %ret
+    call print(%ret)
+    return
 }
 
 define :perfect(%in) {
@@ -11,14 +14,13 @@ define :perfect(%in) {
     :perfect_loop
     %mid <- %right + %left
     %mid <- %mid >> 1
-    %square <- %mid
-    %square <- %square * %square
+    %square <- %mid * %mid
     %smaller <- %square < %in
     %larger <- %square > %in
     %equal <- %square = %in
     br %smaller :perfect_leftPlus
     br %larger :perfect_rightPlus
-    br %in :perfect_true
+    br %equal :perfect_true
 
     :perfect_leftPlus
     %left <- %mid + 1
@@ -33,12 +35,8 @@ define :perfect(%in) {
     br :perfect_false
 
     :perfect_true
-    %ans <- 3
-    call print (%ans)
-    return %ans
+    return 3
 
     :perfect_false
-    %ans <- 3
-    call print (%ans)
-    return %ans
+    return 1
 }
