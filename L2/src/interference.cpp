@@ -164,6 +164,9 @@ namespace L2
                     cout << "register: " << r->toString() << " color: " << n->color<< endl;
                 }
             }
+            else {
+                n->color = Architecture::nocolor;
+            }
             graph->addNode(n); 
         }
         for(auto m : edges){

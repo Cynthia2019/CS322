@@ -1,4 +1,33 @@
-	rax <- 3
-
-	 return
-
+(:perfect
+	call input 0
+	rax >>= 1
+	rdx <- 0
+	rsi <- rax
+	:perfect_loop
+	rcx <- rsi
+	rcx += rdx
+	rcx >>= 1
+	rdi <- rcx
+	rdi *= rdi
+	cjump rdi < rax :perfect_leftPlus
+	cjump rax < rdi :perfect_rightPlus
+	cjump rdi = rax :perfect_true
+	:perfect_leftPlus
+	rdx <- rcx
+	rdx += 1
+	cjump rdx <= rsi :perfect_loop
+	cjump rsi < rdx :perfect_false
+	:perfect_rightPlus
+	rsi <- rcx
+	rsi -= 1
+	cjump rdx <= rsi :perfect_loop
+	cjump rsi < rdx :perfect_false
+	:perfect_true
+	rdi <- 3
+	call print 1
+	return
+	:perfect_false
+	rdi <- 1
+	call print 1
+	return
+)

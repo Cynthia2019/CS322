@@ -169,12 +169,12 @@ class StackArgument : public Memory {
     Instruction_load(Memory *, Item *);
     Item* dst;
     Item* src;
-    Item* m;
+    Item* constant;
     vector<Item *> get_gen_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
     vector<Item *> get_kill_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
     std::string toString() override { 
       return this->dst->toString() + " <- mem "
-          + this->src->toString() + " " + this->m->toString();
+          + this->src->toString() + " " + this->constant->toString();
     }
     void spill(Spiller &s) override;
     void accept(Visitor *v) override; 
@@ -415,7 +415,7 @@ class StackArgument : public Memory {
   class Function
   {
   public:
-    std::string name;
+  std::string name;
     int64_t arguments;
     std::vector<Instruction *> instructions;
     std::map<std::string, Variable*> variables; 

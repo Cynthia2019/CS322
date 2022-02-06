@@ -63,7 +63,7 @@ namespace L2 {
             spillAll();
         }
         
-        f->format_function();
+        //f->format_function();
     }
 
     static bool cmp(Node* a, Node* b){
@@ -84,7 +84,6 @@ namespace L2 {
             neighborst.push(graph->removeNode(curr)); 
             st.push(curr);
         }
-        cout << "stack size: " << st.size() << endl;
         allNodes = graph->getNodes();
         for(Node* n : allNodes){
             if(n->isVariable){
@@ -97,17 +96,22 @@ namespace L2 {
             neighborst.push(graph->removeNode(curr));
             st.push(curr);
         }
-        cout << "stack size second: " << st.size() << endl;
     }
 
 
     Architecture::Color Colorer::selectColor(Node *node) {
         auto neighbor = graph->g[node];
-        vector<Architecture::Color> used;
+        set<Architecture::Color> used;
         for (auto n : neighbor) {
-            used.push_back(n->color);
+            used.insert(n->color);
         }
-
+        // if(is_debug) {
+        //     cout << "used: ";
+        //     for(auto i : used){
+        //         cout << i << " "; 
+        //     }
+        //     cout << endl;
+        // }
         auto caller = Architecture::get_caller_saved_regs();
         auto callee = Architecture::get_callee_saved_regs();
         vector<Architecture::Color> color_ordering;
@@ -117,10 +121,17 @@ namespace L2 {
 
         for (auto r : callee) {
             color_ordering.push_back(Architecture::fromRegisterToColor(r));
-        }
-
-        for (auto c : color_ordering) {
-            if (find(used.begin(), used.end(), c) != used.end()) {
+        }        
+        // if(is_debug) {
+        //     cout << "ordering: ";
+        //     for(auto i : color_ordering){
+        //         cout << i << " "; 
+        //     }
+        //     cout << endl;
+        // }
+        
+        for (Architecture::Color c : color_ordering) {
+            if (used.count(c) == 0) {
                 return c;
             }
         }

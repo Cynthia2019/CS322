@@ -188,7 +188,7 @@ vector<Item *> Instruction_assignment::get_kill_set(std::map<Architecture::Regis
 //load 
 Instruction_load::Instruction_load(Memory *m, Item *item) {
   this->src = m->getStartAddress();
-  this->m = new Number(m->getOffset());
+  this->constant = new Number(m->getOffset());
   this->dst = item;
 }
 
