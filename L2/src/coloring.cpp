@@ -12,49 +12,23 @@
 #include <coloring.h>
 #include <spill.h>
 
+extern bool is_debug;
+
 namespace L2 {
     stack<Node*> st; 
 
-    // void coloring(Program p) {
-    //     // Graph* graph = computeInterference(p).first;
-    //     //remove nodes with edges < 15
-    //     vector<Node*> allNodes = graph->getNodes();
-    //     priority_queue<Node*, vector<Node*>, decltype(&cmp)> pq(cmp); 
-    //     for(Node* n : allNodes){
-    //         if(n->degree < Architecture::GPRegisters && n->isVariable){
-    //             pq.push(n); 
-    //         }
-    //     }
-    //     while(!pq.empty()){
-    //         Node* curr = pq.top(); 
-    //         pq.pop(); 
-    //         graph->removeNode(curr); 
-    //         st.push(curr);
-    //     }
-    //     allNodes = graph->getNodes();
-    //     for(Node* n : allNodes){
-    //         if(n->isVariable){
-    //             pq.push(n);
-    //         }
-    //     }
-    //     while(!pq.empty()){
-    //         Node* curr = pq.top(); 
-    //         pq.pop(); 
-    //         graph->removeNode(curr); 
-    //         st.push(curr);
-    //     }
-    // }
-
-    Colorer::Colorer(Program *p) {
-        this->graph = computeInterference(*p).first;
-        this->prog = p;
+    Colorer::Colorer(Program p, Function* f) {
+        this->graph = computeInterference(p, f).first;
+        this->prog = &p;
+    }
+    Graph* Colorer::getGraph() {
+        return this->graph;
     }
 
     void Colorer::registerAllocate(Function *f) {
         bool success = false;
         while (true) {
             removeNodeToStack();
-
             if (st.size() != neighborst.size()) {
                 cerr << "graph stack size not matched" << endl;
                 abort();
@@ -68,6 +42,9 @@ namespace L2 {
 
                 graph->addNode(v, neighbor);
                 v->color = selectColor(v);
+                if(is_debug) {
+                    cout << "Node: " << v->get()->toString() << " Color: " << v->color << endl;
+                }
             }
 
             auto toSpill = selectNodeToSpill();
@@ -107,6 +84,7 @@ namespace L2 {
             neighborst.push(graph->removeNode(curr)); 
             st.push(curr);
         }
+        cout << "stack size: " << st.size() << endl;
         allNodes = graph->getNodes();
         for(Node* n : allNodes){
             if(n->isVariable){
@@ -119,6 +97,7 @@ namespace L2 {
             neighborst.push(graph->removeNode(curr));
             st.push(curr);
         }
+        cout << "stack size second: " << st.size() << endl;
     }
 
 

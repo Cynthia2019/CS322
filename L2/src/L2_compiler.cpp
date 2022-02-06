@@ -17,6 +17,8 @@
 #include <liveness.h>
 #include <interference.h>
 #include "spill.h"
+#include <coloring.h>
+#include <codegenerator.h>
 
 using namespace std;
 
@@ -135,7 +137,7 @@ int main(
   if (liveness_only)
   {
     // TODO
-    L2::liveness(p);
+    L2::liveness(p, p.functions[0]);
     return 0;
   }
 
@@ -145,7 +147,7 @@ int main(
   if (interference_only)
   {
     // TODO
-    L2::interference(p); 
+    L2::interference(p, p.functions[0]); 
     return 0;
   }
 
@@ -155,6 +157,7 @@ int main(
   if (enable_code_generator)
   {
     // TODO
+    L2::generate_code(p);
   }
 
   return 0;

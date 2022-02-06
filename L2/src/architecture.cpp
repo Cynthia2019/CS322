@@ -70,16 +70,36 @@ namespace L2 {
         {Architecture::r14, Architecture::golden}, 
         {Architecture::r15, Architecture::silver}
     };
+    std::map<Architecture::Color, Architecture::RegisterID> color_to_r = {
+        {Architecture::red, Architecture::rax}, 
+        {Architecture::orange, Architecture::rbx}, 
+        {Architecture::yellow, Architecture::rcx}, 
+        {Architecture::green, Architecture::rdx}, 
+        {Architecture::blue, Architecture::rdi}, 
+        {Architecture::purple, Architecture::rsi}, 
+        {Architecture::pink, Architecture::rbp}, 
+        {Architecture::black, Architecture::r8}, 
+        {Architecture::white, Architecture::r9}, 
+        {Architecture::grey, Architecture::r10}, 
+        {Architecture::brown, Architecture::r11}, 
+        {Architecture::lime, Architecture::r12}, 
+        {Architecture::bronze, Architecture::r13}, 
+        {Architecture::golden, Architecture::r14}, 
+        {Architecture::silver, Architecture::r15}
+    };
     std::string Architecture::fromRegisterToString(Architecture::RegisterID r) {
         return register_to_string[r]; 
-    }
+    };
     Architecture::Color Architecture::fromRegisterToColor(Architecture::RegisterID r){
         return r_to_color[r];
-    }
+    };
+    Architecture::RegisterID Architecture::fromColorToRegister(Architecture::Color c){
+        return color_to_r[c];
+    };
     bool Architecture::isArgument(Architecture::RegisterID r){
         if(find(argument_regs.begin(), argument_regs.end(), r) != argument_regs.end()) return true; 
         return false;
-    }
+    };
     bool Architecture::isCallerSaved(Architecture::RegisterID r){
         if(find(caller_saved_regs.begin(), caller_saved_regs.end(), r) != caller_saved_regs.end()) return true; 
         return false;

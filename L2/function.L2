@@ -1,27 +1,7 @@
-(:main
-	0
-	call :max 8
-	:call_label0
-	%ret <- rax
-	%ret <<= 1
-	%ret += 1
-	rdi <- %ret
-	call print 1
-	rdi <- -13
-	rsi <- 6
-	rdx <- 77
-	rcx <- 15
-	r8 <- -2
-	r9 <- 54
-	mem rsp -24 <- 1
-	mem rsp -16 <- 0
-	mem rsp -8 <- :call_label1
-	call :max 8
-	:call_label1
-	%ret <- rax
-	%ret <<= 1
-	%ret += 1
-	rdi <- %ret
-	call print 1
-	return
+(:test
+  (:test
+    0
+    %v1 <- 3
+    return
+  )
 )

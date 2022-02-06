@@ -12,6 +12,7 @@ namespace L2 {
         enum Color {red, orange, yellow, green, blue, purple, pink, black, white, grey, 
                     brown, lime, bronze, golden, silver, nocolor};
         static Color fromRegisterToColor(RegisterID r);
+        static RegisterID fromColorToRegister (Color c);
         static const int64_t GPRegisters = 15; 
         static string fromRegisterToString(RegisterID r); 
         static bool isGeneralPurpose(RegisterID r); 

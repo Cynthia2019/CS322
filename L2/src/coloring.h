@@ -3,6 +3,7 @@
 #include <L2.h>
 #include <map> 
 #include <set> 
+#include <stack>
 #include <liveness.h>
 #include <interference.h>
 #include "architecture.h"
@@ -11,8 +12,9 @@ namespace L2
 {
     class Colorer {
         public:
-        Colorer(Program *p);
-        void registerAllocate(Function *);
+        Colorer(Program p, Function *f);
+        void registerAllocate(Function *f);
+        Graph* getGraph();
 
         private:
         Graph *graph;

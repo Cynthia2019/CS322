@@ -518,8 +518,6 @@ namespace L2
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
-      if (is_debug)
-        cout << "firing label, str: " << in.string() << endl;
       if (p.entryPointLabel.empty())
       {
         p.entryPointLabel = in.string();
@@ -537,8 +535,6 @@ namespace L2
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
-      if (is_debug)
-        cout << "firing function_name, str: " << in.string() << endl;
       auto newF = new Function();
       newF->name = in.string();
       p.functions.push_back(newF);
@@ -551,8 +547,8 @@ namespace L2
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
-      if (is_debug)
-        cout << "firing spill_prefix, str: " << in.string() << endl;
+      // if (is_debug)
+      //   cout << "firing spill_prefix, str: " << in.string() << endl;
         p.spill_prefix = in.string();
     }
   };
@@ -563,8 +559,8 @@ namespace L2
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
-      if (is_debug)
-        cout << "firing spill_variable, str: " << in.string() << endl;
+      // if (is_debug)
+      //   cout << "firing spill_variable, str: " << in.string() << endl;
       p.spill_variable = in.string();
     }
   };
@@ -598,8 +594,6 @@ namespace L2
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
-      if (is_debug)
-        cout << "firing Label_rule, str: " << in.string() << endl;
       Label *i = new Label(in.string());
       parsed_items.push_back(i);
     }
@@ -611,8 +605,6 @@ namespace L2
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
-      if (is_debug)
-        cout << "firing register_rule, str: " << in.string() << endl;
       Register *i = p.getRegister(string_to_r[in.string()]);
       parsed_items.push_back(i);
     }
@@ -625,8 +617,6 @@ namespace L2
     static void apply(const Input &in, Program &p)
     {
       auto currentF = p.functions.back();
-      if (is_debug)
-        cout << "firing variable_rule, str: " << in.string() << endl;
       Variable *i = currentF->newVariable(in.string());
       currentF->variables[in.string()] = i;
       parsed_items.push_back(i);
@@ -952,8 +942,6 @@ namespace L2
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
-      if (is_debug)
-        cout << "firing Instruction_store_rule, str: " << in.string() << endl;
 
       auto currentF = p.functions.back();
 
@@ -976,8 +964,6 @@ namespace L2
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
-      if (is_debug)
-        cout << "firing shift_op_rule, str: " << in.string() << endl;
       Operation *i = new Operation(in.string());
       parsed_items.push_back(i);
     }
@@ -989,8 +975,6 @@ namespace L2
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
-      if (is_debug)
-        cout << "firing Instruction_shift_rule, str: " << in.string() << endl;
 
       auto currentF = p.functions.back();
 
@@ -1013,8 +997,6 @@ namespace L2
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
-      if (is_debug)
-        cout << "firing compare_op_rule, str: " << in.string() << endl;
       Operation *i = new Operation(in.string());
       parsed_items.push_back(i);
     }
@@ -1026,9 +1008,6 @@ namespace L2
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
-      if (is_debug)
-        cout << "firing Instruction_compare_rule, str: " << in.string() << endl;
-
       auto currentF = p.functions.back();
 
       auto i = new Instruction_compare();
@@ -1052,8 +1031,6 @@ namespace L2
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
-      if (is_debug)
-        cout << "firing Instruction_cjump_rule, str: " << in.string() << endl;
       auto currentF = p.functions.back();
 
       auto i = new Instruction_cjump();

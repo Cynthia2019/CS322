@@ -7,7 +7,7 @@
 
 namespace L2
 {
-  void interference(Program p);
+  void interference(Program p, Function* f);
   class Node {
     public: 
       int32_t degree; 
@@ -15,6 +15,7 @@ namespace L2
       Variable* get(); 
       Architecture::Color color;
       bool isVariable = true;
+      string variableToString(); 
     private: 
       Variable* var; 
   };
@@ -30,5 +31,5 @@ namespace L2
      std::vector<Node*> getNodes(); 
      int32_t size; 
   };
-    pair<Graph*, map<Item*, set<Item*>>> computeInterference(Program& p);
+  pair<Graph*, map<Item*, set<Item*>>> computeInterference(Program p, Function* f);
 }

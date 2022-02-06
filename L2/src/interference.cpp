@@ -12,15 +12,21 @@
 
 using namespace std;
 
+extern bool is_debug;
+
 namespace L2
 {
     Node::Node(Variable* var) {
         this->var = var; 
     } 
+    string Node::variableToString() {
+        return this->var->get();
+    }
     Variable* Node::get() {
         return this->var; 
     }
     void Graph::addNode(Node* node){
+        g[node] = {};
         nodes[node->get()] = node; 
         node->degree++;
         Graph::size++;
@@ -73,8 +79,8 @@ namespace L2
             cout << endl;
         }
     }
-    pair<Graph*, map<Item*, set<Item*>>> computeInterference(Program& p){
-        AnalysisResult* res = computeLiveness(p).first;
+    pair<Graph*, map<Item*, set<Item*>>> computeInterference(Program p, Function* f){
+        AnalysisResult* res = computeLiveness(p, f).first;
         std::map<Instruction*, std::set<Item*>> in = res->ins; 
         std::map<Instruction*, std::set<Item*>> out = res->outs; 
         std::map<Instruction*, std::set<Item*>> gens = res->gens; 
@@ -82,7 +88,7 @@ namespace L2
 
         map<Item*, set<Item*>> edges; 
         Graph* g = new Graph();
-        int length = p.functions[0]->instructions.size(); 
+        int length = f->instructions.size(); 
         //get all gp registers
         vector<Architecture::RegisterID> caller = Architecture::get_caller_saved_regs(); 
         vector<Architecture::RegisterID> callee = Architecture::get_callee_saved_regs(); 
@@ -99,7 +105,7 @@ namespace L2
                 }
             }
         }
-        for(Instruction* inst : p.functions[0]->instructions) {
+        for(Instruction* inst : f->instructions) {
             //connect each pair of variables in the same IN set 
             for(auto s1 : in[inst]){
                 for(auto s2 : in[inst]){
@@ -154,8 +160,11 @@ namespace L2
             if(r != nullptr) {
                 n->color = Architecture::fromRegisterToColor(r->get());
                 n->isVariable = false;
+                if(is_debug) {
+                    cout << "register: " << r->toString() << " color: " << n->color<< endl;
+                }
             }
-            graph->addNode(new Node(v)); 
+            graph->addNode(n); 
         }
         for(auto m : edges){
             Variable* v = dynamic_cast<Variable*>(m.first); 
@@ -169,10 +178,15 @@ namespace L2
         return {graph, edges};
     }
      
-    void interference(Program p) {
-        pair<Graph*, map<Item*, set<Item*>>> graphRes = computeInterference(p); 
+    void interference(Program p, Function* f) {
+        pair<Graph*, map<Item*, set<Item*>>> graphRes = computeInterference(p, f); 
         Graph* g = graphRes.first; 
         map<Item*, set<Item*>> edges = graphRes.second; 
-        print_map(edges); 
+        if(is_debug) {
+            cout << endl;
+            cout << "print interference graph: " << endl; 
+            print_map(edges); 
+            cout << endl;
+        }
     }
 }

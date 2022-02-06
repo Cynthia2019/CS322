@@ -9,6 +9,8 @@
 
 using namespace std;
 
+extern bool is_debug;
+
 namespace L2
 {
     void format_vector(const vector<set<Item*>> in, const vector<set<Item*>> out)
@@ -102,9 +104,8 @@ namespace L2
         }
         return {idx + 1};
     }
-    std::pair<AnalysisResult*, vector<vector<set<Item*>>>> computeLiveness(Program& p) {
+    std::pair<AnalysisResult*, vector<vector<set<Item*>>>> computeLiveness(Program p, Function* f) {
         AnalysisResult* res = new AnalysisResult();
-        auto f = p.functions[0];
         vector<set<Item*>> gens; 
         vector<set<Item*>> kills; 
 
@@ -175,11 +176,14 @@ namespace L2
         } while (changed);
         return {res, {in, out}}; 
     }
-    void liveness(Program p)
+    void liveness(Program p, Function* f)
     {
-        std::pair<AnalysisResult*, vector<vector<set<Item*>>>> res = computeLiveness(p); 
+        std::pair<AnalysisResult*, vector<vector<set<Item*>>>> res = computeLiveness(p, f); 
         vector<set<Item*>> in = res.second[0]; 
         vector<set<Item*>> out = res.second[1];
-        format_vector(in, out);
+        if(is_debug){
+            cout << "print liveness: " << endl; 
+            format_vector(in, out);
+        }
     }
 }
