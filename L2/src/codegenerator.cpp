@@ -162,11 +162,13 @@ namespace L2 {
             Colorer* colorer = new L2::Colorer(p, f);
             colorer->registerAllocate(f); 
             CodeGenerator CodeGen{f, outputFile, colorer};
-            outputFile << "(" << f->name << endl;
+            outputFile << "(" <<p.entryPointLabel << endl;
+            outputFile << "  (" << f->name << endl;
+            ourputFile << "  " << f->arguments << endl; 
             for(auto i : f->instructions){
                 i->accept(&CodeGen);
             } 
-            outputFile << ")\n";
+            outputFile << "  )\n)\n";
             return ;
         }
     }
