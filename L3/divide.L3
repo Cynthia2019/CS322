@@ -1,0 +1,125 @@
+define :main() {
+    %dividend <- call input()
+    %divisor <- call input()
+
+    %res <- call divide(1, 2)
+    %res <- 1
+    call print(1)
+    return
+}
+
+define :divide(%dividend, %divisor) {
+    %dividend >>= 1
+     %divisor >>= 1
+ 
+     turn 1
+
+
+ (:main
+   (:main
+     5
+     call input 0
+     %dividend <- rax
+     //mem rsp 0 <- rax
+     call input 0
+     %divisor <- rax
+     //mem rsp 8 <- rax
+ 
+     rdi <- %dividend
+     rsi <- %divisor
+     mem rsp -8 <- :FUN_next
+     call :divide 2
+     :FUN_next
+ 
+     rdi <- rax
+     call print 1
+     return
+   )
+ 
+   (:divide
+     2
+     // decode
+     rsi >>= 1
+     rdi >>= 1
+ 
+     rax <- 0
+     cjump rsi = 0 :divide_end
+ 
+ 
+     %remaining <- rdi
+     %remaining -= rsi
+ 
+     :divide_loop1
+     cjump rdi < rsi :divide_loop1_next
+     %res <- 1
+     %step <- rsi
+ 
+     :divide_loop2
+     cjump %remaining <= %step :divide_loop2_next
+ 
+     %step <<= 1
+     %res <<= 1
+     %remaining <- rdi
+     %remaining -= %step
+ 
+     goto :divide_loop2
+     :divide_loop2_next
+ 
+     rax += %res
+     rdi -= %step
+     goto :divide_loop1
+     :divide_loop1_next
+ 
+     //encode
+     rax <<= 1
+     rax += 1
+ 
+     :divide_end
+     return
+   )
+  // // // // // // // // // )
+
+ 11 // define :divide(%dividend, %divisor) {
+ 12     // %dividend >>= 1
+ 13     // %divisor >>= 1
+ 14
+ 15         // %retval = 0
+ 16
+ 17         // %b1 <- %divisor = 0
+ 18         // br %b1 :divide_end
+ 19
+ 20         // %remaining <- %dividend
+ 21         // %remaining -= %divisor
+ 22         // :divide_loop1
+ 23         // %b2 <- %dividend < %divisor
+ 24         // br %b2 :divide_loop1_next
+ 25         // %res <- 1
+ 26         // %step <- %divisor
+ 27 //
+ 28         // :divide_loop2
+ 29         // %b3 <- %remaining <= %step
+ 30         // br %b3 :divide_loop2_next
+ 31
+ 32         // %step <<= 1
+ 33         // %res <<= 1
+ 34         // %remaining <- %dividend
+ 35         // %remaining -= %step
+ 36 //
+ 37         // br :divide_loop2
+ 38         // :divide_loop2_next
+ 39 //
+ 40         // %retval += %res
+ 41         // %dividend -= %step
+ 42 //
+ 43         // goto :divide_loop1
+ 44         // :divide_loop1_next
+ 45 //
+ 46         // %retval <<= 1
+ 47         // %retval += 1
+ 48
+ 49         // :divide_end
+ 50         // return %retval
+ 51
+ 52 // }
+~             
+
