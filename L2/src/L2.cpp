@@ -43,10 +43,13 @@ namespace L2
   }
 
   void Function::format_function() {
-    // ::cout << "(" << this->name << endl;
-    // ::cout << "\t" << this->arguments << " " << spill_variable_nb << endl;
+    ::cout << "(" << this->name << endl;
+    ::cout << "\t" << this->arguments << endl;
+    for (auto i : this->instructions) {
+      ::cout << "\t" << i->toString() << endl;
+    }
 
-    // os << ")" << endl;
+    ::cout << ")" << endl;
   }
 
   // Label Item

@@ -23,9 +23,10 @@ namespace L2
      std::map<Node*, std::set<Node*>> g; 
      std::map<Variable*, Node*> nodes; 
      void addNode(Node *n); 
+     void addNode(Node *, set<Node *>);
      void addEdge(Node *n1, Node *n2); 
      bool doesNodeExist(Node *n); 
-     void removeNode(Node *n); 
+     set<Node *> removeNode(Node *n); 
      std::vector<Node*> getNodes(); 
      int32_t size; 
   };

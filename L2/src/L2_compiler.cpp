@@ -124,7 +124,8 @@ int main(
   if (spill_only)
   {
     // TODO
-    L2::spill(p);
+    L2::Function *f = p.functions[0];
+    L2::spill(&p, f, f->newVariable(p.spill_variable), p.spill_prefix);
     return 0;
   }
 
