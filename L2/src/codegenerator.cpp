@@ -74,6 +74,7 @@ namespace L2 {
         string src = fromItemToString(i->src, colorer->getGraph()); 
         string dst = fromItemToString(i->dst, colorer->getGraph()); 
         string offset = std::to_string(this->f->locals * 8 + stoll(i->src->toString()));
+        cout << "locals: " <<this->f->locals << " src: " <<i->src->toString() <<  "stack-arg: " << offset << endl;
         string ans = "\t" + dst + " <- mem rsp " + offset + '\n'; 
         this->outputFile << ans; 
     }

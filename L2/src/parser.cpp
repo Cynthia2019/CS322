@@ -741,7 +741,7 @@ namespace L2
       parsed_items.pop_back();
       i->dst = parsed_items.back();
       parsed_items.pop_back();
-
+      currentF->locals += 1;
       currentF->instructions.push_back(i);
     }
   };

@@ -29,7 +29,7 @@ namespace L2 {
     bool Colorer::tryRegisterAllocate(Function *f) {
 
         bool success = false;
-        f->locals = 0;
+        //f->locals = 0;
         unordered_map<Variable *, bool> spilled_variables;
         int64_t round = 0, start_pos = 0;
         while (true) {
