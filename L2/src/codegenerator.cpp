@@ -174,27 +174,16 @@ namespace L2 {
             colorer->registerAllocate(f); 
             CodeGenerator CodeGen{f, outputFile, colorer};
             outputFile << "  (" << f->name << endl;
-<<<<<<< HEAD
-            outputFile << "\t" << f->arguments << " " << f->locals << endl; 
-=======
             outputFile << "  " << f->arguments << " " << f->locals << endl; 
             // f->format_function();
->>>>>>> bcfb356e8a4553d93474497749df6cc424b1d1fb
             for(auto i : f->instructions){
                 if(is_debug) cout << "instruction: "<< i->toString() << endl;
                 i->accept(&CodeGen);
             } 
-<<<<<<< HEAD
-            outputFile << "  )\n";
-        }
-        outputFile << ")\n";
-=======
-            // cerr << "hi" << endl;
             outputFile << "  )\n";
         }
         outputFile << ")\n";
         return;
->>>>>>> bcfb356e8a4553d93474497749df6cc424b1d1fb
     }
 
 }
