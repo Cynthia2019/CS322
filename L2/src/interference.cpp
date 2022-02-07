@@ -178,6 +178,12 @@ namespace L2
                 graph->addEdge(nv, nu); 
             }
         }
+        if(is_debug) {
+            cout << endl;
+            cout << "print interference graph: " << endl; 
+            print_map(edges); 
+            cout << endl;
+        }
         return {graph, edges};
     }
      

@@ -69,8 +69,8 @@ namespace L2 {
     void CodeGenerator::visit(Instruction_stack *i) {
         string src = fromItemToString(i->src, colorer->getGraph()); 
         string dst = fromItemToString(i->dst, colorer->getGraph()); 
-        string offset = std::to_string(this->f->locals * 8);
-        string ans = "\t" + dst + " <- mem " + src + " " + offset + '\n'; 
+        string offset = std::to_string(this->f->locals * 8 + stoll(i->src->toString()));
+        string ans = "\t" + dst + " <- mem rsp " + offset + '\n'; 
         this->outputFile << ans; 
     }
     void CodeGenerator::visit(Instruction_aop *i) {
@@ -101,7 +101,7 @@ namespace L2 {
            string oprand2 = fromItemToString(i->oprand2, colorer->getGraph()); 
            string op = fromItemToString(i->op, colorer->getGraph()); 
            string dst = fromItemToString(i->dst, colorer->getGraph()); 
-           string ans = "\t" + dst + " " + oprand1 + " " + op + " " + oprand2 + "\n";
+           string ans = "\t" + dst + " <- " + oprand1 + " " + op + " " + oprand2 + "\n";
             this->outputFile << ans;
        }
        void CodeGenerator::visit(Instruction_cjump *i) {
@@ -158,22 +158,22 @@ namespace L2 {
         */ 
         std::ofstream outputFile;
         outputFile.open("prog.L1");
-
+        outputFile << "(" <<p.entryPointLabel << endl;
         for(Function* f : p.functions){
             // liveness(p, f); 
             // interference(p, f); 
             Colorer* colorer = new L2::Colorer(p, f);
             colorer->registerAllocate(f); 
             CodeGenerator CodeGen{f, outputFile, colorer};
-            outputFile << "(" <<p.entryPointLabel << endl;
             outputFile << "  (" << f->name << endl;
-            outputFile << "  " << f->arguments << " " << f->locals << endl; 
+            outputFile << "\t" << f->arguments << " " << f->locals << endl; 
             for(auto i : f->instructions){
+                if(is_debug) cout << "instruction: "<< i->toString() << endl;
                 i->accept(&CodeGen);
             } 
-            outputFile << "  )\n)\n";
-            return ;
+            outputFile << "  )\n";
         }
+        outputFile << ")\n";
     }
 
 }

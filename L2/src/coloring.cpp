@@ -13,6 +13,7 @@
 #include <spill.h>
 
 extern bool is_debug;
+using namespace std;
 
 namespace L2 {
     stack<Node*> st; 
