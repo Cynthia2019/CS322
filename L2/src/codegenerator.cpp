@@ -16,9 +16,9 @@ extern bool is_debug;
 namespace L2 {
     std::string fromItemToString(Item* item, Graph* graph){
         Variable* v = dynamic_cast<Variable*>(item); 
-        if(is_debug) {
-            cout << "Item: " << item->toString() << endl;
-        }
+        // if(is_debug) {
+        //     cout << "Item: " << item->toString() << endl;
+        // }
         if(v == nullptr) {
             return item->toString();
         }
@@ -173,7 +173,6 @@ namespace L2 {
             outputFile << "  " << f->arguments << " " << f->locals << endl; 
             // f->format_function();
             for(auto i : f->instructions){
-                if(is_debug) cout << "instruction: "<< i->toString() << endl;
                 i->accept(&CodeGen);
             } 
             outputFile << "  )\n";

@@ -201,7 +201,7 @@ namespace L2 {
   //     os << "\t" << i->toString() << endl;
   //   }
   //   os << ")" << endl;
-  cout << "number" << spill_variable_nb << endl;
+  cout << "number " << spill_variable_nb << endl;
     return spill_variable_nb;
   }
 
@@ -215,7 +215,7 @@ namespace L2 {
     // int spill_variable_nb = 0;
     ostream &os = ::cout;
     int64_t lineno = 0, start_pos = newVariable.size();
-    cout << "enter spill one" << endl;
+    cout << "variable spilled : " << spill_var->toString() << " prefix: " << prefix << endl;
     Spiller_single spiller(os, p, f, spill_var, prefix, lineno, start_pos, newVariable);
     // spiller.initSpill(spill_var);
 
