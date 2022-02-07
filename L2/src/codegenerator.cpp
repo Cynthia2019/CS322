@@ -68,7 +68,10 @@ namespace L2 {
     }
     void CodeGenerator::visit(Instruction_stack *i) {
         string src = fromItemToString(i->src, colorer->getGraph()); 
-        string dst = fromItemToString(i->dst, colorer->getGraph());       
+        string dst = fromItemToString(i->dst, colorer->getGraph()); 
+        string offset = std::to_string(this->f->locals * 8);
+        string ans = "\t" + dst + " <- mem " + src + " " + offset + '\n'; 
+        this->outputFile << ans; 
     }
     void CodeGenerator::visit(Instruction_aop *i) {
         string src = fromItemToString(i->src, colorer->getGraph()); 
