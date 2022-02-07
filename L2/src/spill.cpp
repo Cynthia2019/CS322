@@ -1,6 +1,7 @@
 #include "spill.h"
 #include <iostream>
 
+extern bool is_debug;
 namespace L2 {
 
   class Spiller_single : public Visitor {
@@ -28,8 +29,7 @@ namespace L2 {
     //   lineno = 0;
     // } 
 
-    void visit(Instruction_ret *i) {
-    }
+    void visit(Instruction_ret *i) { }
 
     void visit(Instruction_assignment *i) {
       bool use = should_spill(&i->src);
@@ -39,8 +39,6 @@ namespace L2 {
       if (use)
         load();
 
-      string s = i->toString();
-      
       if (define)
         store();
       if (use || define)
@@ -57,6 +55,11 @@ namespace L2 {
     }
 
     void visit(Instruction_shift *i) {
+      bool define = should_spill(&i->dst);
+      bool use = should_spill(&i->src);
+      if (use) load();
+      if (define) store();
+      if (use || define) counter++;
     }
 
 
@@ -65,12 +68,15 @@ namespace L2 {
       bool dst = should_spill(&i->dst);
       bool use = src || dst;
       if (use) load();
-      // if (&i->src->get_type() == item_variable) {
-      //   load();
-      // }
+      if (use) counter++;
     }
 
     void visit(Instruction_stack *i) {
+      bool define = should_spill(&i->dst);
+      bool use = should_spill(&i->src);
+      if (use) load();
+      if (define) store();
+      if (use || define) counter++;
     }
 
     void visit(Instruction_aop *i) {
@@ -89,8 +95,16 @@ namespace L2 {
       bool dst = should_spill(&i->dst);
       bool use = src || dst;
       if (use) load();
+      if (use) counter++;
      }
-    void visit(Instruction_load_aop *i) {}
+
+    void visit(Instruction_load_aop *i) {
+      bool use = should_spill(&i->src);
+      bool define = should_spill(&i->dst);
+      if (use) load();
+      if (define) store();
+      if (use || define) counter++;
+    }
     void visit(Instruction_compare *i) {}
     void visit(Instruction_cjump *i) {
       bool label = should_spill(&i->label);
@@ -103,7 +117,8 @@ namespace L2 {
     void visit(Instruction_call *i) { 
       bool use = should_spill(&i->dst); 
       if(use) load();
-     }
+      if (use) counter++;
+    }
     void visit(Instruction_call_print *i) {}
     void visit(Instruction_call_input *i) {}
     void visit(Instruction_call_allocate *i) {}
@@ -114,9 +129,25 @@ namespace L2 {
       if (spill) load();
       if (spill) store();
       if (spill) counter++;
-      }
-    void visit(Instruction_decrement *i) {}
-    void visit(Instruction_at *i) {}
+    }
+
+    void visit(Instruction_decrement *i) {
+      bool spill = should_spill(&i->src);
+      if (spill) load();
+      if (spill) store();
+      if (spill) counter++;
+    }
+
+    void visit(Instruction_at *i) {
+      bool src1 = should_spill(&i->src_add);
+      bool src2 = should_spill(&i->src_mult);
+      bool dst = should_spill(&i->dst);
+      bool use = src1 || src2;
+      if (use) load();
+      if (dst) store();
+      if (use || dst) counter++;
+      
+    }
     void visit(Instruction_goto *i) {}
 
     private:
@@ -187,8 +218,15 @@ namespace L2 {
 
     for (auto v : tospill) {
       //TODO: check spilled variable
+      if (is_debug) {
+        f->format_function();
+        cout << v->toString() << endl;
+      }
       bool spilled = spillOne(p, f, v, prefix, newVariable);
       if (spilled) {
+        if (is_debug) {
+          cout << v->toString() << " spilled" << endl;
+        }
         spill_variable_nb++;
         start_pos++;
         // newVariable[f->newVariable()]
