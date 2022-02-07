@@ -201,6 +201,7 @@ namespace L2 {
   //     os << "\t" << i->toString() << endl;
   //   }
   //   os << ")" << endl;
+  cout << "number" << spill_variable_nb << endl;
     return spill_variable_nb;
   }
 

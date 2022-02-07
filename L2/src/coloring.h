@@ -12,7 +12,7 @@ namespace L2
 {
     class Colorer {
         public:
-        Colorer(Program p, Function *f);
+        Colorer(Program *p, Function *f);
         void registerAllocate(Function *f);
         Graph* getGraph();
 
