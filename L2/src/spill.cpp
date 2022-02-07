@@ -47,11 +47,11 @@ namespace L2 {
 
     void visit(Instruction_load *i) {
       bool define = should_spill(&i->dst);
+      bool use = should_spill(&i->src);
+      if (use) load();
+      if (define) store();
 
-      if (define) {
-        store();
-        counter++;
-      }
+      if (use || define) counter++;
     }
 
     void visit(Instruction_shift *i) {

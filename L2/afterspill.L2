@@ -1,0 +1,22 @@
+(:leftShiftStuff_1
+	3
+	%S0_0 <- rdi
+	mem rsp 0 <- %S0_0
+	%S1_0 <- rsi
+	mem rsp 8 <- %S1_0
+	%S2_0 <- rdx
+	mem rsp 16 <- %S2_0
+	%S0_1 <- mem rsp 0
+	%S1_1 <<= %S0_1
+	mem rsp 8 <- %S1_1
+	%S1_2 <- mem rsp 8
+	%S2_1 <<= %S1_2
+	mem rsp 16 <- %S2_1
+	%S2_2 <- mem rsp 16
+	rax <- %S2_2
+	%S0_2 <- mem rsp 0
+	rax += %S0_2
+	%S1_3 <- mem rsp 8
+	rax += %S1_3
+	return
+)
