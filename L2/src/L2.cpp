@@ -33,6 +33,16 @@ namespace L2
   }
   //Function 
   Function::Function(void) {}
+  Function::Function(const Function &f) {
+    this->name = f.name;
+    this->arguments = f.arguments;
+    this->locals = f.locals;
+    for (auto i : f.instructions) {
+      Instruction *inst = i->clone();
+      this->instructions.push_back(inst);
+    }
+    this->variables= f.variables;
+  }
 
   Variable* Function::newVariable(std::string variableName){
     if(Function::variables.find(variableName) != Function::variables.end()){
@@ -166,6 +176,30 @@ StackArgument::StackArgument(Register* rsp, Number* o) : Memory(rsp, o)
 string StackArgument::toString() {
   return this->startAddress->toString() + " " + this->offset->toString();
 }
+
+  Instruction_ret * Instruction_ret::clone() { return new Instruction_ret(*this); }
+  Instruction_assignment * Instruction_assignment::clone() { return new Instruction_assignment(*this); }
+  Instruction_load * Instruction_load::clone() { return new Instruction_load(*this); }
+  Instruction_shift * Instruction_shift::clone() { return new Instruction_shift(*this); }
+  Instruction_store * Instruction_store::clone() { return new Instruction_store(*this); }
+  Instruction_stack * Instruction_stack::clone() { return new Instruction_stack(*this); }
+  Instruction_aop * Instruction_aop::clone() { return new Instruction_aop(*this); }
+  Instruction_store_aop * Instruction_store_aop::clone() { return new Instruction_store_aop(*this); }
+  Instruction_load_aop * Instruction_load_aop::clone() { return new Instruction_load_aop(*this); }
+  Instruction_compare * Instruction_compare::clone() { return new Instruction_compare(*this); }
+  Instruction_cjump * Instruction_cjump::clone() { return new Instruction_cjump(*this); }
+  Instruction_call * Instruction_call::clone() { return new Instruction_call(*this); }
+  Instruction_call_print * Instruction_call_print::clone() { return new Instruction_call_print(*this); }
+  Instruction_call_input * Instruction_call_input::clone() { return new Instruction_call_input(*this); }
+  Instruction_call_allocate * Instruction_call_allocate::clone() { return new Instruction_call_allocate(*this); }
+  Instruction_call_error * Instruction_call_error::clone() { return new Instruction_call_error(*this); }
+  Instruction_label * Instruction_label::clone() { return new Instruction_label(*this); }
+  Instruction_increment * Instruction_increment::clone() { return new Instruction_increment(*this); }
+  Instruction_decrement * Instruction_decrement::clone() { return new Instruction_decrement(*this); }
+  Instruction_at * Instruction_at::clone() { return new Instruction_at(*this); }
+  Instruction_goto * Instruction_goto::clone() { return new Instruction_goto(*this); }
+
+
 //assignment 
 void Instruction_assignment::accept(Visitor* v) {
   v->visit(this);

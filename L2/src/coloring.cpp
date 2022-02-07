@@ -26,7 +26,8 @@ namespace L2 {
         return this->graph;
     }
 
-    void Colorer::registerAllocate(Function *f) {
+    bool Colorer::tryRegisterAllocate(Function *f) {
+
         bool success = false;
         f->locals = 0;
         unordered_map<Variable *, bool> spilled_variables;
@@ -48,7 +49,7 @@ namespace L2 {
                 graph->addNode(v, neighbor);
                 v->color = selectColor(v);
                 if(is_debug) {
-                    cout << "Node: " << v->get()->toString() << " Color: " << v->color << endl;
+                    cout << "Node: " << v->get()->toString() << " Color: " << v->color << Architecture::fromRegisterToString(Architecture::fromColorToRegister(v->color))<< endl;
                 }
             }
 
@@ -63,7 +64,7 @@ namespace L2 {
                 break;
             }
 
-            std::string prefix = "R" + to_string(round) + "S";
+            std::string prefix = "%R" + to_string(round);
             int64_t spilled = spillMultiple(prog, f, toSpill, spilled_variables, prefix, start_pos);
             if (spilled == 0) {
                 cerr << "BUG, this should not happen, please look at coloring.cpp" << endl;
@@ -72,16 +73,29 @@ namespace L2 {
 
             f->locals += spilled;
             round++;
-            start_pos += toSpill.size();
+            start_pos += spilled;
         }
 
         // cerr << f->locals << endl;
         // f->format_function();
-        if (!success) {
-            f->locals = 0;
-            cerr << "not implemented" << endl;
-            spillAll();
+        return success;
+
+    }
+
+    Function *Colorer::registerAllocate(Function *f) {
+        Function *original_f = new Function(*f);
+
+        if (!tryRegisterAllocate(f)) {
+            cout << "spill all" << endl;
+            spillAll(prog, original_f);
+            bool error = tryRegisterAllocate(original_f);
+            if (!error) {
+                cerr << "bug, this one should succeed" << endl;
+            }
+            return original_f;
         }
+
+        return f;
     }
 
     static bool cmp(Node* a, Node* b){

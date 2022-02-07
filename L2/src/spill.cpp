@@ -55,8 +55,10 @@ namespace L2 {
     }
 
     void visit(Instruction_shift *i) {
+      // cout << "parsing " << i->toString() << endl;
+      bool src = should_spill(&i->src);
       bool define = should_spill(&i->dst);
-      bool use = should_spill(&i->src);
+      bool use = src || define;
       if (use) load();
       if (define) store();
       if (use || define) counter++;
@@ -99,13 +101,26 @@ namespace L2 {
      }
 
     void visit(Instruction_load_aop *i) {
-      bool use = should_spill(&i->src);
+      bool src = should_spill(&i->src);
+      bool dst = should_spill(&i->dst);
+      bool use = src || dst;
+
+      // bool use = should_spill(&i->src);
+      bool define = dst;
+      if (use) load();
+      if (define) store();
+      if (use || define) counter++;
+    }
+
+    void visit(Instruction_compare *i) {
+      bool op1 = should_spill(&i->oprand1);
+      bool op2 = should_spill(&i->oprand2);
+      bool use = op1 || op2;
       bool define = should_spill(&i->dst);
       if (use) load();
       if (define) store();
       if (use || define) counter++;
     }
-    void visit(Instruction_compare *i) {}
     void visit(Instruction_cjump *i) {
       bool label = should_spill(&i->label);
       bool opr1 = should_spill(&i->oprand1);
@@ -168,6 +183,7 @@ namespace L2 {
         Memory *m = new Memory(prog->getRegister(Architecture::rsp), new Number(offset));
         Variable *nv = func->newVariable(prefix + to_string(counter));
         Instruction *ins = new Instruction_load(m, nv);
+        // cout << "inserting" << ins->toString() << " " << lineno << endl;
         func->instructions.insert(func->instructions.begin() + lineno, ins);
         newVariables[nv] = true;
         // outputstream << "\t" << prefix + to_string(counter) << " <- mem rsp 0" << endl;
@@ -214,20 +230,22 @@ namespace L2 {
     // Spiller_single spiller(os, p, f, , prefix, lineno, start_pos);
     int spill_variable_nb = 0;
 
+    int64_t prefix_count = 0;
     for (auto v : tospill) {
       //TODO: check spilled variable
-      if (is_debug) {
+      // if (is_debug) {
         f->format_function();
         cout << v->toString() << endl;
-      }
-      bool spilled = spillOne(p, f, v, prefix, newVariable, start_pos);
+      // }
+      bool spilled = spillOne(p, f, v, prefix + "S" + to_string(prefix_count) + "_", newVariable, start_pos);
       if (spilled) {
-        if (is_debug) {
+        // if (is_debug) {
           cout << v->toString() << " spilled" << endl;
           f->format_function();
-        }
+        // }
         spill_variable_nb++;
         start_pos++;
+        prefix_count++;
         // newVariable[f->newVariable()]
       }
     }
@@ -242,9 +260,27 @@ namespace L2 {
     return spill_variable_nb;
   }
 
-  void spillAll() {
+  void spillAll(Program *p, Function *f) {
     //TODO: fill this out
     ::cout << "spilling all" << endl;
+    std::string prefix = "%S";
+    unordered_map<Variable *, bool> newVariable;
+    int64_t start_pos = 0;
+
+    int64_t prefix_count = 0;
+    f->locals = 0;
+    cout << f->variables.size() << endl;
+    for (auto v : f->variables) {
+      cout << "spilling " << v.first << endl;
+      f->format_function();
+      bool spilled = spillOne(p, f, f->newVariable(v.first), prefix + to_string(prefix_count) + "_", newVariable, start_pos);
+      if (spilled) {
+        start_pos++;
+        prefix_count++;
+        f->locals++;
+      f->format_function();
+      }
+    }
   }
 
   bool spillOne(Program *p, Function *f, Variable *spill_var, std::string prefix, 

@@ -13,7 +13,7 @@ namespace L2
     class Colorer {
         public:
         Colorer(Program *p, Function *f);
-        void registerAllocate(Function *f);
+        Function *registerAllocate(Function *f);
         Graph* getGraph();
 
         private:
@@ -25,5 +25,6 @@ namespace L2
         Architecture::Color selectColor(Node *);
         vector<Variable *> selectNodeToSpill(unordered_map<Variable *, bool>);
         bool areAllNodesColored();
+        bool tryRegisterAllocate(Function *f);
     };
 }

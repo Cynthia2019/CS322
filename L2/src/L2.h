@@ -133,6 +133,7 @@ class StackArgument : public Memory {
 
     virtual void accept(Visitor* visitor) = 0; 
     virtual std::string toString() = 0; //for debug
+    virtual Instruction *clone() = 0;
   };
 
   /*
@@ -146,6 +147,7 @@ class StackArgument : public Memory {
       std::string toString() override { return "return"; }
       void spill(Spiller &s) override;
       void accept(Visitor *v) override; 
+      Instruction_ret *clone() override; 
   };
 
   class Instruction_assignment : public Instruction
@@ -158,6 +160,7 @@ class StackArgument : public Memory {
     vector<Item *> get_gen_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
     vector<Item *> get_kill_set(std::map<Architecture::RegisterID, Register*> &registers)  override;
     void spill(Spiller &s) override;
+    Instruction_assignment *clone() override; 
   };
 
   // load instruction
@@ -178,6 +181,7 @@ class StackArgument : public Memory {
     }
     void spill(Spiller &s) override;
     void accept(Visitor *v) override; 
+    Instruction_load *clone() override; 
   };
 
   // shift instruction
@@ -192,6 +196,7 @@ class StackArgument : public Memory {
     std::string toString() override { return dst->toString() +" "+ op->toString() + " " + src->toString(); }
     void spill(Spiller &s) override;
     void accept(Visitor *v) override; 
+    Instruction_shift *clone() override; 
   };
 
   // store instruction
@@ -211,6 +216,7 @@ class StackArgument : public Memory {
   
     void spill(Spiller &s) override;
     void accept(Visitor *v) override; 
+    Instruction_store *clone() override; 
   };
 
   // stack arg instruction
@@ -224,6 +230,7 @@ class StackArgument : public Memory {
     std::string toString() override { return dst->toString() + " stack-arg " + src->toString(); }
     void spill(Spiller &s) override;
     void accept(Visitor *v) override; 
+    Instruction_stack *clone() override; 
   };
 
   // aop instruction
@@ -238,6 +245,7 @@ class StackArgument : public Memory {
     std::string toString() override { return dst->toString() + " "+ op->toString() + " " + src->toString(); }
     void spill(Spiller &s) override;
     void accept(Visitor *v) override; 
+    Instruction_aop *clone() override; 
   };
 
   // store aop instruction
@@ -253,6 +261,7 @@ class StackArgument : public Memory {
     std::string toString() override { return "mem " + dst->toString() + " " + constant->toString() + " " + op->toString() + " " + src->toString(); }
     void spill(Spiller &s) override;
     void accept(Visitor *v) override; 
+    Instruction_store_aop *clone() override; 
   };
 
   // load aop instruction
@@ -268,6 +277,7 @@ class StackArgument : public Memory {
     std::string toString() override { return dst->toString() + op->toString() + src->toString() + constant->toString(); }
     void spill(Spiller &s) override;
     void accept(Visitor *v) override; 
+    Instruction_load_aop *clone() override; 
   };
 
   class Instruction_compare : public Instruction
@@ -282,6 +292,7 @@ class StackArgument : public Memory {
     std::string toString() override { return dst->toString() + oprand1->toString() + op->toString() + oprand2->toString(); }
     void spill(Spiller &s) override;
     void accept(Visitor *v) override; 
+    Instruction_compare *clone() override; 
   };
 
   class Instruction_cjump : public Instruction
@@ -296,6 +307,7 @@ class StackArgument : public Memory {
     std::string toString() override { return "cjump " + oprand1->toString() + " " + op->toString()+ " " + oprand2->toString() + " " + label->toString(); }
     void spill(Spiller &s) override;
     void accept(Visitor *v) override; 
+    Instruction_cjump *clone() override; 
   };
 
   // call u N instruction
@@ -309,6 +321,7 @@ class StackArgument : public Memory {
     std::string toString() override { return "call " + dst->toString() +" "+ constant->toString(); }
     void spill(Spiller &s) override;
     void accept(Visitor *v) override; 
+    Instruction_call *clone() override; 
   };
 
   class Instruction_call_print : public Instruction
@@ -319,6 +332,7 @@ class StackArgument : public Memory {
     std::string toString() override { return "call print 1"; }
     void spill(Spiller &s) override;
     void accept(Visitor *v) override; 
+    Instruction_call_print *clone() override; 
   };
   class Instruction_call_input : public Instruction
   {
@@ -328,6 +342,7 @@ class StackArgument : public Memory {
     std::string toString() override { return "call input 0"; }
     void spill(Spiller &s) override;
     void accept(Visitor *v) override; 
+    Instruction_call_input *clone() override; 
   };
   class Instruction_call_allocate : public Instruction
   {
@@ -337,6 +352,7 @@ class StackArgument : public Memory {
     std::string toString() override { return "allocate"; }
     void spill(Spiller &s) override;
     void accept(Visitor *v) override; 
+    Instruction_call_allocate *clone() override; 
   };
   class Instruction_call_error : public Instruction
   {
@@ -347,6 +363,7 @@ class StackArgument : public Memory {
     std::string toString() override { return "error"; }
     void spill(Spiller &s) override;
     void accept(Visitor *v) override; 
+    Instruction_call_error *clone() override; 
   };
 
   // label instruction
@@ -359,6 +376,7 @@ class StackArgument : public Memory {
     std::string toString() override { return label->toString(); }
     void spill(Spiller &s) override;
     void accept(Visitor *v) override; 
+    Instruction_label *clone() override; 
   };
 
   /*
@@ -373,6 +391,7 @@ class StackArgument : public Memory {
     std::string toString() override { return src->toString() + "++"; }
     void spill(Spiller &s) override;
     void accept(Visitor *v) override; 
+    Instruction_increment *clone() override; 
   };
   class Instruction_decrement : public Instruction
   {
@@ -383,6 +402,7 @@ class StackArgument : public Memory {
     std::string toString() override { return src->toString() + "--"; }
     void spill(Spiller &s) override;
     void accept(Visitor *v) override; 
+    Instruction_decrement *clone() override; 
   };
   class Instruction_at : public Instruction
   {
@@ -396,6 +416,7 @@ class StackArgument : public Memory {
     std::string toString() override { return dst->toString() + src_add->toString() + src_mult->toString() + constant->toString(); }
     void spill(Spiller &s) override;
     void accept(Visitor *v) override; 
+    Instruction_at *clone() override; 
   };
 
   // goto instruction
@@ -408,6 +429,7 @@ class StackArgument : public Memory {
     std::string toString() override { return "goto " + label->toString(); }
     void spill(Spiller &s) override;
     void accept(Visitor *v) override; 
+    Instruction_goto *clone() override; 
   };
   /*
    * Function.
@@ -422,6 +444,7 @@ class StackArgument : public Memory {
     std::map<std::string, Variable*> variables; 
     Variable* newVariable(std::string variableName);
     Function(); 
+    Function(const Function &f);
     void format_function();
   };
 

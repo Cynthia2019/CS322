@@ -167,12 +167,12 @@ namespace L2 {
             // liveness(p, f); 
             // interference(p, f); 
             Colorer* colorer = new L2::Colorer(&p, f);
-            colorer->registerAllocate(f); 
-            CodeGenerator CodeGen{f, outputFile, colorer};
-            outputFile << "  (" << f->name << endl;
-            outputFile << "  " << f->arguments << " " << f->locals << endl; 
+            Function *newfunc = colorer->registerAllocate(f); 
+            CodeGenerator CodeGen{newfunc, outputFile, colorer};
+            outputFile << "  (" << newfunc->name << endl;
+            outputFile << "  " << newfunc->arguments << " " << newfunc->locals << endl; 
             // f->format_function();
-            for(auto i : f->instructions){
+            for(auto i : newfunc->instructions){
                 i->accept(&CodeGen);
             } 
             outputFile << "  )\n";

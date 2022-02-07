@@ -12,5 +12,5 @@ namespace L2 {
         std::unordered_map<Variable *, bool> &,
         std::string,
         int64_t);
-    void spillAll();
+    void spillAll(Program *p, Function *f);
 }
