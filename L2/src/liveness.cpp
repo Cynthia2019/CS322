@@ -174,6 +174,10 @@ namespace L2
                 res->outs[iptr] = out[i];
             }
         } while (changed);
+        if(is_debug){
+            cout << "print liveness: " << endl; 
+            format_vector(in, out);
+        }
         return {res, {in, out}}; 
     }
     void liveness(Program p, Function* f)

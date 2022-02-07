@@ -1,7 +1,69 @@
 (:test
-  (:test
-    0
-    %v1 <- 3
+ (:test
+2
+
+    // Store the input
+    %array <- rdi
+    %indexToPrintEncoded <- rsi
+
+    // Print the element number
+    rdi <- %indexToPrintEncoded
+    call print 1
+
+    // Fetch the length of the %array
+    %arrayLength <- mem %array 0
+
+    // Encode the length of the %array
+    %arrayLengthEncoded <- %arrayLength
+    %arrayLengthEncoded <<= 1
+    %arrayLengthEncoded += 1
+
+    // Check that %array is big enough
+    cjump %indexToPrintEncoded < %arrayLengthEncoded :correct 
+goto :wrong
+
+    :wrong
+    rdi <- %array
+    rsi <- %indexToPrintEncoded
+    rdi <- 0
+    call tensor-error 1
+
+    // Compute the %offset of the specified element in the %array given as input
+    :correct
+    %offset <- %indexToPrintEncoded
+    %offset >>= 1
+    %offset *= 8
+    %offset += 8
+    %offsetEncoded <- %offset
+    %offsetEncoded <<= 1
+    %offsetEncoded += 1
+
+    // Print the %offset
+    rdi <- %offsetEncoded
+    call print 1
+
+    // Fetch the %array element to print
+    %arrayElementAddress <- %offset
+    %arrayElementAddress += %array
+    %arrayElement <- mem %arrayElementAddress 0
+
+    // Print the specified element of the %array
+    %isArrayElementAnInt <- %arrayElement
+    %isArrayElementAnInt &= 1
+    cjump %isArrayElementAnInt = 0 :isAnArray2 
+goto :isAnInt2
+
+    :isAnInt2
+    rdi <- %arrayElement
+    call print 1
+    goto :exitFunction
+    :isAnArray2
+    mem rsp -8 <- :exitFunction
+    rdi <- %arrayElement
+    call :printArray 1
+
+    // Return
+    :exitFunction
     return
   )
 )

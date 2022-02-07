@@ -77,6 +77,7 @@ namespace L2
                 cout << s->toString() << " ";
             }
             cout << endl;
+             cout << endl;
         }
     }
     pair<Graph*, map<Item*, set<Item*>>> computeInterference(Program p, Function* f){
@@ -85,7 +86,6 @@ namespace L2
         std::map<Instruction*, std::set<Item*>> out = res->outs; 
         std::map<Instruction*, std::set<Item*>> gens = res->gens; 
         std::map<Instruction*, std::set<Item*>> kills = res->kills; 
-
         map<Item*, set<Item*>> edges; 
         Graph* g = new Graph();
         int length = f->instructions.size(); 
@@ -114,6 +114,18 @@ namespace L2
                         edges[s2].insert(s1); 
                     }
                 }
+            }
+            //if in has only one element, add this element into graph
+            if(in[inst].size() == 1) {
+                set<Item*> ele = in[inst];
+                Item* s = *ele.begin();
+                edges[s].insert(s);
+            }
+            //if out has only one element, add this element into graph
+            if(out.size() == 1) {
+                set<Item*> ele = out[inst];
+                Item* s = *ele.begin();
+                edges[s].insert(s);
             }
             //connect each pair of variables in the same out set 
             for(auto s1 : out[inst]){
@@ -160,9 +172,9 @@ namespace L2
             if(r != nullptr) {
                 n->color = Architecture::fromRegisterToColor(r->get());
                 n->isVariable = false;
-                if(is_debug) {
-                    cout << "register: " << r->toString() << " color: " << n->color<< endl;
-                }
+                // if(is_debug) {
+                //     cout << "register: " << r->toString() << " color: " << n->color<< endl;
+                // }
             }
             else {
                 n->color = Architecture::nocolor;
@@ -174,6 +186,7 @@ namespace L2
             Node* nv = graph->nodes[v];
             for(Item* i : m.second){
                 Variable* u = dynamic_cast<Variable*>(i);
+                if(i == v) continue;
                 Node* nu = graph->nodes[u]; 
                 graph->addEdge(nv, nu); 
             }

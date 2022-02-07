@@ -146,6 +146,9 @@ namespace L2 {
         set<Architecture::Color> used;
         for (auto n : neighbor) {
             used.insert(n->color);
+            // if(is_debug) {
+            //     cout << "neighbor: " << n->get()->toString() << " color: " << n->color << endl; 
+            // }
         }
         // if(is_debug) {
         //     cout << "used: ";
