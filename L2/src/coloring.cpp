@@ -18,9 +18,9 @@ using namespace std;
 namespace L2 {
     stack<Node*> st; 
 
-    Colorer::Colorer(Program p, Function* f) {
-        this->graph = computeInterference(p, f).first;
-        this->prog = &p;
+    Colorer::Colorer(Program *p, Function* f) {
+        // this->graph = computeInterference(*p, f).first;
+        this->prog = p;
     }
     Graph* Colorer::getGraph() {
         return this->graph;
@@ -31,6 +31,7 @@ namespace L2 {
         f->locals = 0;
         unordered_map<Variable *, bool> spilled_variables;
         while (true) {
+            this->graph = computeInterference(*prog, f).first;
             removeNodeToStack();
             if (st.size() != neighborst.size()) {
                 cerr << "graph stack size not matched" << endl;
