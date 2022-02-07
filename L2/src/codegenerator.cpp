@@ -23,6 +23,10 @@ namespace L2 {
             return item->toString();
         }
         Node* node = graph->nodes[v]; 
+        // cerr << v->toString() << endl;
+        if (node == nullptr) {
+            return v->toString();
+        }
         Architecture::RegisterID rid = Architecture::fromColorToRegister(node->color);
         return Architecture::fromRegisterToString(rid);
     } 
@@ -158,6 +162,10 @@ namespace L2 {
         */ 
         std::ofstream outputFile;
         outputFile.open("prog.L1");
+<<<<<<< HEAD
+=======
+
+>>>>>>> bcfb356e8a4553d93474497749df6cc424b1d1fb
         outputFile << "(" <<p.entryPointLabel << endl;
         for(Function* f : p.functions){
             // liveness(p, f); 
@@ -166,14 +174,27 @@ namespace L2 {
             colorer->registerAllocate(f); 
             CodeGenerator CodeGen{f, outputFile, colorer};
             outputFile << "  (" << f->name << endl;
+<<<<<<< HEAD
             outputFile << "\t" << f->arguments << " " << f->locals << endl; 
+=======
+            outputFile << "  " << f->arguments << " " << f->locals << endl; 
+            // f->format_function();
+>>>>>>> bcfb356e8a4553d93474497749df6cc424b1d1fb
             for(auto i : f->instructions){
                 if(is_debug) cout << "instruction: "<< i->toString() << endl;
                 i->accept(&CodeGen);
             } 
+<<<<<<< HEAD
             outputFile << "  )\n";
         }
         outputFile << ")\n";
+=======
+            // cerr << "hi" << endl;
+            outputFile << "  )\n";
+        }
+        outputFile << ")\n";
+        return;
+>>>>>>> bcfb356e8a4553d93474497749df6cc424b1d1fb
     }
 
 }
