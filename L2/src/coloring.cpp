@@ -69,6 +69,8 @@ namespace L2 {
             f->locals += spilled;
         }
 
+        // cerr << f->locals << endl;
+        // f->format_function();
         if (!success) {
             f->locals = 0;
             cerr << "not implemented" << endl;

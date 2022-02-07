@@ -23,6 +23,10 @@ namespace L2 {
             return item->toString();
         }
         Node* node = graph->nodes[v]; 
+        // cerr << v->toString() << endl;
+        if (node == nullptr) {
+            return v->toString();
+        }
         Architecture::RegisterID rid = Architecture::fromColorToRegister(node->color);
         return Architecture::fromRegisterToString(rid);
     } 
@@ -168,12 +172,14 @@ namespace L2 {
             CodeGenerator CodeGen{f, outputFile, colorer};
             outputFile << "  (" << f->name << endl;
             outputFile << "  " << f->arguments << " " << f->locals << endl; 
+            // f->format_function();
             for(auto i : f->instructions){
                 i->accept(&CodeGen);
             } 
+            // cerr << "hi" << endl;
             outputFile << "  )\n";
         }
-        outputFile << "  )\n";
+        outputFile << ")\n";
         return;
     }
 
