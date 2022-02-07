@@ -3,7 +3,7 @@
 #include "L2.h"
 
 namespace L2 {
-    void spill(Program *p, Function *f, Variable *, ::string);
-    int64_t spillMultiple(Program *p, Function *, vector<Variable *>);
+    bool spillOne(Program *, Function *, Variable *, std::string, std::unordered_map<Variable *, bool> &);
+    int64_t spillMultiple(Program *, Function *, vector<Variable *>, std::unordered_map<Variable *, bool> &);
     void spillAll();
 }

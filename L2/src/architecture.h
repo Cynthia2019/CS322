@@ -22,5 +22,6 @@ namespace L2 {
         static vector<Architecture::RegisterID> get_caller_saved_regs();
         static vector<Architecture::RegisterID> get_callee_saved_regs();
         static vector<Architecture::RegisterID> get_argument_regs();
+        static const int64_t stackWordLen = 8;
     };
 }

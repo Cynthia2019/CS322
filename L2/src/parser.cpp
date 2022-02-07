@@ -926,7 +926,7 @@ namespace L2
       auto currentF = p.functions.back();
 
       auto i = new Instruction_load();
-      i->m = parsed_items.back();
+      i->constant = parsed_items.back();
       parsed_items.pop_back();
       i->src = parsed_items.back();
       parsed_items.pop_back();

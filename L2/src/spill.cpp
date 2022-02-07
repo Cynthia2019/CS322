@@ -11,13 +11,22 @@ namespace L2 {
       Function *f,
       Variable *v,
       ::string prefix,
-      int64_t &lineno) 
-    :outputstream(os), prog(p), prefix(prefix), func(f), spill_var(v), lineno(lineno){
+      int64_t &lineno,
+      int64_t start_stack_pos,
+      std::unordered_map<Variable *, bool> &newVariables) 
+        :outputstream(os), prog(p), prefix(prefix), func(f), spill_var(v),
+        lineno(lineno), start_stack_pos(start_stack_pos), newVariables(newVariables){
+      offset = start_stack_pos * Architecture::stackWordLen;
     }
 
     bool if_spilled() {
       return if_spilled_at_all;
     }
+
+    // void initSpill(Variable *spill_var) {
+    //   this->spill_var = spill_var;
+    //   lineno = 0;
+    // } 
 
     void visit(Instruction_ret *i) {
     }
@@ -121,11 +130,15 @@ namespace L2 {
       Function *func;
       Program *prog;
       bool if_spilled_at_all = false;
+      int64_t start_stack_pos;
+      std::unordered_map<Variable *, bool> &newVariables;
 
       void load() {
         Memory *m = new Memory(prog->getRegister(Architecture::rsp), new Number(offset));
-        Instruction *ins = new Instruction_load(m, func->newVariable(prefix + to_string(counter)));
+        Variable *nv = func->newVariable(prefix + to_string(counter));
+        Instruction *ins = new Instruction_load(m, nv);
         func->instructions.insert(func->instructions.begin() + lineno, ins);
+        newVariables[nv] = true;
         // outputstream << "\t" << prefix + to_string(counter) << " <- mem rsp 0" << endl;
         lineno++;
         if_spilled_at_all = true;
@@ -133,8 +146,10 @@ namespace L2 {
       
       void store() {
         Memory *m = new Memory(prog->getRegister(Architecture::rsp), new Number(offset));
-        Instruction *ins = new Instruction_store(m, func->newVariable(prefix + to_string(counter)));
+        Variable *nv = func->newVariable(prefix + to_string(counter));
+        Instruction *ins = new Instruction_store(m, nv);
         func->instructions.insert(func->instructions.begin() + lineno + 1, ins);
+        newVariables[nv] = true;
         // outputstream << "\t" << "mem rsp 0 <- " << prefix + to_string(counter) << endl;
         lineno++;
         if_spilled_at_all = true;
@@ -151,35 +166,57 @@ namespace L2 {
       }
   };
 
-  bool checkVariablePresent(string spill_variable, Function* f){
-    for(auto i: f->instructions){
-      size_t n = i->toString().find(spill_variable); 
-      if(n != string::npos) return true;
-    }
-    return false; 
-  }
+  // bool checkVariablePresent(string spill_variable, Function* f){
+  //   for(auto i: f->instructions){
+  //     size_t n = i->toString().find(spill_variable); 
+  //     if(n != string::npos) return true;
+  //   }
+  //   return false; 
+  // }
 
-  int64_t spillMultiple(Program *p, Function *f, vector<Variable *> tospill) {
+  int64_t spillMultiple(Program *p, Function *f, vector<Variable *> tospill, 
+      std::unordered_map<Variable *, bool> &newVariable) {
     ::cout << "spill multiple" << endl;
-    ::string prefix = "S" + to_string(1) + "_";
+    ::string prefix = "%S" + to_string(1) + "_";
+    int64_t start_pos = newVariable.size();
+
+    // ostream &os = ::cout;
+    // int64_t lineno = 0;
+    // Spiller_single spiller(os, p, f, , prefix, lineno, start_pos);
+    int spill_variable_nb = 0;
+
     for (auto v : tospill) {
       //TODO: check spilled variable
-      spill(p, f, v, prefix);
+      bool spilled = spillOne(p, f, v, prefix, newVariable);
+      if (spilled) {
+        spill_variable_nb++;
+        start_pos++;
+        // newVariable[f->newVariable()]
+      }
     }
-    return 0;
+
+  //  os << "(" << f->name << endl;
+  //   os << "\t" << f->arguments << " " << spill_variable_nb << endl;
+  //   for (auto i: f->instructions) {
+  //     os << "\t" << i->toString() << endl;
+  //   }
+  //   os << ")" << endl;
+    return spill_variable_nb;
   }
 
   void spillAll() {
+    //TODO: fill this out
     ::cout << "spilling all" << endl;
   }
 
-  void spill(Program *p, Function *f, Variable *spill_var, ::string prefix) {
-    int spill_variable_nb = 0;
-    // cout << p.spill_variable << endl;
-    // if(!checkVariablePresent(p.spill_variable, f)) spill_variable_nb = 0;
+  bool spillOne(Program *p, Function *f, Variable *spill_var, std::string prefix, 
+      std::unordered_map<Variable *, bool> &newVariable) {
+    // int spill_variable_nb = 0;
     ostream &os = ::cout;
-    int64_t lineno = 0;
-    Spiller_single spiller(os, p, f, spill_var, prefix, lineno);
+    int64_t lineno = 0, start_pos = newVariable.size();
+
+    Spiller_single spiller(os, p, f, spill_var, prefix, lineno, start_pos, newVariable);
+    // spiller.initSpill(spill_var);
 
     auto instruction_cp = f->instructions;
     for (auto i: instruction_cp) {
@@ -187,15 +224,17 @@ namespace L2 {
       lineno++;
     }   
 
-    if (spiller.if_spilled()) {
-      spill_variable_nb = 1;
-    }
-    os << "(" << f->name << endl;
-    os << "\t" << f->arguments << " " << spill_variable_nb << endl;
-    for (auto i: f->instructions) {
-      os << "\t" << i->toString() << endl;
-    }
-    os << ")" << endl;
+    // if (spiller.if_spilled()) {
+    //   spill_variable_nb = 1;
+    // }
+
+    // os << "(" << f->name << endl;
+    // os << "\t" << f->arguments << " " << spill_variable_nb << endl;
+    // for (auto i: f->instructions) {
+    //   os << "\t" << i->toString() << endl;
+    // }
+    // os << ")" << endl;
+    return spiller.if_spilled();
   }
 
 

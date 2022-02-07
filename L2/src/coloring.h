@@ -23,6 +23,7 @@ namespace L2
         stack<set<Node *>> neighborst;
         void removeNodeToStack();
         Architecture::Color selectColor(Node *);
-        vector<Variable *> selectNodeToSpill();
+        vector<Variable *> selectNodeToSpill(unordered_map<Variable *, bool>);
+        bool areAllNodesColored();
     };
 }

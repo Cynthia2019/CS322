@@ -89,17 +89,17 @@ namespace L2 {
     };
     std::string Architecture::fromRegisterToString(Architecture::RegisterID r) {
         return register_to_string[r]; 
-    };
+    }
     Architecture::Color Architecture::fromRegisterToColor(Architecture::RegisterID r){
         return r_to_color[r];
-    };
+    }
     Architecture::RegisterID Architecture::fromColorToRegister(Architecture::Color c){
         return color_to_r[c];
-    };
+    }
     bool Architecture::isArgument(Architecture::RegisterID r){
         if(find(argument_regs.begin(), argument_regs.end(), r) != argument_regs.end()) return true; 
         return false;
-    };
+    }
     bool Architecture::isCallerSaved(Architecture::RegisterID r){
         if(find(caller_saved_regs.begin(), caller_saved_regs.end(), r) != caller_saved_regs.end()) return true; 
         return false;

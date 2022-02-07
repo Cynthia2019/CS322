@@ -5,6 +5,9 @@ L1/bin/L1i
 L2/bin/L2
 L2/bin/L2i
 prog.S
+prog.L1
+prog.L2
+prog.L3
 L1/src/test.L1
 *.tmp
 prog.o

@@ -27,6 +27,7 @@ namespace L2 {
 
     void Colorer::registerAllocate(Function *f) {
         bool success = false;
+        unordered_map<Variable *, bool> spilled_variables;
         while (true) {
             removeNodeToStack();
             if (st.size() != neighborst.size()) {
@@ -47,14 +48,20 @@ namespace L2 {
                 }
             }
 
-            auto toSpill = selectNodeToSpill();
-            if (toSpill.size() == 0) {
+            if (areAllNodesColored()) {
                 success = true;
                 break;
             }
 
-            int64_t spilled = spillMultiple(prog, f, toSpill);
+            auto toSpill = selectNodeToSpill(spilled_variables);
+            if (toSpill.size() == 0) {
+                // nothing we can spill, fail
+                break;
+            }
+
+            int64_t spilled = spillMultiple(prog, f, toSpill, spilled_variables);
             if (spilled == 0) {
+                cerr << "BUG, this should not happen, please look at coloring.cpp" << endl;
                 break;
             }
         }
@@ -68,6 +75,16 @@ namespace L2 {
 
     static bool cmp(Node* a, Node* b){
         return a->degree < b->degree; 
+    }
+
+    bool Colorer::areAllNodesColored() {
+        auto nodes = graph->getNodes();
+        for (auto n : nodes) {
+            if (n->color == Architecture::nocolor) {
+                return false;
+            }
+        }
+        return true;
     }
 
     void Colorer::removeNodeToStack() {
@@ -138,11 +155,14 @@ namespace L2 {
         return Architecture::nocolor;
     }
 
-    vector<Variable *> Colorer::selectNodeToSpill() {
+    vector<Variable *> Colorer::selectNodeToSpill(unordered_map<Variable *, bool> spilled) {
         auto nodes = graph->getNodes();
         vector<Variable *> res;
         for (auto n : nodes) {
             if (n->color == Architecture::nocolor) {
+                if (spilled.count(n->get()) != 0 && spilled[n->get()] == true) {
+                    continue;
+                }
                 res.push_back(n->get());
             }
         }
