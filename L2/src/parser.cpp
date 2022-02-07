@@ -617,8 +617,9 @@ namespace L2
     static void apply(const Input &in, Program &p)
     {
       auto currentF = p.functions.back();
-      Variable *i = currentF->newVariable(in.string());
-      currentF->variables[in.string()] = i;
+      std::string var_name = "%_" + currentF->name.substr(1) + '_' + in.string().substr(1); 
+      Variable *i = currentF->newVariable(var_name);
+      currentF->variables[var_name] = i;
       parsed_items.push_back(i);
     }
   };
