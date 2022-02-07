@@ -162,10 +162,6 @@ namespace L2 {
         */ 
         std::ofstream outputFile;
         outputFile.open("prog.L1");
-<<<<<<< HEAD
-=======
-
->>>>>>> bcfb356e8a4553d93474497749df6cc424b1d1fb
         outputFile << "(" <<p.entryPointLabel << endl;
         for(Function* f : p.functions){
             // liveness(p, f); 
