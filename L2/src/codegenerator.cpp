@@ -159,21 +159,22 @@ namespace L2 {
         std::ofstream outputFile;
         outputFile.open("prog.L1");
 
+        outputFile << "(" <<p.entryPointLabel << endl;
         for(Function* f : p.functions){
             // liveness(p, f); 
             // interference(p, f); 
             Colorer* colorer = new L2::Colorer(p, f);
             colorer->registerAllocate(f); 
             CodeGenerator CodeGen{f, outputFile, colorer};
-            outputFile << "(" <<p.entryPointLabel << endl;
             outputFile << "  (" << f->name << endl;
             outputFile << "  " << f->arguments << " " << f->locals << endl; 
             for(auto i : f->instructions){
                 i->accept(&CodeGen);
             } 
-            outputFile << "  )\n)\n";
-            return ;
+            outputFile << "  )\n";
         }
+        outputFile << "  )\n";
+        return;
     }
 
 }
