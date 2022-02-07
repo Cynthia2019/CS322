@@ -157,14 +157,14 @@ namespace L2 {
         outputFile.open("prog.L1");
 
         for(Function* f : p.functions){
-            liveness(p, f); 
-            interference(p, f); 
+            // liveness(p, f); 
+            // interference(p, f); 
             Colorer* colorer = new L2::Colorer(p, f);
             colorer->registerAllocate(f); 
             CodeGenerator CodeGen{f, outputFile, colorer};
             outputFile << "(" <<p.entryPointLabel << endl;
             outputFile << "  (" << f->name << endl;
-            outputFile << "  " << f->arguments << endl; 
+            outputFile << "  " << f->arguments << " " << f->locals << endl; 
             for(auto i : f->instructions){
                 i->accept(&CodeGen);
             } 

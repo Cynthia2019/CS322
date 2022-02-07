@@ -27,6 +27,7 @@ namespace L2 {
 
     void Colorer::registerAllocate(Function *f) {
         bool success = false;
+        f->locals = 0;
         unordered_map<Variable *, bool> spilled_variables;
         while (true) {
             removeNodeToStack();
@@ -64,13 +65,15 @@ namespace L2 {
                 cerr << "BUG, this should not happen, please look at coloring.cpp" << endl;
                 break;
             }
+
+            f->locals += spilled;
         }
 
         if (!success) {
+            f->locals = 0;
+            cerr << "not implemented" << endl;
             spillAll();
         }
-        
-        //f->format_function();
     }
 
     static bool cmp(Node* a, Node* b){
