@@ -128,7 +128,7 @@ int main(
     // TODO
     L2::Function *f = p.functions[0];
     unordered_map<L2::Variable *, bool> empt;
-    L2::spillOne(&p, f, f->newVariable(p.spill_variable), p.spill_prefix, empt);
+    L2::spillOne(&p, f, f->newVariable(p.spill_variable), p.spill_prefix, empt, 0);
     return 0;
   }
 

@@ -30,6 +30,7 @@ namespace L2 {
         bool success = false;
         f->locals = 0;
         unordered_map<Variable *, bool> spilled_variables;
+        int64_t round = 0, start_pos = 0;
         while (true) {
             this->graph = computeInterference(*prog, f).first;
             removeNodeToStack();
@@ -62,13 +63,16 @@ namespace L2 {
                 break;
             }
 
-            int64_t spilled = spillMultiple(prog, f, toSpill, spilled_variables);
+            std::string prefix = "R" + to_string(round) + "S";
+            int64_t spilled = spillMultiple(prog, f, toSpill, spilled_variables, prefix, start_pos);
             if (spilled == 0) {
                 cerr << "BUG, this should not happen, please look at coloring.cpp" << endl;
                 break;
             }
 
             f->locals += spilled;
+            round++;
+            start_pos += toSpill.size();
         }
 
         // cerr << f->locals << endl;

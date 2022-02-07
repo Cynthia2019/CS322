@@ -206,10 +206,8 @@ namespace L2 {
   // }
 
   int64_t spillMultiple(Program *p, Function *f, vector<Variable *> tospill, 
-      std::unordered_map<Variable *, bool> &newVariable) {
+      std::unordered_map<Variable *, bool> &newVariable, std::string prefix, int64_t start_pos) {
     ::cout << "spill multiple" << endl;
-    ::string prefix = "%S" + to_string(1) + "_";
-    int64_t start_pos = newVariable.size();
 
     // ostream &os = ::cout;
     // int64_t lineno = 0;
@@ -222,10 +220,11 @@ namespace L2 {
         f->format_function();
         cout << v->toString() << endl;
       }
-      bool spilled = spillOne(p, f, v, prefix, newVariable);
+      bool spilled = spillOne(p, f, v, prefix, newVariable, start_pos);
       if (spilled) {
         if (is_debug) {
           cout << v->toString() << " spilled" << endl;
+          f->format_function();
         }
         spill_variable_nb++;
         start_pos++;
@@ -239,7 +238,7 @@ namespace L2 {
   //     os << "\t" << i->toString() << endl;
   //   }
   //   os << ")" << endl;
-  cout << "number" << spill_variable_nb << endl;
+  // cout << "number" << spill_variable_nb << endl;
     return spill_variable_nb;
   }
 
@@ -249,10 +248,10 @@ namespace L2 {
   }
 
   bool spillOne(Program *p, Function *f, Variable *spill_var, std::string prefix, 
-      std::unordered_map<Variable *, bool> &newVariable) {
+      std::unordered_map<Variable *, bool> &newVariable, int64_t start_pos) {
     // int spill_variable_nb = 0;
     ostream &os = ::cout;
-    int64_t lineno = 0, start_pos = newVariable.size();
+    int64_t lineno = 0;
 
     Spiller_single spiller(os, p, f, spill_var, prefix, lineno, start_pos, newVariable);
     // spiller.initSpill(spill_var);
