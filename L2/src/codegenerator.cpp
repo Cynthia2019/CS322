@@ -98,7 +98,7 @@ namespace L2 {
            string oprand2 = fromItemToString(i->oprand2, colorer->getGraph()); 
            string op = fromItemToString(i->op, colorer->getGraph()); 
            string dst = fromItemToString(i->dst, colorer->getGraph()); 
-           string ans = "\t" + dst + " " + oprand1 + " " + op + " " + oprand2 + "\n";
+           string ans = "\t" + dst + " <-" + " " + oprand1 + " " + op + " " + oprand2 + "\n";
             this->outputFile << ans;
        }
        void CodeGenerator::visit(Instruction_cjump *i) {
