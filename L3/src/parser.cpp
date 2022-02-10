@@ -150,10 +150,10 @@ namespace L3
 
   struct op_rule : pegtl::sor<TAOCPP_PEGTL_STRING("<<"), 
                                     TAOCPP_PEGTL_STRING(">>"),
-                                    TAOCPP_PEGTL_STRING("+"), 
-                                    TAOCPP_PEGTL_STRING("-"), 
-                                    TAOCPP_PEGTL_STRING("*"),
-                                    TAOCPP_PEGTL_STRING("&")
+                                    pegtl::one<'+'>, 
+                                    pegtl::one<'-'>, 
+                                    pegtl::one<'*'>,
+                                    pegtl::one<'&'>
                                     >
   {
   };
@@ -232,11 +232,9 @@ namespace L3
                                          Label_rule,
                                          variable_rule,
                                          call_string_rule>,
-                                     seps,
                                      TAOCPP_PEGTL_STRING("("),
                                      seps, 
                                      args_rule,
-                                     seps,
                                      TAOCPP_PEGTL_STRING(")")>
   {
   };
@@ -338,24 +336,6 @@ namespace L3
   {
   };
 
-//   template <>
-//   struct action<label>
-//   {
-//     template <typename Input>
-//     static void apply(const Input &in, Program &p)
-//     {
-//         //need to verify if a program does not have main 
-//       if (p.entryPointLabel.empty())
-//       {
-//         p.entryPointLabel = in.string();
-//       }
-//       else
-//       {
-//         abort();
-//       }
-//     }
-//   };
-
   template <>
   struct action<function_name>
   {
@@ -377,6 +357,7 @@ namespace L3
     {
       auto currentF = p.functions.back();
       auto i = new Instruction_ret();
+      if(is_debug) cout << i->toString() << endl;
       currentF->instructions.push_back(i);
     }
   };
@@ -391,6 +372,7 @@ namespace L3
       i->arg = parsed_items.back(); 
       parsed_items.pop_back();
       currentF->instructions.push_back(i);
+      if(is_debug) cout << i->toString() << endl;
     }
   };
   template <>
@@ -401,6 +383,7 @@ namespace L3
     {
       Label *i = new Label(in.string());
       parsed_items.push_back(i);
+      if(is_debug) cout << i->toString() << endl;      
     }
   };
 
@@ -479,6 +462,7 @@ template <>
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
+      if(is_debug) cout << "op: " << in.string() << endl;
       Operation *i = new Operation(in.string());
       parsed_items.push_back(i);
     }
@@ -518,7 +502,7 @@ template <>
       auto i = new Instruction_label();
       Label *item = new Label(in.string());
       i->label = item;
-
+      if(is_debug) cout << i->toString() << endl;
       currentF->instructions.push_back(i);
     }
   };
@@ -537,10 +521,10 @@ template <>
       parsed_items.pop_back();
       i->oprand1 = parsed_items.back();
       parsed_items.pop_back();
-      Variable* v = dynamic_cast<Variable*>(parsed_items.back());
-      i->dst = v;
+      i->dst = dynamic_cast<Variable*>(parsed_items.back());
+      if(dynamic_cast<Variable*>(parsed_items.back()) == nullptr) cout << "NULL" <<endl;
       parsed_items.pop_back();
-
+      if(is_debug) cout << i->toString() << endl;
       currentF->instructions.push_back(i);
     }
   };
@@ -561,7 +545,7 @@ template <>
       }
       i->callee = parsed_items.back();
       parsed_items.pop_back();
-
+      if(is_debug) cout << i->toString() << endl;
       currentF->instructions.push_back(i);
     }
   };
@@ -583,6 +567,7 @@ template <>
       i->dst = dynamic_cast<Variable*>(parsed_items.back());;
       parsed_items.pop_back();
       currentF->instructions.push_back(i);
+      if(is_debug) cout << i->toString() << endl;
     }
   };
 
@@ -598,6 +583,7 @@ template <>
       i->label = dynamic_cast<Label*>(parsed_items.back());;
       parsed_items.pop_back();
       currentF->instructions.push_back(i);
+      if(is_debug) cout << i->toString() << endl;
     }
   };
   // action for br t label
@@ -614,6 +600,7 @@ template <>
       i->condition = parsed_items.back();
       parsed_items.pop_back();
       currentF->instructions.push_back(i);
+      if(is_debug) cout << i->toString() << endl;
     }
   };
 
@@ -630,7 +617,7 @@ template <>
       parsed_items.pop_back();
       i->dst = dynamic_cast<Variable*>(parsed_items.back());
       parsed_items.pop_back();
-
+      if(is_debug) cout << i->toString() << endl;
       /*
        * Add the just-created instruction to the current function.
        */
@@ -652,7 +639,7 @@ template <>
       parsed_items.pop_back();
       i->dst = dynamic_cast<Variable*>(parsed_items.back());
       parsed_items.pop_back();
-
+      if(is_debug) cout << i->toString() << endl;
       currentF->instructions.push_back(i);
     }
   };
@@ -670,7 +657,7 @@ template <>
       parsed_items.pop_back();
       i->dst = parsed_items.back();
       parsed_items.pop_back();
-
+      if(is_debug) cout << i->toString() << endl;
       currentF->instructions.push_back(i);
     }
   };
@@ -703,7 +690,7 @@ template <>
       parsed_items.pop_back();
       i->dst = dynamic_cast<Variable*>(parsed_items.back());
       parsed_items.pop_back();
-
+      if(is_debug) cout << i->toString() << endl;
       currentF->instructions.push_back(i);
     }
   };
