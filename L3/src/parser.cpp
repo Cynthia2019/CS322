@@ -42,8 +42,8 @@ namespace L3
   /*
    * Data required to parse
    */
-  std::vector<Item *> parsed_items;
-  std::vector<Item *> list_of_args; 
+  std::vector<Item *> parsed_items = {};
+  std::vector<Item *> list_of_args = {}; 
 
   /*
    *map from string to registerid
@@ -114,17 +114,17 @@ namespace L3
                                         >
                                 > {};
   struct args_rule :   pegtl::sor<
-                                seps,
-                                variable_rule,
                                 pegtl::seq<
-                                    variable_rule,
+                                    pegtl::sor<variable_rule, number_rule>,
                                     pegtl::star<
                                         pegtl::seq<
                                             pegtl::one<','>,
+                                            seps,
                                             pegtl::sor<variable_rule, number_rule>
                                                 >
                                             >
-                                        >
+                                        >,
+                                seps
                                     > {};
 
   struct Label_rule : label {};
@@ -233,7 +233,6 @@ namespace L3
                                          variable_rule,
                                          call_string_rule>,
                                      TAOCPP_PEGTL_STRING("("),
-                                     seps, 
                                      args_rule,
                                      TAOCPP_PEGTL_STRING(")")>
   {
@@ -249,11 +248,8 @@ namespace L3
                                          Label_rule,
                                          variable_rule,
                                          call_string_rule>,
-                                     seps,
                                      TAOCPP_PEGTL_STRING("("),
-                                     seps,
                                      args_rule,
-                                     seps,
                                      TAOCPP_PEGTL_STRING(")")>
   {
   };
@@ -383,8 +379,7 @@ namespace L3
     static void apply(const Input &in, Program &p)
     {
       Label *i = new Label(in.string());
-      parsed_items.push_back(i);
-      if(is_debug) cout << i->toString() << endl;      
+      parsed_items.push_back(i);   
     }
   };
 
@@ -437,6 +432,7 @@ template <>
       if(is_debug) {
           cout << "string args: " << args << endl;
       }
+      if(args.size() == 0) return ;
       while(args.find(',') != args.npos){
           int n = args.find(','); 
           //eliminate any space in 0-n
@@ -454,6 +450,17 @@ template <>
           }
           args = args.substr(n);
       }
+      if(is_debug) cout << "args after parsed: " << args << endl;
+      if(args[0] == '%'){
+          Variable* i = currentF->newVariable(args); 
+          currentF->variables[args] = i; 
+          list_of_args.push_back(i);
+      }
+      else {
+         Number* i = new Number(std::stoll(args)); 
+        list_of_args.push_back(i);
+      }
+      cout << "list of args size: " << list_of_args.size() << endl;
     }
   };
   // action for + - & * << >>
@@ -463,7 +470,6 @@ template <>
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
-      if(is_debug) cout << "op: " << in.string() << endl;
       Operation *i = new Operation(in.string());
       parsed_items.push_back(i);
     }
@@ -480,7 +486,7 @@ template <>
     }
   };
 
-  // action when value is a print, allocate, input, tensor-error
+  //                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              action when value is a print, allocate, input, tensor-error
   template <>
   struct action<call_string_rule>
   {
@@ -516,7 +522,6 @@ template <>
     {
       auto currentF = p.functions.back();
       auto i = new Instruction_math();
-      if(is_debug) cout <<"parsed: " <<  parsed_items.back()->toString() << endl;
       i->oprand2 = parsed_items.back();
       parsed_items.pop_back();
       i->op = parsed_items.back();
@@ -542,8 +547,8 @@ template <>
     {
       auto currentF = p.functions.back();
       auto i = new Instruction_call();
-      for(Item* item : list_of_args) {
-          i->args.push_back(item);
+      while(!list_of_args.empty()) {
+          i->args.push_back(list_of_args.back());
       }
       i->callee = parsed_items.back();
       parsed_items.pop_back();
@@ -552,7 +557,6 @@ template <>
     }
   };
 
-  // action for call print 1
   template <>
   struct action<Instruction_call_assignment_rule>
   {
@@ -561,9 +565,10 @@ template <>
     {
       auto currentF = p.functions.back();
       auto i = new Instruction_call_assignment();
-      for(Item* item : list_of_args) {
-          i->args.push_back(item);
-      }
+    //   for(Item* item : list_of_args) {
+    //      i->args.push_back(item);
+    //   }
+    //   list_of_args = {};
       i->callee = parsed_items.back();
       parsed_items.pop_back();
       i->dst = dynamic_cast<Variable*>(parsed_items.back());;
