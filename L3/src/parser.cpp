@@ -149,12 +149,12 @@ namespace L3
   };
 
   struct op_rule : pegtl::sor<TAOCPP_PEGTL_STRING("<<"), 
-                                    TAOCPP_PEGTL_STRING(">>"),
-                                    pegtl::one<'+'>, 
-                                    pegtl::one<'-'>, 
-                                    pegtl::one<'*'>,
-                                    pegtl::one<'&'>
-                                    >
+                            TAOCPP_PEGTL_STRING(">>"),
+                            pegtl::one<'+'>, 
+                            pegtl::one<'-'>, 
+                            pegtl::one<'*'>,
+                            pegtl::one<'&'>
+                            >
   {
   };
 
@@ -279,13 +279,14 @@ namespace L3
                                 pegtl::seq<pegtl::at<Instruction_return_t_rule>, Instruction_return_t_rule>,
                                 pegtl::seq<pegtl::at<Instruction_return_rule>, Instruction_return_rule>,
                                 pegtl::seq<pegtl::at<Instruction_compare_rule>, Instruction_compare_rule>,
-                                pegtl::seq<pegtl::at<Instruction_assignment_rule>, Instruction_assignment_rule>,
+                                pegtl::seq<pegtl::at<Instruction_math_rule>, Instruction_math_rule>,
                                 pegtl::seq<pegtl::at<Instruction_load_rule>, Instruction_load_rule>,
                                 pegtl::seq<pegtl::at<Instruction_store_rule>, Instruction_store_rule>,
                                 pegtl::seq<pegtl::at<Instruction_call_rule>, Instruction_call_rule>,
                                 pegtl::seq<pegtl::at<Instruction_call_assignment_rule>, Instruction_call_assignment_rule>,
-                                pegtl::seq<pegtl::at<Instruction_br_rule>, Instruction_br_rule>,
                                 pegtl::seq<pegtl::at<Instruction_br_t_rule>, Instruction_br_t_rule>,
+                                pegtl::seq<pegtl::at<Instruction_br_rule>, Instruction_br_rule>,
+                                pegtl::seq<pegtl::at<Instruction_assignment_rule>, Instruction_assignment_rule>,
                                 pegtl::seq<pegtl::at<Instruction_label_rule>, Instruction_label_rule>>
   {
   };
@@ -515,6 +516,7 @@ template <>
     {
       auto currentF = p.functions.back();
       auto i = new Instruction_math();
+      if(is_debug) cout <<"parsed: " <<  parsed_items.back()->toString() << endl;
       i->oprand2 = parsed_items.back();
       parsed_items.pop_back();
       i->op = parsed_items.back();
