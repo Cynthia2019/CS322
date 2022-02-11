@@ -61,16 +61,6 @@ namespace L3
     string sName;
   };
 
-// class Register : public Variable
-//   {
-//   public:
-//     Register(Architecture::RegisterID rid); 
-//     Architecture::RegisterID get (void); 
-//     bool operator == (const Register &other); 
-//     std::string toString(void) override;
-//   private: 
-//     Architecture::RegisterID rid;
-//   };
 class Operation : public Item
   {
   public:
