@@ -81,19 +81,6 @@ class Operation : public Item
   private: 
     string op;
   };
-class Memory : public Item
-  {
-  public:
-    Memory(Variable *s, Number *o); 
-    Variable* getStartAddress(); 
-    // Item** getStartAddressPtr(); 
-    int64_t getOffset(); 
-    bool operator == (const Memory &other); 
-    string toString(void) override;
-  protected: 
-    Variable* startAddress; 
-    Number* offset; 
-  };
   /*
    * Instruction interface.
    */
@@ -111,12 +98,14 @@ class Memory : public Item
   class Instruction_ret : public Instruction
   {
     public:
+      Operation* op; 
       std::string toString() override { return "return"; }
       void accept(Visitor *v) override; 
   };
   class Instruction_ret_t : public Instruction
   {
     public:
+      Operation* op;
       Item* arg; 
       std::string toString() override { return "return " + arg->toString(); }
       void accept(Visitor *v) override; 
