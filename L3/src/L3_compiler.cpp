@@ -14,6 +14,7 @@
 
 #include <L3.h>
 #include <parser.h>
+#include <instructionSelect.h>
 // #include <codegenerator.h>
 
 using namespace std;
@@ -74,6 +75,8 @@ int main(
     * Parse the L3 program.
     */
 p = L3::parse_file(argv[optind]);
+//test instruction select
+
 
 
   /*

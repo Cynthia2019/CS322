@@ -18,6 +18,7 @@ namespace L3 {
         Operation* op;
         TreeNode* oprand1; 
         TreeNode* oprand2; 
+        void printNode(TreeNode* node);
     };
 class Tree : public Visitor{
     public:
@@ -25,6 +26,9 @@ class Tree : public Visitor{
         Tree(Context* context); 
         bool isEmpty() {return root == nullptr;};
         vector<Item*> uses; 
+        vector<Item*> define;
+        Instruction* getInstruction();
+        void printTree(Tree* tree);
 
         void visit(Instruction_ret_not *i) override;
         void visit(Instruction_ret_t *i) override;
@@ -40,5 +44,8 @@ class Tree : public Visitor{
         void visit(Instruction_label *i) override;
         private: 
             Context* context; 
+            Instruction* instruction;
     };
+
+    void mergeTrees(Context* context);
 }

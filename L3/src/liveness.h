@@ -1,4 +1,5 @@
 #include <L3.h>
+#include <instructionSelect.h>
 
 namespace L3 {
   struct AnalysisResult {
@@ -23,5 +24,5 @@ namespace L3 {
       void visit(Instruction_call_assignment *i);
       void visit(Instruction_label *i);
   };
-  std::pair<AnalysisResult*, vector<vector<set<Item*>>>> computeLiveness(Program p, Function* f);
+  AnalysisResult* computeLiveness(Context* context);
 }

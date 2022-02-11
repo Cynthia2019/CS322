@@ -1,30 +1,50 @@
 #include <instructionSelect.h>
 #include <L3.h>
-
+#include <liveness.h>
+#include <string> 
+#include <iostream>
 using namespace std; 
 
 namespace L3 {
     TreeNode::TreeNode(Item* item) {
         val = item;
     }
+    void TreeNode::printNode(TreeNode* node){
+        if(node == nullptr) return ;
+        cout << node->val->toString() << endl;
+        if(node->op) cout << node->op->toString() << endl; 
+        if(node->oprand1) printNode(node->oprand1) ; 
+        if (node->oprand2) printNode(node->oprand2);
+    }
     Tree::Tree(Context* context) : context(context) {}
+    Instruction* Tree::getInstruction() {
+        return this->instruction;
+    }
+    void Tree::printTree(Tree* tree){
+        if(tree->root == nullptr) return; 
+        tree->root->printNode(root); 
+    }
     void Tree::visit(Instruction_ret_not* i) {
         TreeNode* node = new TreeNode(i->op);
         root = node;
+        uses = i->uses; 
+        define = i->define;
     }
     void Tree::visit(Instruction_ret_t* i) {
          
         TreeNode* node = new TreeNode(i->op);
         node->oprand1 = new TreeNode(i->arg); 
         root = node;
-        uses.push_back(i->arg);
+        uses = i->uses; 
+        define = i->define;
     }
     void Tree::visit(Instruction_assignment* i) {
          
         TreeNode* node = new TreeNode(i->dst);
         node->oprand1 = new TreeNode(i->src); 
         root = node;
-        uses.push_back(i->src); 
+        uses = i->uses; 
+        define = i->define;
     }
     void Tree::visit(Instruction_math* i) {
          
@@ -33,8 +53,8 @@ namespace L3 {
         node->op = dynamic_cast<Operation*>(i->op); 
         node->oprand2 = new TreeNode(i->oprand2);
         root = node;
-        uses.push_back(i->oprand1);
-        uses.push_back(i->oprand2);
+        uses = i->uses; 
+        define = i->define;
     }
     void Tree::visit(Instruction_compare* i) {
          
@@ -43,8 +63,8 @@ namespace L3 {
         node->op = dynamic_cast<Operation*>(i->op); 
         node->oprand2 = new TreeNode(i->oprand2);
         root = node;
-        uses.push_back(i->oprand1);
-        uses.push_back(i->oprand2);
+        uses = i->uses; 
+        define = i->define;
     }
     void Tree::visit(Instruction_load* i) {
          
@@ -52,7 +72,8 @@ namespace L3 {
         node->oprand1 = new TreeNode(i->src); 
         node->op = dynamic_cast<Operation*>(i->op); 
         root = node;
-        uses.push_back(i->src);
+        uses = i->uses; 
+        define = i->define;
     }
     void Tree::visit(Instruction_store* i) {
          
@@ -60,8 +81,8 @@ namespace L3 {
         node->oprand1 = new TreeNode(i->src); 
         node->op = dynamic_cast<Operation*>(i->op);  
         root = node;
-        uses.push_back(i->src);
-        uses.push_back(i->dst);
+        uses = i->uses; 
+        define = i->define;
     }
     void Tree::visit(Instruction_br_t* i) {
          
@@ -69,15 +90,16 @@ namespace L3 {
         node->oprand1 = new TreeNode(i->condition); 
         node->oprand2 = new TreeNode(i->label); 
         root = node;
-        uses.push_back(i->condition);
-        uses.push_back(i->label);
+        uses = i->uses; 
+        define = i->define;
     }
     void Tree::visit(Instruction_br_label* i) {
          
         TreeNode* node = new TreeNode(i->op); 
         node->oprand1 = new TreeNode(i->label); 
         root = node;
-        uses.push_back(i->label);
+        uses = i->uses; 
+        define = i->define;
     }
     void Tree::visit(Instruction_call_noassign *i) {}
     void Tree::visit(Instruction_call_assignment *i) {}
@@ -107,31 +129,78 @@ namespace L3 {
 
         return context_list;
     }
-    bool checkUseV(int a, int b, Variable* v, vector<Tree*>& trees) {
+    //check if there is no definitions of variables used by T2 between T2 and T1
+    bool checkDependency(int a, int b, Tree* T2, Variable* v, vector<Tree*>& trees){
         for(int i = a; i <= b; i++){
             Tree* t = trees[i]; 
+            //check no memory instruction between 
+            //TODO
+            //check v not used between T2 and T1
             for(Item* item : t->uses){
                 Variable* u = dynamic_cast<Variable*>(item); 
                 if(u != nullptr && u == v){
-                    return true; 
+                    return false; 
+                }
+            }
+            //check used var in T2 not defined between T2 and T1 
+            for(Item* item : T2->uses){
+                Variable* v_used = dynamic_cast<Variable*>(item); 
+                //if v is not a variable, no need to compare, skip 
+                if(v_used != nullptr) {
+                    for(Item* d : t->define) {
+                        Variable* u = dynamic_cast<Variable*>(d); 
+                        if(u != nullptr && u == v_used) return false; 
+                    }
                 }
             }
         }
-        return false; 
+        return true; 
+    };
+    bool checkMemoryInst(int a, int b, vector<Instruction*> insts){
+        for(Instruction* i : insts){
+            Instruction_load* load = dynamic_cast<Instruction_load*>(i); 
+            if(load != nullptr) return false; 
+            Instruction_store* store = dynamic_cast<Instruction_store*>(i);
+            if(store != nullptr) return false; 
+        }
+        return true;
     }
-    bool checkT2Uses(int a, int b, vector<Item*> uses, vector<Tree*>& trees){
-        
+    bool checkDead(int a, Item* v, AnalysisResult* res, vector<Tree*> trees){
+        for(int i = a; i < trees.size(); i++){
+            Tree* t = trees[i]; 
+            set<Item*> out = res->outs[t->getInstruction()]; 
+            if(out.find(v) != out.end()){
+                return false; 
+            }
+        }
+        return true;
+    }
+    bool checkOnlyUsedByT1(int a, Item*v, vector<Instruction*> insts){
+        for(int i = a; i < insts.size(); i++){
+            vector<Item*> uses = insts[i]->uses; 
+            if(find(uses.begin(), uses.end(), v) != uses.end()) return false; 
+        }
+        return true;
     }
     vector<Tree*> getAllTree(Context* context){
         vector<Tree*> trees; 
         for(auto i : context->instructions) {
-            Tree t{context}; 
-            i->accept(&t);
+            Tree* t = new Tree(context); 
+            i->accept(t);
+            cout << "instruction: " << i->toString() << endl ;
+            cout << "tree: "; 
+            t->printTree(t);
         }
         return trees;
     }
     void mergeTrees(Context* context){
         int64_t size = context->instructions.size(); 
+        //perform liveness analysis on instructions
+        GenKill genkill; 
+        for(Instruction* i : context->instructions) {
+            i->accept(&genkill);
+        }
+        AnalysisResult* res = computeLiveness(context);
         vector<Tree*> trees = getAllTree(context); 
         for(int i = 0; i < size; i++){
             Tree* T2 = trees[i];
@@ -143,15 +212,33 @@ namespace L3 {
                     Tree* T1 = trees[j]; 
                     //condition 1: t_next uses t_curr root
                     if(T1->root->oprand1 && T1->root->oprand1->val == T2->root->val){
-                        //check no other uses of T2->root
-                        bool cond1 = checkUseV(i+1, j, v, trees);
-                        T1->root->oprand1 = T2->root; 
+                        //condition A, T2->root->val dead after T1
+                        bool dead = checkDead(j+1, T2->root->val, res, trees);
+                        bool only = checkOnlyUsedByT1(j+1, T2->root->val, context->instructions);
+                        if(dead || only) {
+                            //condition B
+                            bool notDependent = checkDependency(i, j, T2, v, trees); 
+                            bool noMemoryInst = checkMemoryInst(i+1, j-1, context->instructions);
+                            if(notDependent && noMemoryInst){
+                                //merge
+                                T1->root->oprand1 = T2->root; 
+                            }
+                        }
                     }
                     //condition 1: t_next uses t_curr root
                     else if(T1->root->oprand1 && T1->root->oprand2->val == T2->root->val) {
-                        //check no other uses of T2->root
-                        bool cond1 = checkUseV(i+1, j, v, trees);
-                        T1->root->oprand2 = T2->root; 
+                        //condition A, T2->root->val dead after T1
+                        bool dead = checkDead(j+1, T2->root->val, res, trees);
+                        bool only = checkOnlyUsedByT1(j+1, T2->root->val, context->instructions);
+                        if(dead || only) {
+                            //condition B
+                            bool notDependent = checkDependency(i, j, T2, v, trees); 
+                            bool noMemoryInst = checkMemoryInst(i+1, j-1, context->instructions);
+                            if(notDependent && noMemoryInst){
+                                //merge
+                                T1->root->oprand2 = T2->root; 
+                            }
+                        }
                     }
                     else continue;
                 }
