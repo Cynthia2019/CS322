@@ -22,8 +22,9 @@ namespace L3 {
 class Tree : public Visitor{
     public:
         TreeNode* root; 
-        Tree() {root = nullptr;}; 
+        Tree(Context* context); 
         bool isEmpty() {return root == nullptr;};
+        vector<Item*> uses; 
 
         void visit(Instruction_ret_not *i) override;
         void visit(Instruction_ret_t *i) override;
@@ -34,7 +35,10 @@ class Tree : public Visitor{
         void visit(Instruction_compare *i) override;
         void visit(Instruction_br_label *i) override;
         void visit(Instruction_br_t *i) override;
+        void visit(Instruction_call_noassign *i) override;
+        void visit(Instruction_call_assignment *i) override;
+        void visit(Instruction_label *i) override;
         private: 
-            Instruction* i; 
+            Context* context; 
     };
 }
