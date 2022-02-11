@@ -134,6 +134,7 @@ class Operation : public Item
   public:
     Variable* dst;
     Variable* src;
+    Operation* op;
     std::string toString() override { 
       return this->dst->toString() + " <- load "
           + this->src->toString();
@@ -159,6 +160,7 @@ class Operation : public Item
   public:
     Item *src;
     Item *dst;
+    Operation* op;
     std::string toString() override { return "store " + dst->toString() + " <- " + src->toString(); }
     void accept(Visitor *v) override; 
   };
@@ -182,6 +184,7 @@ class Operation : public Item
   class Instruction_br_label : public Instruction_br
   {
   public:
+    Operation* op; 
     Label *label;
     std::string toString() override { return "br " + label->toString(); }
     void accept(Visitor *v) override; 
@@ -190,6 +193,7 @@ class Operation : public Item
 class Instruction_br_t : public Instruction_br
   {
   public:
+    Operation* op;
     Label *label;
     Item *condition;
     std::string toString() override { return "br " + condition->toString() + " " +label->toString(); }

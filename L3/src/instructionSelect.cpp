@@ -4,6 +4,9 @@
 using namespace std; 
 
 namespace L3 {
+    TreeNode::TreeNode(Item* item) {
+        val = item;
+    }
     void Tree::visit(Instruction_ret_not* i) {
         this->i = i; 
         TreeNode* node = new TreeNode(i->op);
@@ -18,7 +21,43 @@ namespace L3 {
         TreeNode* node = new TreeNode(i->dst);
         node->oprand1 = new TreeNode(i->src); 
     }
-
+    void Tree::visit(Instruction_math* i) {
+        this->i = i; 
+        TreeNode* node = new TreeNode(i->dst); 
+        node->oprand1 = new TreeNode(i->oprand1); 
+        node->op = dynamic_cast<Operation*>(i->op); 
+        node->oprand2 = new TreeNode(i->oprand2);
+    }
+    void Tree::visit(Instruction_compare* i) {
+        this->i = i; 
+        TreeNode* node = new TreeNode(i->dst); 
+        node->oprand1 = new TreeNode(i->oprand1); 
+        node->op = dynamic_cast<Operation*>(i->op); 
+        node->oprand2 = new TreeNode(i->oprand2);
+    }
+    void Tree::visit(Instruction_load* i) {
+        this->i = i; 
+        TreeNode* node = new TreeNode(i->dst); 
+        node->oprand1 = new TreeNode(i->src); 
+        node->op = dynamic_cast<Operation*>(i->op); 
+    }
+    void Tree::visit(Instruction_store* i) {
+        this->i = i; 
+        TreeNode* node = new TreeNode(i->dst); 
+        node->oprand1 = new TreeNode(i->src); 
+        node->op = dynamic_cast<Operation*>(i->op);  
+    }
+    void Tree::visit(Instruction_br_t* i) {
+        this->i = i; 
+        TreeNode* node = new TreeNode(i->op); 
+        node->oprand1 = new TreeNode(i->condition); 
+        node->oprand2 = new TreeNode(i->label); 
+    }
+    void Tree::visit(Instruction_br_label* i) {
+        this->i = i; 
+        TreeNode* node = new TreeNode(i->op); 
+        node->oprand1 = new TreeNode(i->label); 
+    }
    vector<Context *> identifyContext(Function *f) {
         vector<Context *> context_list;
         Context *context = new Context();
