@@ -259,7 +259,7 @@ namespace L3
   {
   };
 
-  struct Instruction_br_rule : pegtl::seq<
+  struct Instruction_br_label_rule : pegtl::seq<
                                      op_rule,
                                      seps,
                                      Label_rule>
@@ -286,7 +286,7 @@ namespace L3
                                 pegtl::seq<pegtl::at<Instruction_call_rule>, Instruction_call_rule>,
                                 pegtl::seq<pegtl::at<Instruction_call_assignment_rule>, Instruction_call_assignment_rule>,
                                 pegtl::seq<pegtl::at<Instruction_br_t_rule>, Instruction_br_t_rule>,
-                                pegtl::seq<pegtl::at<Instruction_br_rule>, Instruction_br_rule>,
+                                pegtl::seq<pegtl::at<Instruction_br_label_rule>, Instruction_br_label_rule>,
                                 pegtl::seq<pegtl::at<Instruction_assignment_rule>, Instruction_assignment_rule>,
                                 pegtl::seq<pegtl::at<Instruction_label_rule>, Instruction_label_rule>>
   {
@@ -623,7 +623,7 @@ template <>
 
   // action for br label
   template <>
-  struct action<Instruction_br_rule>
+  struct action<Instruction_br_label_rule>
   {
     template <typename Input>
     static void apply(const Input &in, Program &p)
@@ -633,6 +633,8 @@ template <>
       auto currentF = p.functions.back();
       auto i = new Instruction_br_label();
       i->label = dynamic_cast<Label*>(parsed_items.back());;
+      parsed_items.pop_back();
+      i->op = dynamic_cast<Operation*>(parsed_items.back());;
       parsed_items.pop_back();
       currentF->instructions.push_back(i);
       if(is_debug) cout << i->toString() << endl;
@@ -652,6 +654,8 @@ template <>
       i->label = dynamic_cast<Label*>(parsed_items.back());;
       parsed_items.pop_back();
       i->condition = parsed_items.back();
+      parsed_items.pop_back();
+      i->op = dynamic_cast<Operation*>(parsed_items.back());;
       parsed_items.pop_back();
       currentF->instructions.push_back(i);
       if(is_debug) cout << i->toString() << endl;
@@ -695,6 +699,8 @@ template <>
       auto i = new Instruction_load();
       i->src = dynamic_cast<Variable*>(parsed_items.back());
       parsed_items.pop_back();
+      i->op = dynamic_cast<Operation*>(parsed_items.back()); 
+      parsed_items.pop_back();
       i->dst = dynamic_cast<Variable*>(parsed_items.back());
       parsed_items.pop_back();
       if(is_debug) cout << i->toString() << endl;
@@ -716,6 +722,8 @@ template <>
       i->src = parsed_items.back();
       parsed_items.pop_back();
       i->dst = parsed_items.back();
+      parsed_items.pop_back();
+      i->op = dynamic_cast<Operation*>(parsed_items.back()); 
       parsed_items.pop_back();
       if(is_debug) cout << i->toString() << endl;
       currentF->instructions.push_back(i);
