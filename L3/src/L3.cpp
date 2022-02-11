@@ -152,13 +152,13 @@ void Instruction_math::accept(Visitor* v) {
 void Instruction_compare::accept(Visitor* v) {
   v->visit(this);
 }
-void Instruction_br::accept(Visitor* v) {
+void Instruction_br_label::accept(Visitor* v) {
   v->visit(this);
 }
 void Instruction_br_t::accept(Visitor* v) {
   v->visit(this);
 }
-void Instruction_call::accept(Visitor* v) {
+void Instruction_call_noassign::accept(Visitor* v) {
   v->visit(this);
 }
 void Instruction_call_assignment::accept(Visitor* v) {
