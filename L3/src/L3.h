@@ -87,6 +87,8 @@ class Operation : public Item
   class Instruction
   {
   public:
+    vector<Item *> uses;
+    vector<Item *> define;
 
     virtual void accept(Visitor* visitor) = 0; 
     virtual std::string toString() = 0; //for debug
@@ -98,7 +100,7 @@ class Operation : public Item
   class Instruction_ret : public Instruction
   {
     public:
-      Operation* op;
+      // Operation* op;
       virtual std::string toString() = 0;
       virtual void accept(Visitor *v) = 0;
   };
@@ -177,6 +179,9 @@ class Operation : public Item
   };
 
   class Instruction_br : public Instruction {
+    public:
+    Label *label;
+    Operation* op; 
     virtual std::string toString() = 0;
     virtual void accept(Visitor *v) = 0;
   };
@@ -184,8 +189,6 @@ class Operation : public Item
   class Instruction_br_label : public Instruction_br
   {
   public:
-    Operation* op; 
-    Label *label;
     std::string toString() override { return "br " + label->toString(); }
     void accept(Visitor *v) override; 
   };
@@ -193,14 +196,15 @@ class Operation : public Item
 class Instruction_br_t : public Instruction_br
   {
   public:
-    Operation* op;
-    Label *label;
     Item *condition;
     std::string toString() override { return "br " + condition->toString() + " " +label->toString(); }
     void accept(Visitor *v) override; 
   };
 
   class Instruction_call : public Instruction {
+    public:
+    Item *callee;
+    vector<Item*> args; 
     virtual std::string toString() = 0;
     virtual void accept(Visitor *v) = 0;
   };
@@ -209,8 +213,6 @@ class Instruction_br_t : public Instruction_br
   class Instruction_call_noassign : public Instruction_call
   {
   public:
-    Item *callee;
-    vector<Item*> args; 
     std::string toString() override { 
         string s = "call " + callee->toString() + " "; 
         for(Item* i : args) s += i->toString() + " ";
@@ -223,8 +225,6 @@ class Instruction_br_t : public Instruction_br
   {
   public:
     Variable *dst;
-    Item* callee; 
-    vector<Item*> args; 
     std::string toString() override { 
         string s = dst->toString() + " <- call " + callee->toString() + " "; 
         for(Item* i : args) s += i->toString() + " ";
