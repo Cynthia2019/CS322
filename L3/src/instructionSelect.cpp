@@ -16,19 +16,13 @@ namespace L3 {
             Instruction_br *b = dynamic_cast<Instruction_br *>(i);
             Instruction_ret *r = dynamic_cast<Instruction_ret *>(i);
             if (l || c || b || r) {
-                context_list.push_back(context);
+                if (!context->isEmpty()) {
+                    context_list.push_back(context);
+                }
                 context = new Context();
             }
         }
 
-        
-        vector<Context *> context_list_noempty;
-        for (auto c: context_list) {
-            if (!c->isEmpty()) {
-                context_list_noempty.push_back(c);
-            }
-        }
-
-        return context_list_noempty;
+        return context_list;
     }
 }
