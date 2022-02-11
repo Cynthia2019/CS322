@@ -98,7 +98,7 @@ class Operation : public Item
   class Instruction_ret : public Instruction
   {
     public:
-      Operation* op
+      Operation* op;
       virtual std::string toString() = 0;
       virtual void accept(Visitor *v) = 0;
   };

@@ -128,6 +128,20 @@ namespace L3
                                     > {};
 
   struct Label_rule : label {};
+  
+  struct op_rule : pegtl::sor<TAOCPP_PEGTL_STRING("<<"), 
+                            TAOCPP_PEGTL_STRING(">>"),
+                            pegtl::one<'+'>, 
+                            pegtl::one<'-'>, 
+                            pegtl::one<'*'>,
+                            pegtl::one<'&'>, 
+                            TAOCPP_PEGTL_STRING("return"),
+                            TAOCPP_PEGTL_STRING("load"), 
+                            TAOCPP_PEGTL_STRING("store"), 
+                            TAOCPP_PEGTL_STRING("br")
+                            >
+  {
+  };
 
   struct Instruction_return_rule : pegtl::seq<
                                        op_rule> {};
@@ -146,20 +160,6 @@ namespace L3
                                                number_rule,
                                                Label_rule,
                                                variable_rule>>
-  {
-  };
-
-  struct op_rule : pegtl::sor<TAOCPP_PEGTL_STRING("<<"), 
-                            TAOCPP_PEGTL_STRING(">>"),
-                            pegtl::one<'+'>, 
-                            pegtl::one<'-'>, 
-                            pegtl::one<'*'>,
-                            pegtl::one<'&'>, 
-                            TAOCPP_PEGTL_STRING("return"),
-                            TAOCPP_PEGTL_STRING("load"), 
-                            TAOCPP_PEGTL_STRING("store"), 
-                            TAOCPP_PEGTL_STRING("br")
-                            >
   {
   };
 
