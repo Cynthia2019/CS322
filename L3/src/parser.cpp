@@ -128,11 +128,25 @@ namespace L3
                                     > {};
 
   struct Label_rule : label {};
+  
+  struct op_rule : pegtl::sor<TAOCPP_PEGTL_STRING("<<"), 
+                            TAOCPP_PEGTL_STRING(">>"),
+                            pegtl::one<'+'>, 
+                            pegtl::one<'-'>, 
+                            pegtl::one<'*'>,
+                            pegtl::one<'&'>, 
+                            TAOCPP_PEGTL_STRING("return"),
+                            TAOCPP_PEGTL_STRING("load"), 
+                            TAOCPP_PEGTL_STRING("store"), 
+                            TAOCPP_PEGTL_STRING("br")
+                            >
+  {
+  };
 
   struct Instruction_return_rule : pegtl::seq<
-                                       str_return> {};
+                                       op_rule> {};
   struct Instruction_return_t_rule : pegtl::seq<
-                                       str_return,
+                                       op_rule,
                                        seps,
                                        pegtl::sor<variable_rule, 
                                                   number_rule>> {};
@@ -146,16 +160,6 @@ namespace L3
                                                number_rule,
                                                Label_rule,
                                                variable_rule>>
-  {
-  };
-
-  struct op_rule : pegtl::sor<TAOCPP_PEGTL_STRING("<<"), 
-                            TAOCPP_PEGTL_STRING(">>"),
-                            pegtl::one<'+'>, 
-                            pegtl::one<'-'>, 
-                            pegtl::one<'*'>,
-                            pegtl::one<'&'>
-                            >
   {
   };
 
@@ -177,14 +181,14 @@ namespace L3
                                      seps,
                                      str_arrow,
                                      seps,
-                                     str_load,
+                                     op_rule,
                                      seps,
                                      variable_rule>
   {
   };
 
   struct Instruction_store_rule : pegtl::seq<
-                                      str_store,
+                                      op_rule,
                                       seps,
                                       variable_rule,
                                       seps,
@@ -256,13 +260,13 @@ namespace L3
   };
 
   struct Instruction_br_rule : pegtl::seq<
-                                     TAOCPP_PEGTL_STRING("br"),
+                                     op_rule,
                                      seps,
                                      Label_rule>
   {
   };
   struct Instruction_br_t_rule : pegtl::seq<
-                                     TAOCPP_PEGTL_STRING("br"),
+                                     op_rule,
                                      seps,
                                      pegtl::sor<variable_rule, number_rule>,
                                      seps, 
@@ -375,6 +379,9 @@ namespace L3
       auto i = new Instruction_ret_t();
       i->arg = parsed_items.back(); 
       parsed_items.pop_back();
+      Operation* op = dynamic_cast<Operation*>(parsed_items.back()); 
+      parsed_items.pop_back();
+      i->op = op;
       currentF->instructions.push_back(i);
       if(is_debug) cout << i->toString() << endl;
     }
