@@ -140,7 +140,7 @@ void Instruction_load::accept(Visitor* v) {
 void Instruction_store::accept(Visitor* v) {
   v->visit(this);
 }
-void Instruction_ret::accept(Visitor* v) {
+void Instruction_ret_not::accept(Visitor* v) {
   v->visit(this);
 }
 void Instruction_ret_t::accept(Visitor* v) {

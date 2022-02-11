@@ -362,10 +362,7 @@ namespace L3
       if (is_debug)
         cout << "firing Instruction_ret: " << in.string() << endl;
       auto currentF = p.functions.back();
-      auto i = new Instruction_ret();
-      Operation* op = dynamic_cast<Operation*>(parsed_items.back()); 
-      parsed_items.pop_back();
-      i->op = op;
+      auto i = new Instruction_ret_not();
       if(is_debug) cout << i->toString() << endl;
       currentF->instructions.push_back(i);
     }

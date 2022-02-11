@@ -98,11 +98,19 @@ class Operation : public Item
   class Instruction_ret : public Instruction
   {
     public:
-      Operation* op; 
+      Operation* op
+      virtual std::string toString() = 0;
+      virtual void accept(Visitor *v) = 0;
+  };
+
+  class Instruction_ret_not : public Instruction_ret
+  {
+    public:
       std::string toString() override { return "return"; }
       void accept(Visitor *v) override; 
   };
-  class Instruction_ret_t : public Instruction
+
+  class Instruction_ret_t : public Instruction_ret
   {
     public:
       Operation* op;
@@ -262,7 +270,7 @@ class Instruction_br_t : public Instruction_br
 
   class Visitor {
     public: 
-      virtual void visit(Instruction_ret *i) = 0;
+      virtual void visit(Instruction_ret_not *i) = 0;
       virtual void visit(Instruction_ret_t *i) = 0;
       virtual void visit(Instruction_assignment *i) = 0;
       virtual void visit(Instruction_load *i) = 0;
