@@ -101,7 +101,6 @@ namespace L3
 
   struct variable_rule : variable {};
   struct variables_rule :   pegtl::sor<
-                                seps,
                                 variable,
                                 pegtl::seq<
                                     variable,
@@ -111,7 +110,8 @@ namespace L3
                                             variable
                                                 >
                                             >
-                                        >
+                                        >,
+                                seps
                                 > {};
   struct args_rule :   pegtl::sor<
                                 pegtl::seq<
@@ -133,6 +133,7 @@ namespace L3
                                        str_return> {};
   struct Instruction_return_t_rule : pegtl::seq<
                                        str_return,
+                                       seps,
                                        pegtl::sor<variable_rule, 
                                                   number_rule>> {};
 
@@ -339,6 +340,8 @@ namespace L3
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
+      if (is_debug)
+        cout << "firing function_name: " << in.string() << endl;
       auto newF = new Function();
       newF->name = in.string();
       newF->isMain = in.string() == ":main";
@@ -352,6 +355,8 @@ namespace L3
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
+      if (is_debug)
+        cout << "firing Instruction_ret: " << in.string() << endl;
       auto currentF = p.functions.back();
       auto i = new Instruction_ret();
       if(is_debug) cout << i->toString() << endl;
@@ -364,6 +369,8 @@ namespace L3
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
+      if (is_debug)
+        cout << "firing Instruction_ret_t: " << in.string() << endl;
       auto currentF = p.functions.back();
       auto i = new Instruction_ret_t();
       i->arg = parsed_items.back(); 
@@ -378,6 +385,8 @@ namespace L3
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
+      if (is_debug)
+        cout << "firing Label_rule: " << in.string() << endl;
       Label *i = new Label(in.string());
       parsed_items.push_back(i);   
     }
@@ -389,6 +398,8 @@ namespace L3
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
+      if (is_debug)
+        cout << "firing variable_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       std::string var_name = in.string(); 
       Variable *i = currentF->newVariable(var_name);
@@ -403,6 +414,8 @@ template <>
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
+      if (is_debug)
+        cout << "firing variables_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       std::string vars = in.string(); 
       if(is_debug) {
@@ -427,6 +440,8 @@ template <>
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
+      if (is_debug)
+        cout << "firing args_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       std::string args = in.string(); 
       if(is_debug) {
@@ -470,6 +485,8 @@ template <>
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
+      if (is_debug)
+        cout << "firing op_rule: " << in.string() << endl;
       Operation *i = new Operation(in.string());
       parsed_items.push_back(i);
     }
@@ -481,6 +498,8 @@ template <>
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
+      if (is_debug)
+        cout << "firing number_rule: " << in.string() << endl;
       Number *i = new Number(std::stoll(in.string()));
       parsed_items.push_back(i);
     }
@@ -493,6 +512,8 @@ template <>
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
+      if (is_debug)
+        cout << "firing call_string_rule: " << in.string() << endl;
       String *i = new String(in.string());
       parsed_items.push_back(i);
     }
@@ -505,6 +526,8 @@ template <>
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
+      if (is_debug)
+        cout << "firing Instruction_label_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       auto i = new Instruction_label();
       Label *item = new Label(in.string());
@@ -520,6 +543,8 @@ template <>
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
+      if (is_debug)
+        cout << "firing Instruction_math_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       auto i = new Instruction_math();
       i->oprand2 = parsed_items.back();
@@ -545,10 +570,15 @@ template <>
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
+      if (is_debug)
+        cout << "firing Instruction_call_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       auto i = new Instruction_call();
+      if (is_debug)
+        cout << "args size: " << list_of_args.size() << endl;
       while(!list_of_args.empty()) {
           i->args.push_back(list_of_args.back());
+          list_of_args.pop_back();
       }
       i->callee = parsed_items.back();
       parsed_items.pop_back();
@@ -563,18 +593,23 @@ template <>
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
+      if (is_debug)
+        cout << "firing Instruction_call_assignment_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       auto i = new Instruction_call_assignment();
-    //   for(Item* item : list_of_args) {
-    //      i->args.push_back(item);
-    //   }
-    //   list_of_args = {};
+    // //   for(Item* item : list_of_args) {
+    // //      i->args.push_back(item);
+    // //   }
+    // //   list_of_args = {};
+    cout << "item " << parsed_items.size() << endl;
       i->callee = parsed_items.back();
       parsed_items.pop_back();
       i->dst = dynamic_cast<Variable*>(parsed_items.back());;
-      parsed_items.pop_back();
+      if (!i->dst) cout << "bug" << endl;
+    //   parsed_items.pop_back();
       currentF->instructions.push_back(i);
-      if(is_debug) cout << i->toString() << endl;
+    //   if(is_debug) cout << i->toString() << endl;
+      cout << "here" << endl;
     }
   };
 
@@ -585,6 +620,8 @@ template <>
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
+      if (is_debug)
+        cout << "firing Instruction_br_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       auto i = new Instruction_br();
       i->label = dynamic_cast<Label*>(parsed_items.back());;
@@ -600,6 +637,8 @@ template <>
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
+      if (is_debug)
+        cout << "firing Instruction_br_t_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       auto i = new Instruction_br_t();
       i->label = dynamic_cast<Label*>(parsed_items.back());;
@@ -617,6 +656,8 @@ template <>
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
+      if (is_debug)
+        cout << "firing Instruction_assignment_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
 
       auto i = new Instruction_assignment();
@@ -638,6 +679,8 @@ template <>
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
+      if (is_debug)
+        cout << "firing Instruction_load_rule: " << in.string() << endl;
 
       auto currentF = p.functions.back();
 
@@ -656,6 +699,8 @@ template <>
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
+      if (is_debug)
+        cout << "firing Instruction_store_rule: " << in.string() << endl;
 
       auto currentF = p.functions.back();
 
@@ -675,6 +720,8 @@ template <>
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
+      if (is_debug)
+        cout << "firing compare_op_rule: " << in.string() << endl;
       Operation *i = new Operation(in.string());
       parsed_items.push_back(i);
     }
@@ -686,6 +733,8 @@ template <>
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
+      if (is_debug)
+        cout << "firing Instruction_compare_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
 
       auto i = new Instruction_compare();
