@@ -10,16 +10,19 @@ namespace L3 {
     void Tree::visit(Instruction_ret_not* i) {
         this->i = i; 
         TreeNode* node = new TreeNode(i->op);
+        root = node;
     }
     void Tree::visit(Instruction_ret_t* i) {
         this->i = i; 
         TreeNode* node = new TreeNode(i->op);
         node->oprand1 = new TreeNode(i->arg); 
+        root = node;
     }
     void Tree::visit(Instruction_assignment* i) {
         this->i = i; 
         TreeNode* node = new TreeNode(i->dst);
         node->oprand1 = new TreeNode(i->src); 
+        root = node;
     }
     void Tree::visit(Instruction_math* i) {
         this->i = i; 
@@ -27,6 +30,7 @@ namespace L3 {
         node->oprand1 = new TreeNode(i->oprand1); 
         node->op = dynamic_cast<Operation*>(i->op); 
         node->oprand2 = new TreeNode(i->oprand2);
+        root = node;
     }
     void Tree::visit(Instruction_compare* i) {
         this->i = i; 
@@ -34,29 +38,34 @@ namespace L3 {
         node->oprand1 = new TreeNode(i->oprand1); 
         node->op = dynamic_cast<Operation*>(i->op); 
         node->oprand2 = new TreeNode(i->oprand2);
+        root = node;
     }
     void Tree::visit(Instruction_load* i) {
         this->i = i; 
         TreeNode* node = new TreeNode(i->dst); 
         node->oprand1 = new TreeNode(i->src); 
         node->op = dynamic_cast<Operation*>(i->op); 
+        root = node;
     }
     void Tree::visit(Instruction_store* i) {
         this->i = i; 
         TreeNode* node = new TreeNode(i->dst); 
         node->oprand1 = new TreeNode(i->src); 
         node->op = dynamic_cast<Operation*>(i->op);  
+        root = node;
     }
     void Tree::visit(Instruction_br_t* i) {
         this->i = i; 
         TreeNode* node = new TreeNode(i->op); 
         node->oprand1 = new TreeNode(i->condition); 
         node->oprand2 = new TreeNode(i->label); 
+        root = node;
     }
     void Tree::visit(Instruction_br_label* i) {
         this->i = i; 
         TreeNode* node = new TreeNode(i->op); 
         node->oprand1 = new TreeNode(i->label); 
+        root = node;
     }
    vector<Context *> identifyContext(Function *f) {
         vector<Context *> context_list;
