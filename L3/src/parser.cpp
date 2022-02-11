@@ -584,7 +584,7 @@ template <>
       if (is_debug)
         cout << "firing Instruction_call_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
-      auto i = new Instruction_call();
+      auto i = new Instruction_call_noassign();
       if (is_debug)
         cout << "args size: " << list_of_args.size() << endl;
       while(!list_of_args.empty()) {
@@ -634,7 +634,7 @@ template <>
       if (is_debug)
         cout << "firing Instruction_br_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
-      auto i = new Instruction_br();
+      auto i = new Instruction_br_label();
       i->label = dynamic_cast<Label*>(parsed_items.back());;
       parsed_items.pop_back();
       currentF->instructions.push_back(i);

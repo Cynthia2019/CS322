@@ -166,7 +166,12 @@ class Operation : public Item
     void accept(Visitor *v) override; 
   };
 
-  class Instruction_br : public Instruction
+  class Instruction_br : public Instruction {
+    virtual std::string toString() = 0;
+    virtual void accept(Visitor *v) = 0;
+  };
+
+  class Instruction_br_label : public Instruction_br
   {
   public:
     Label *label;
@@ -174,7 +179,7 @@ class Operation : public Item
     void accept(Visitor *v) override; 
   };
 
-class Instruction_br_t : public Instruction
+class Instruction_br_t : public Instruction_br
   {
   public:
     Label *label;
@@ -182,8 +187,14 @@ class Instruction_br_t : public Instruction
     std::string toString() override { return "br " + condition->toString() + " " +label->toString(); }
     void accept(Visitor *v) override; 
   };
+
+  class Instruction_call : public Instruction {
+    virtual std::string toString() = 0;
+    virtual void accept(Visitor *v) = 0;
+  };
+
   // call callee (args) instruction
-  class Instruction_call : public Instruction
+  class Instruction_call_noassign : public Instruction_call
   {
   public:
     Item *callee;
@@ -196,7 +207,7 @@ class Instruction_br_t : public Instruction
     void accept(Visitor *v) override; 
   };
   // var <- call callee (args) instruction
-  class Instruction_call_assignment : public Instruction
+  class Instruction_call_assignment : public Instruction_call
   {
   public:
     Variable *dst;
@@ -258,9 +269,9 @@ class Instruction_br_t : public Instruction
       virtual void visit(Instruction_math *i) = 0;
       virtual void visit(Instruction_store *i) = 0;
       virtual void visit(Instruction_compare *i) = 0;
-      virtual void visit(Instruction_br *i) = 0;
+      virtual void visit(Instruction_br_label *i) = 0;
       virtual void visit(Instruction_br_t *i) = 0;
-      virtual void visit(Instruction_call *i) = 0;
+      virtual void visit(Instruction_call_noassign *i) = 0;
       virtual void visit(Instruction_call_assignment *i) = 0;
       virtual void visit(Instruction_label *i) = 0;
   };
