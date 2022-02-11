@@ -3,6 +3,14 @@
 #include <L3.h>
 using namespace std;
 namespace L3 {
+    class Context{
+        public:
+        void inline add(Instruction *i) { instructions.push_back(i);};
+        bool inline isEmpty() { return instructions.size() == 0; }
+        vector<Instruction *> instructions;
+    };
+
+    vector<Context *> identifyContext(Function *f);
     class TreeNode {
         public: 
         TreeNode(Item* item); 
