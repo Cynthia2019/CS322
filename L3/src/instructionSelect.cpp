@@ -7,7 +7,7 @@ namespace L3 {
     TreeNode::TreeNode(Item* item) {
         val = item;
     }
-    Tree::Tree(Context* context) : context(context) {};
+    Tree::Tree(Context* context) : context(context) {}
     void Tree::visit(Instruction_ret_not* i) {
         TreeNode* node = new TreeNode(i->op);
         root = node;
@@ -79,9 +79,9 @@ namespace L3 {
         root = node;
         uses.push_back(i->label);
     }
-    void Tree::visit(Instruction_call_noassign *i) {};
-    void Tree::visit(Instruction_call_assignment *i) {};
-    void Tree::visit(Instruction_label *i) {};
+    void Tree::visit(Instruction_call_noassign *i) {}
+    void Tree::visit(Instruction_call_assignment *i) {}
+    void Tree::visit(Instruction_label *i) {}
 
    vector<Context *> identifyContext(Function *f) {
         vector<Context *> context_list;
