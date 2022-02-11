@@ -198,10 +198,10 @@ namespace L3
   };
 
   struct compare_op_rule : pegtl::sor<
-                               TAOCPP_PEGTL_STRING(">"),
                                TAOCPP_PEGTL_STRING(">="),
                                TAOCPP_PEGTL_STRING("<="),
                                TAOCPP_PEGTL_STRING("<"),
+                               TAOCPP_PEGTL_STRING(">"),
                                TAOCPP_PEGTL_STRING("=")>
   {
   };
@@ -463,9 +463,10 @@ template <>
               Number* i = new Number(std::stoll(temp)); 
               list_of_args.push_back(i);
           }
-          args = args.substr(n);
+          args = args.substr(n+1);
       }
       if(is_debug) cout << "args after parsed: " << args << endl;
+      args.erase(std::remove_if(args.begin(), args.end(), [](unsigned char x){return std::isspace(x);}), args.end()); 
       if(args[0] == '%'){
           Variable* i = currentF->newVariable(args); 
           currentF->variables[args] = i; 
@@ -597,10 +598,10 @@ template <>
         cout << "firing Instruction_call_assignment_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       auto i = new Instruction_call_assignment();
-    // //   for(Item* item : list_of_args) {
-    // //      i->args.push_back(item);
-    // //   }
-    // //   list_of_args = {};
+      for(Item* item : list_of_args) {
+         i->args.push_back(item);
+      }
+      list_of_args = {};
     cout << "item " << parsed_items.size() << endl;
       i->callee = parsed_items.back();
       parsed_items.pop_back();
