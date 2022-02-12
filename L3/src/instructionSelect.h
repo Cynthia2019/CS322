@@ -23,7 +23,7 @@ namespace L3 {
 class Tree : public Visitor{
     public:
         TreeNode* root; 
-        Tree(); 
+        Tree(Instruction* i); 
         bool isEmpty() {return root == nullptr;};
         vector<Item*> uses; 
         vector<Item*> define;
@@ -45,7 +45,5 @@ class Tree : public Visitor{
         private: 
             Instruction* instruction;
     };
-
-    void mergeTrees(Context* context);
     void instructionSelection(Program p, Function* f);
 }

@@ -1,5 +1,7 @@
 #include "L3.h"
 #include "instructionSelect.h"
+#include <string>
+#include <iostream>
 
 namespace L3 {
   struct AnalysisResult {

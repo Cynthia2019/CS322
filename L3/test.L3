@@ -1,0 +1,5 @@
+define :main() {
+    %v1 <- %p1 * 4
+    %v2 <- %v1 + %p2
+    return
+}
