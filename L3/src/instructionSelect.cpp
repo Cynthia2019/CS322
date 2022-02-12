@@ -1,9 +1,11 @@
-#include <instructionSelect.h>
-#include <L3.h>
-#include <liveness.h>
+#include "instructionSelect.h"
+#include "L3.h"
+#include "liveness.h"
 #include <string> 
 #include <iostream>
 using namespace std; 
+
+extern bool is_debug;
 
 namespace L3 {
     TreeNode::TreeNode(Item* item) {
@@ -11,18 +13,19 @@ namespace L3 {
     }
     void TreeNode::printNode(TreeNode* node){
         if(node == nullptr) return ;
+        if(node->val == nullptr) cout << "bug" << endl;
         cout << node->val->toString() << endl;
-        if(node->op) cout << node->op->toString() << endl; 
-        if(node->oprand1) printNode(node->oprand1) ; 
-        if (node->oprand2) printNode(node->oprand2);
+        if(node->op != nullptr) cout << node->op->toString() << endl; 
+        if(node->oprand1 != nullptr) printNode(node->oprand1) ; 
+        if (node->oprand2 != nullptr) printNode(node->oprand2);
     }
-    Tree::Tree(Context* context) : context(context) {}
+    Tree::Tree() {};
     Instruction* Tree::getInstruction() {
         return this->instruction;
     }
     void Tree::printTree(Tree* tree){
         if(tree->root == nullptr) return; 
-        tree->root->printNode(root); 
+        tree->root->printNode(tree->root); 
     }
     void Tree::visit(Instruction_ret_not* i) {
         TreeNode* node = new TreeNode(i->op);
@@ -116,7 +119,7 @@ namespace L3 {
             if (l == nullptr && c == nullptr) {
                 context->add(i);
             }
-
+            
             Instruction_br *b = dynamic_cast<Instruction_br *>(i);
             Instruction_ret *r = dynamic_cast<Instruction_ret *>(i);
             if (l || c || b || r) {
@@ -185,65 +188,77 @@ namespace L3 {
     vector<Tree*> getAllTree(Context* context){
         vector<Tree*> trees; 
         for(auto i : context->instructions) {
-            Tree* t = new Tree(context); 
-            i->accept(t);
             cout << "instruction: " << i->toString() << endl ;
-            cout << "tree: "; 
+            Tree* t = new Tree(); 
+            i->accept(t);
+            cout << "tree: " << endl; 
             t->printTree(t);
+            trees.push_back(t);
         }
         return trees;
     }
     void mergeTrees(Context* context){
         int64_t size = context->instructions.size(); 
+        vector<Tree*> trees = getAllTree(context); 
+        // for(int i = 0; i < size; i++){
+        //     Tree* T2 = trees[i];
+        //     Variable* v = dynamic_cast<Variable*>(T2->root->val); 
+        //     //current root is not a variable
+        //     //instruction must be return, br, return t, br t, skip
+        //     if(v != nullptr){
+        //         for(int j = i + 1; j < size; j++){
+        //             Tree* T1 = trees[j]; 
+        //             //condition 1: t_next uses t_curr root
+        //             if(T1->root->oprand1 && T1->root->oprand1->val == T2->root->val){
+        //                 //condition A, T2->root->val dead after T1
+        //                 bool dead = checkDead(j+1, T2->root->val, res, trees);
+        //                 bool only = checkOnlyUsedByT1(j+1, T2->root->val, context->instructions);
+        //                 if(dead || only) {
+        //                     //condition B
+        //                     bool notDependent = checkDependency(i, j, T2, v, trees); 
+        //                     bool noMemoryInst = checkMemoryInst(i+1, j-1, context->instructions);
+        //                     if(notDependent && noMemoryInst){
+        //                         //merge
+        //                         T1->root->oprand1 = T2->root; 
+        //                     }
+        //                 }
+        //             }
+        //             //condition 1: t_next uses t_curr root
+        //             else if(T1->root->oprand1 && T1->root->oprand2->val == T2->root->val) {
+        //                 //condition A, T2->root->val dead after T1
+        //                 bool dead = checkDead(j+1, T2->root->val, res, trees);
+        //                 bool only = checkOnlyUsedByT1(j+1, T2->root->val, context->instructions);
+        //                 if(dead || only) {
+        //                     //condition B
+        //                     bool notDependent = checkDependency(i, j, T2, v, trees); 
+        //                     bool noMemoryInst = checkMemoryInst(i+1, j-1, context->instructions);
+        //                     if(notDependent && noMemoryInst){
+        //                         //merge
+        //                         T1->root->oprand2 = T2->root; 
+        //                     }
+        //                 }
+        //             }
+        //             else continue;
+        //         }
+        //     }
+        // }
+
+    }
+    void instructionSelection(Program p, Function* f){        
         //perform liveness analysis on instructions
         GenKill genkill; 
-        for(Instruction* i : context->instructions) {
+        for(Instruction* i : f->instructions) {
             i->accept(&genkill);
         }
-        AnalysisResult* res = computeLiveness(context);
-        vector<Tree*> trees = getAllTree(context); 
-        for(int i = 0; i < size; i++){
-            Tree* T2 = trees[i];
-            Variable* v = dynamic_cast<Variable*>(T2->root->val); 
-            //current root is not a variable
-            //instruction must be return, br, return t, br t, skip
-            if(v != nullptr){
-                for(int j = i + 1; j < size; j++){
-                    Tree* T1 = trees[j]; 
-                    //condition 1: t_next uses t_curr root
-                    if(T1->root->oprand1 && T1->root->oprand1->val == T2->root->val){
-                        //condition A, T2->root->val dead after T1
-                        bool dead = checkDead(j+1, T2->root->val, res, trees);
-                        bool only = checkOnlyUsedByT1(j+1, T2->root->val, context->instructions);
-                        if(dead || only) {
-                            //condition B
-                            bool notDependent = checkDependency(i, j, T2, v, trees); 
-                            bool noMemoryInst = checkMemoryInst(i+1, j-1, context->instructions);
-                            if(notDependent && noMemoryInst){
-                                //merge
-                                T1->root->oprand1 = T2->root; 
-                            }
-                        }
-                    }
-                    //condition 1: t_next uses t_curr root
-                    else if(T1->root->oprand1 && T1->root->oprand2->val == T2->root->val) {
-                        //condition A, T2->root->val dead after T1
-                        bool dead = checkDead(j+1, T2->root->val, res, trees);
-                        bool only = checkOnlyUsedByT1(j+1, T2->root->val, context->instructions);
-                        if(dead || only) {
-                            //condition B
-                            bool notDependent = checkDependency(i, j, T2, v, trees); 
-                            bool noMemoryInst = checkMemoryInst(i+1, j-1, context->instructions);
-                            if(notDependent && noMemoryInst){
-                                //merge
-                                T1->root->oprand2 = T2->root; 
-                            }
-                        }
-                    }
-                    else continue;
-                }
+        AnalysisResult* res = computeLiveness(f);
+        vector<Context*> ctx = identifyContext(f); 
+        for(Context* c : ctx){
+            cout << "instructions in a context: " << endl;
+            for(Instruction* i : c->instructions) {
+                cout << i->toString() << endl;
             }
+            cout << "merge trees in a context" << endl;
+            mergeTrees(c); 
         }
-
     }
 }

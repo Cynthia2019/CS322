@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include <L3.h>
+#include "L3.h"
 using namespace std;
 namespace L3 {
     class Context{
@@ -14,16 +14,16 @@ namespace L3 {
     class TreeNode {
         public: 
         TreeNode(Item* item); 
-        Item* val; 
-        Operation* op;
-        TreeNode* oprand1; 
-        TreeNode* oprand2; 
+        Item* val = nullptr; 
+        Operation* op = nullptr;
+        TreeNode* oprand1 = nullptr; 
+        TreeNode* oprand2 = nullptr; 
         void printNode(TreeNode* node);
     };
 class Tree : public Visitor{
     public:
         TreeNode* root; 
-        Tree(Context* context); 
+        Tree(); 
         bool isEmpty() {return root == nullptr;};
         vector<Item*> uses; 
         vector<Item*> define;
@@ -43,9 +43,9 @@ class Tree : public Visitor{
         void visit(Instruction_call_assignment *i) override;
         void visit(Instruction_label *i) override;
         private: 
-            Context* context; 
             Instruction* instruction;
     };
 
     void mergeTrees(Context* context);
+    void instructionSelection(Program p, Function* f);
 }

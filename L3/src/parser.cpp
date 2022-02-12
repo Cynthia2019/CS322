@@ -72,6 +72,7 @@ namespace L3
   struct str_load : TAOCPP_PEGTL_STRING("load") {};
   struct str_store : TAOCPP_PEGTL_STRING("store") {};
   struct str_call : TAOCPP_PEGTL_STRING("call") {};
+  struct str_br : TAOCPP_PEGTL_STRING("br") {};
   struct str_arrow : TAOCPP_PEGTL_STRING("<-") {};
 
   struct comment : pegtl::disable<
@@ -134,19 +135,15 @@ namespace L3
                             pegtl::one<'+'>, 
                             pegtl::one<'-'>, 
                             pegtl::one<'*'>,
-                            pegtl::one<'&'>, 
-                            TAOCPP_PEGTL_STRING("return"),
-                            TAOCPP_PEGTL_STRING("load"), 
-                            TAOCPP_PEGTL_STRING("store"), 
-                            TAOCPP_PEGTL_STRING("br")
+                            pegtl::one<'&'>
                             >
   {
   };
 
   struct Instruction_return_rule : pegtl::seq<
-                                       op_rule> {};
+                                       str_return> {};
   struct Instruction_return_t_rule : pegtl::seq<
-                                       op_rule,
+                                       str_return,
                                        seps,
                                        pegtl::sor<variable_rule, 
                                                   number_rule>> {};
@@ -181,14 +178,14 @@ namespace L3
                                      seps,
                                      str_arrow,
                                      seps,
-                                     op_rule,
+                                     str_load,
                                      seps,
                                      variable_rule>
   {
   };
 
   struct Instruction_store_rule : pegtl::seq<
-                                      op_rule,
+                                      str_store,
                                       seps,
                                       variable_rule,
                                       seps,
@@ -260,13 +257,13 @@ namespace L3
   };
 
   struct Instruction_br_label_rule : pegtl::seq<
-                                     op_rule,
+                                     str_br,
                                      seps,
                                      Label_rule>
   {
   };
   struct Instruction_br_t_rule : pegtl::seq<
-                                     op_rule,
+                                     str_br,
                                      seps,
                                      pegtl::sor<variable_rule, number_rule>,
                                      seps, 
@@ -277,6 +274,8 @@ namespace L3
   {
   };
   struct Instruction_rule : pegtl::sor<
+                                pegtl::seq<pegtl::at<Instruction_br_label_rule>, Instruction_br_label_rule>,
+                                pegtl::seq<pegtl::at<Instruction_br_t_rule>, Instruction_br_t_rule>,
                                 pegtl::seq<pegtl::at<Instruction_return_t_rule>, Instruction_return_t_rule>,
                                 pegtl::seq<pegtl::at<Instruction_return_rule>, Instruction_return_rule>,
                                 pegtl::seq<pegtl::at<Instruction_compare_rule>, Instruction_compare_rule>,
@@ -285,8 +284,6 @@ namespace L3
                                 pegtl::seq<pegtl::at<Instruction_store_rule>, Instruction_store_rule>,
                                 pegtl::seq<pegtl::at<Instruction_call_rule>, Instruction_call_rule>,
                                 pegtl::seq<pegtl::at<Instruction_call_assignment_rule>, Instruction_call_assignment_rule>,
-                                pegtl::seq<pegtl::at<Instruction_br_t_rule>, Instruction_br_t_rule>,
-                                pegtl::seq<pegtl::at<Instruction_br_label_rule>, Instruction_br_label_rule>,
                                 pegtl::seq<pegtl::at<Instruction_assignment_rule>, Instruction_assignment_rule>,
                                 pegtl::seq<pegtl::at<Instruction_label_rule>, Instruction_label_rule>>
   {
@@ -344,8 +341,6 @@ namespace L3
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
-      if (is_debug)
-        cout << "firing function_name: " << in.string() << endl;
       auto newF = new Function();
       newF->name = in.string();
       newF->isMain = in.string() == ":main";
@@ -354,7 +349,7 @@ namespace L3
   };
 
   template <>
-  struct action<Instruction_ret>
+  struct action<Instruction_return_rule>
   {
     template <typename Input>
     static void apply(const Input &in, Program &p)
@@ -363,12 +358,14 @@ namespace L3
         cout << "firing Instruction_ret: " << in.string() << endl;
       auto currentF = p.functions.back();
       auto i = new Instruction_ret_not();
+      i->op = dynamic_cast<Operation*>(parsed_items.back()); 
+      parsed_items.pop_back();
       if(is_debug) cout << i->toString() << endl;
       currentF->instructions.push_back(i);
     }
   };
   template <>
-  struct action<Instruction_ret_t>
+  struct action<Instruction_return_t_rule>
   {
     template <typename Input>
     static void apply(const Input &in, Program &p)
@@ -379,9 +376,8 @@ namespace L3
       auto i = new Instruction_ret_t();
       i->arg = parsed_items.back(); 
       parsed_items.pop_back();
-      Operation* op = dynamic_cast<Operation*>(parsed_items.back()); 
+      i->op = dynamic_cast<Operation*>(parsed_items.back()); 
       parsed_items.pop_back();
-      i->op = op;
       currentF->instructions.push_back(i);
       if(is_debug) cout << i->toString() << endl;
     }
@@ -392,8 +388,6 @@ namespace L3
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
-      if (is_debug)
-        cout << "firing Label_rule: " << in.string() << endl;
       Label *i = new Label(in.string());
       parsed_items.push_back(i);   
     }
@@ -405,8 +399,8 @@ namespace L3
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
-      if (is_debug)
-        cout << "firing variable_rule: " << in.string() << endl;
+      // if (is_debug)
+      //   cout << "firing variable_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       std::string var_name = in.string(); 
       Variable *i = currentF->newVariable(var_name);
@@ -425,15 +419,11 @@ template <>
         cout << "firing variables_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       std::string vars = in.string(); 
-      if(is_debug) {
-          cout << "string vars: " << vars << endl;
-      }
       while(vars.find(',') != vars.npos){
           int n = vars.find(','); 
           //eliminate any space in 0-n
           std::string temp = vars.substr(0, n); 
           temp.erase(std::remove_if(temp.begin(), temp.end(), [](unsigned char x){return std::isspace(x);}), temp.end()); 
-          if(is_debug) cout << "variable: " << temp << endl;
           Variable *i = currentF->newVariable(temp);
           currentF->variables[temp] = i;
           currentF->arguments.push_back(i);
@@ -451,9 +441,6 @@ template <>
         cout << "firing args_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       std::string args = in.string(); 
-      if(is_debug) {
-          cout << "string args: " << args << endl;
-      }
       if(args.size() == 0) return ;
       while(args.find(',') != args.npos){
           int n = args.find(','); 
@@ -493,8 +480,56 @@ template <>
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
-      if (is_debug)
-        cout << "firing op_rule: " << in.string() << endl;
+      // if (is_debug)
+      //   cout << "firing op_rule: " << in.string() << endl;
+      Operation *i = new Operation(in.string());
+      parsed_items.push_back(i);
+    }
+  };
+  template <>
+  struct action<str_return>
+  {
+    template <typename Input>
+    static void apply(const Input &in, Program &p)
+    {
+      // if (is_debug)
+      //   cout << "firing op_rule: " << in.string() << endl;
+      Operation *i = new Operation(in.string());
+      parsed_items.push_back(i);
+    }
+  };
+  template <>
+  struct action<str_br>
+  {
+    template <typename Input>
+    static void apply(const Input &in, Program &p)
+    {
+      // if (is_debug)
+      //   cout << "firing op_rule: " << in.string() << endl;
+      Operation *i = new Operation(in.string());
+      parsed_items.push_back(i);
+    }
+  };
+  template <>
+  struct action<str_load>
+  {
+    template <typename Input>
+    static void apply(const Input &in, Program &p)
+    {
+      // if (is_debug)
+      //   cout << "firing op_rule: " << in.string() << endl;
+      Operation *i = new Operation(in.string());
+      parsed_items.push_back(i);
+    }
+  };
+  template <>
+  struct action<str_store>
+  {
+    template <typename Input>
+    static void apply(const Input &in, Program &p)
+    {
+      // if (is_debug)
+      //   cout << "firing op_rule: " << in.string() << endl;
       Operation *i = new Operation(in.string());
       parsed_items.push_back(i);
     }
@@ -506,8 +541,8 @@ template <>
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
-      if (is_debug)
-        cout << "firing number_rule: " << in.string() << endl;
+      // if (is_debug)
+      //   cout << "firing number_rule: " << in.string() << endl;
       Number *i = new Number(std::stoll(in.string()));
       parsed_items.push_back(i);
     }
@@ -520,8 +555,8 @@ template <>
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
-      if (is_debug)
-        cout << "firing call_string_rule: " << in.string() << endl;
+      // if (is_debug)
+      //   cout << "firing call_string_rule: " << in.string() << endl;
       String *i = new String(in.string());
       parsed_items.push_back(i);
     }
@@ -582,11 +617,12 @@ template <>
         cout << "firing Instruction_call_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       auto i = new Instruction_call_noassign();
-      if (is_debug)
-        cout << "args size: " << list_of_args.size() << endl;
+      // if (is_debug)
+      //   cout << "args size: " << list_of_args.size() << endl;
       while(!list_of_args.empty()) {
           i->args.push_back(list_of_args.back());
           list_of_args.pop_back();
+          parsed_items.pop_back();
       }
       i->callee = parsed_items.back();
       parsed_items.pop_back();
@@ -607,17 +643,15 @@ template <>
       auto i = new Instruction_call_assignment();
       for(Item* item : list_of_args) {
          i->args.push_back(item);
+         parsed_items.pop_back();
       }
       list_of_args = {};
-    cout << "item " << parsed_items.size() << endl;
       i->callee = parsed_items.back();
       parsed_items.pop_back();
       i->dst = dynamic_cast<Variable*>(parsed_items.back());;
       if (!i->dst) cout << "bug" << endl;
-    //   parsed_items.pop_back();
+       parsed_items.pop_back();
       currentF->instructions.push_back(i);
-    //   if(is_debug) cout << i->toString() << endl;
-      cout << "here" << endl;
     }
   };
 
@@ -736,8 +770,8 @@ template <>
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
-      if (is_debug)
-        cout << "firing compare_op_rule: " << in.string() << endl;
+      // if (is_debug)
+      //   cout << "firing compare_op_rule: " << in.string() << endl;
       Operation *i = new Operation(in.string());
       parsed_items.push_back(i);
     }

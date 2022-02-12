@@ -1,5 +1,5 @@
-#include <L3.h>
-#include <instructionSelect.h>
+#include "L3.h"
+#include "instructionSelect.h"
 
 namespace L3 {
   struct AnalysisResult {
@@ -24,5 +24,5 @@ namespace L3 {
       void visit(Instruction_call_assignment *i);
       void visit(Instruction_label *i);
   };
-  AnalysisResult* computeLiveness(Context* context);
+  AnalysisResult* computeLiveness(Function* function);
 }

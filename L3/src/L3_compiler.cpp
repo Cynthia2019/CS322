@@ -75,6 +75,11 @@ int main(
     * Parse the L3 program.
     */
 p = L3::parse_file(argv[optind]);
+cout << "\nInstruction select: " << endl;
+for(L3::Function* f : p.functions){
+  L3::instructionSelection(p, f);
+  cout << endl;
+}
 //test instruction select
 
 

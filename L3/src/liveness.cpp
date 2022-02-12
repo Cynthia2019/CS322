@@ -69,12 +69,12 @@ namespace L3 {
         return {idx + 1};
     }
 
-    AnalysisResult* computeLiveness(Context* context) {
+    AnalysisResult* computeLiveness(Function* f) {
         AnalysisResult* res = new AnalysisResult();
         vector<set<Item*>> gens; 
         vector<set<Item*>> kills; 
 
-        for (auto i : context->instructions)
+        for (auto i : f->instructions)
         {
             auto gen = i->uses;
             auto kill = i->define;
@@ -97,14 +97,14 @@ namespace L3 {
             kills.push_back(kill_var);
         }
 
-        vector<set<Item*>> in(context->instructions.size());
-        vector<set<Item*>> out(context->instructions.size());
+        vector<set<Item*>> in(f->instructions.size());
+        vector<set<Item*>> out(f->instructions.size());
 
         bool changed = false;
         do
         {
             changed = false;
-            for (int i = context->instructions.size() - 1; i >= 0; i--)
+            for (int i = f->instructions.size() - 1; i >= 0; i--)
             {
                 auto gen = gens[i];
                 auto kill = kills[i];
@@ -123,7 +123,7 @@ namespace L3 {
 
                 auto out_before = out[i];
                 out[i] = {};
-                vector<int> idxs = get_successor(context->instructions, i);
+                vector<int> idxs = get_successor(f->instructions, i);
                 for (auto t : idxs)
                 {
                     out[i].insert(in[t].begin(), in[t].end());
@@ -132,7 +132,7 @@ namespace L3 {
                 {
                     changed = true;
                 }
-                Instruction* iptr = context->instructions[i];
+                Instruction* iptr = f->instructions[i];
                 res->gens[iptr] = gen; 
                 res->kills[iptr] = kill; 
                 res->ins[iptr] = in[i];
