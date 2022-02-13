@@ -1,5 +1,5 @@
 #include <L3.h>
-#include <L2.h>
+#include <../L2/src/L2.h>
 #include <instructionSelect.h>
 
 namespace L3 {

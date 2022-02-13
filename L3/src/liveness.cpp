@@ -108,7 +108,6 @@ namespace L3 {
         AnalysisResult* res = new AnalysisResult();
         vector<set<Item*>> gens; 
         vector<set<Item*>> kills; 
-        cout << "function name " <<f->name << endl;
         for (auto i : f->instructions)
         {
             auto gen = i->uses;
