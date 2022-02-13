@@ -1,0 +1,80 @@
+define int64 :main(){
+  :mainFunction
+  int64 %input
+  int64 %ans
+  int64 %i
+  int64 %smaller
+  %input <- call input()
+  %input <- %input - 1
+  %input <- %input >> 1
+  %ans <- 0
+  %i <- 2
+  %smaller <- %input < %i
+  br %smaller :ret_ans :loop
+
+  :loop
+  int64 %out
+  %out <- %i >= %input
+  br %out :ret_ans :loop_content
+
+  :loop_content
+  int64 %prime
+  int64 %check_true
+  %prime <- call :isPrime(%i)
+  %check_true <- %prime = 1
+  %i <- %i + 1
+  br %check_true :addOne :loop
+
+  :addOne
+  %ans <- %ans + 1
+  br :loop
+
+  :ret_ans
+  %ans <- %ans << 1
+  %ans <- %ans + 1
+  call print(%ans)
+  return %ans
+}
+
+define int64 :isPrime(int64 %x){
+   :start
+   int64 %i
+   %i <- 2
+   br :loop
+
+   :loop
+   int64 %square
+   int64 %check
+   int64 %start
+   %square <- %i * %i
+   %check <- %square > %x
+   %start <- 1
+   br %check :ret_true :mod
+
+   :mod
+   int64 %mult
+   int64 %same
+   %mult <- %start * %i
+   %same <- %mult = %x
+   br %same :ret_false :continue
+
+   :continue
+   int64 %smaller
+   %smaller <- %mult < %x
+   %start <- %start + 1
+   br %smaller :mod :increment
+
+   :increment
+   %i <- %i + 1
+   br :loop
+
+   :ret_true
+   int64 %res1
+   %res1 <- 1
+   return %res1
+
+   :ret_false
+   int64 %res2
+   %res2 <- 0
+   return %res2
+}
