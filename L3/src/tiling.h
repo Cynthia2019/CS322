@@ -18,6 +18,7 @@ namespace L3 {
         TileNode *oprand1 = nullptr;
         TileNode *oprand2 = nullptr;
         bool match(TreeNode *);
+        bool isLeaf();
     };
 
     class Tile {

@@ -4,6 +4,7 @@
 #include <string> 
 #include <iostream>
 #include <algorithm>
+#include <tiling.h>
 using namespace std; 
 
 extern bool is_debug;
@@ -257,10 +258,20 @@ namespace L3 {
                 }
             }
         }
+
+        vector<Tile *> alltiles;
+        Tile_math *tile = new Tile_math("*");
+        alltiles.push_back(tile);
+        tile = new Tile_math("+");
+        alltiles.push_back(tile);
         cout << "tree after merge: " << endl;
+        vector<TreeNode *> subtrees;
         for(Tree* t : trees){
+            vector<Tile *> tiled;
             cout << "new tree: " << endl ;
             t->printTree(t);
+            tiling(t->root, tiled, alltiles);
+            // cout << tiled.size() << endl;
         }
     }
     void instructionSelection(Program p, Function* f){        

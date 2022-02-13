@@ -1,7 +1,15 @@
 #include <tiling.h>
+#include <iostream>
 #include <queue>
 
+using namespace std;
+
+extern bool is_debug;
 namespace L3 {
+
+    bool TileNode::isLeaf() {
+        return oprand1 == nullptr && oprand2 == nullptr;
+    }
 
     bool TileNode::match(TreeNode *tree) {
         if (!tree) {
@@ -36,20 +44,22 @@ namespace L3 {
     bool match_helper(TileNode *tile, TreeNode *tree, vector<TreeNode *> &subtrees,
             std::map<pair<short, int64_t>, TreeNode *> &nodemap) {
         if (tile == nullptr) {
-            if (tree != nullptr) {
-                subtrees.push_back(tree);
-            }
             return true; // tile is null, it matches any tree
         }
         if (tree == nullptr) {
+            if (is_debug) cout << "tree pt is null" << endl;
             return false; // tile has this node, tree doen't have
         }
         bool curr = tile->match(tree); // match op and type
-        if (!curr) return false;
+        if (!curr) {
+            if (is_debug) cout << "op or type not match" << endl;
+            return false;
+        }
 
         // if this item is required to be the same as previous variables
         if (nodemap.count({tile->tile_type, tile->id}) != 0) {
             if (tree->val != nodemap[{tile->tile_type, tile->id}]->val) {
+                if (is_debug) cout << "not same variable" << endl;
                 return false; // different from previous stored variable
             }
         } else {
@@ -57,6 +67,10 @@ namespace L3 {
             nodemap[{tile->tile_type, tile->id}] = tree;
         }
 
+        if (tile->isLeaf()) {
+            if (is_debug) cout << "pushing: " << endl;
+            subtrees.push_back(tree);
+        }
         bool left = match_helper(tile->oprand1, tree->oprand1, subtrees, nodemap);
         bool right = match_helper(tile->oprand2, tree->oprand2, subtrees, nodemap);
         return left && right;
@@ -136,29 +150,43 @@ namespace L3 {
 
     Tile_math::Tile_math(std::string op) {
         this->root = new TileNode();
-        // root->id = 0;
+        root->id = 0;
         root->tile_type |= TileNodeTypeVariable;
         root->op = new Operation(op);
         root->oprand1 = new TileNode();
         root->oprand1->tile_type |= TileNodeTypeNumber;
         root->oprand1->tile_type |= TileNodeTypeVariable;
-        root->oprand1 = new TileNode();
-        root->oprand1->tile_type |= TileNodeTypeNumber;
-        root->oprand1->tile_type |= TileNodeTypeVariable;
+        root->oprand1->id = 0;
+        root->oprand2 = new TileNode();
+        root->oprand2->tile_type |= TileNodeTypeNumber;
+        root->oprand2->tile_type |= TileNodeTypeVariable;
+        root->oprand2->id = 1;
     }
 
     void tiling(TreeNode *root, vector<Tile *>&res, const vector<Tile *> all_tiles) {
         vector<TreeNode *> subtrees;
+        bool flag = false;
+        if (root->oprand1 == nullptr && root->oprand2 == nullptr) {
+            return; // a leaf node skip
+        }
         for (auto t :all_tiles) {
             if (t->match(root, subtrees)) {
+                flag = true;
+                cout << "matched: " << endl;
+                root->printNode(root);
                 res.push_back(t);
                 break;
             }
         }
 
-        for (auto sub: subtrees) {
-            tiling(sub, res, all_tiles);
+        if (flag) {
+            for (auto sub: subtrees) {
+                tiling(sub, res, all_tiles);
+            }
+        } else {
+            cerr << "warning: cannot match to any tile." << endl;
         }
+        return;
     }
 
 }
