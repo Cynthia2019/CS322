@@ -3,6 +3,7 @@
 #include "liveness.h"
 #include <string> 
 #include <iostream>
+#include <algorithm>
 using namespace std; 
 
 extern bool is_debug;
@@ -25,7 +26,7 @@ namespace L3 {
     }
     Tree::Tree(Instruction* i) {
         this->instruction = i;
-    };
+    }
     Instruction* Tree::getInstruction() {
         return this->instruction;
     }
@@ -163,7 +164,7 @@ namespace L3 {
             }
         }
         return true; 
-    };
+    }
     bool checkMemoryInst(int a, int b, vector<Instruction*> insts){
         for(int i = a; i <= b; i++){
             Instruction* inst = insts[i];
