@@ -18,7 +18,7 @@ namespace L3 {
         Operation* op = nullptr;
         TreeNode* oprand1 = nullptr; 
         TreeNode* oprand2 = nullptr; 
-        void printNode(TreeNode* node);
+        void printNode(TreeNode* node, int space);
     };
 class Tree : public Visitor{
     public:

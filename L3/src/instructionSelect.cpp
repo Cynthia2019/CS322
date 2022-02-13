@@ -8,16 +8,20 @@ using namespace std;
 extern bool is_debug;
 
 namespace L3 {
+    constexpr int count = 10;
     TreeNode::TreeNode(Item* item) {
         val = item;
     }
-    void TreeNode::printNode(TreeNode* node){
+    void TreeNode::printNode(TreeNode* node, int space){
         if(node == nullptr) return ;
-        if(node->val == nullptr) cout << "bug" << endl;
-        cout << node->val->toString() << endl;
-        if(node->op != nullptr) cout << node->op->toString() << endl; 
-        if(node->oprand1 != nullptr) printNode(node->oprand1) ; 
-        if (node->oprand2 != nullptr) printNode(node->oprand2);
+        space += count;
+        if (node->oprand2 != nullptr) printNode(node->oprand2, space);
+        for(int i = count; i < space; i++) cout <<" ";
+        if(node->op != nullptr) {
+            cout << node->val->toString() << "   " << node->op->toString() << endl;
+        }
+        else {cout << node->val->toString() << endl;}
+        if(node->oprand1 != nullptr) printNode(node->oprand1, space) ; 
     }
     Tree::Tree(Instruction* i) {
         this->instruction = i;
@@ -27,7 +31,7 @@ namespace L3 {
     }
     void Tree::printTree(Tree* tree){
         if(tree->root == nullptr) return; 
-        tree->root->printNode(tree->root); 
+        tree->root->printNode(tree->root, 0); 
     }
     void Tree::visit(Instruction_ret_not* i) {
         TreeNode* node = new TreeNode(i->op);
@@ -137,7 +141,7 @@ namespace L3 {
     //check if there is no definitions of variables used by T2 between T2 and T1
     bool checkDependency(int a, int b, Tree* T2, Variable* v, vector<Tree*>& trees){
         //between [T2,T1)
-        for(int i = a; i < b; i++){
+        for(int i = a; i <= b; i++){
             Tree* t = trees[i]; 
             //check v not used
             for(Item* item : t->uses){
@@ -221,7 +225,7 @@ namespace L3 {
                         bool only = checkOnlyUsedByT1(j+1, T2->root->val, context->instructions);
                         if(dead || only) {
                             //condition B
-                            bool notDependent = checkDependency(i, j, T2, v, trees); 
+                            bool notDependent = checkDependency(i+1, j-1, T2, v, trees); 
                             //T1 defines v
                             if(T1->root->val == T2->root->val) notDependent = false;
                             //another oprand in T1 uses v 
@@ -240,7 +244,7 @@ namespace L3 {
                         bool only = checkOnlyUsedByT1(j+1, T2->root->val, context->instructions);
                         if(dead || only) {
                             //condition B
-                            bool notDependent = checkDependency(i, j, T2, v, trees); 
+                            bool notDependent = checkDependency(i+1, j-1, T2, v, trees); 
                             //T1 defines v
                             if(T1->root->val == T2->root->val) notDependent = false;
                             //another oprand in T1 uses v 
