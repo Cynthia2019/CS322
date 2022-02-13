@@ -1,0 +1,74 @@
+define void :main() {
+	:entry
+	int64 %v1
+	%v1 <- 3
+	int64 %lineno
+	%lineno <- call input()
+	int64 %condi
+	int64 %counter
+	int64 %encoded
+	%counter <- 0
+	%lineno <- %lineno >> 1
+	int64[] %prev_array
+	int64[] %line_array
+	br :loop_continue
+
+	:loop_continue
+	%counter <- %counter + 1
+	%encoded <- call :encode(%counter)
+	//call print(%encoded)
+	int64 %item_nb
+	%item_nb <- 0
+	%line_array <- new Array(%encoded)
+	br :inner_loop_continue
+
+	:inner_loop_continue
+	%condi <- %item_nb = 0
+	br %condi :border :or_condi
+
+	:or_condi
+	int64 %counter_minus_one
+	%counter_minus_one <- %counter - 1
+	%condi <- %item_nb = %counter_minus_one
+	br %condi :border :other_line
+	
+	:border
+	%line_array[%item_nb] <- 3
+	br :should_quit
+
+	:other_line
+	int64 %prev1
+	int64 %prev2
+	%prev1 <- %prev_array[%item_nb]
+	%encoded <- %item_nb - 1
+	%prev2 <- %prev_array[%encoded]
+	%encoded <- %prev1 + %prev2
+	%encoded <- %encoded - 1
+	%line_array[%item_nb] <- %encoded
+	//call print(%encoded)
+	br :should_quit
+
+	:should_quit
+	%item_nb <- %item_nb + 1
+	%encoded <- call :encode(%item_nb)
+	//call print(%encoded)
+	%condi <- %item_nb < %counter
+	br %condi :inner_loop_continue :inner_loop_after
+
+	:inner_loop_after
+	call print(%line_array)
+	%prev_array <- %line_array
+	%condi <- %counter < %lineno
+	br %condi :loop_continue :loop_after
+
+	:loop_after
+
+	return
+}
+
+define int64 :encode(int64 %p1) {
+	:encode_entry
+	%p1 <- %p1 << 1
+	%p1 <- %p1 + 1
+	return %p1
+}
