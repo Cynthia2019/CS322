@@ -3,7 +3,16 @@
 #include <instructionSelect.h>
 
 namespace L3 {
-    class Tile : public Tree {
+
+    class TileNode {
+        ItemType item;
+        Operation *op;
+        TileNode *oprand1;
+        TileNode *oprand2;
+        bool match();
+    };
+
+    class Tile {
         public:
         Tile();
         /**
@@ -20,7 +29,7 @@ namespace L3 {
         vector<L2::Instruction *> getInstructions();
         
         private:
-        TreeNode *root;
+        TileNode *root;
         int64_t size = -1;
         vector<L2::Instruction *> instructions;
     };
