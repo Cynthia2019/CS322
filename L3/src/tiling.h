@@ -1,20 +1,28 @@
 #include <L3.h>
-#include <L2.h>
+// #include <L2.h>
 #include <instructionSelect.h>
 
 namespace L3 {
 
     class TileNode {
-        ItemType item;
-        Operation *op;
-        TileNode *oprand1;
-        TileNode *oprand2;
-        bool match();
+#define TileNodeTypeNumber 0x0001
+#define TileNodeTypeVariable 0x0002
+#define TileNodeTypeLabel 0x0004
+#define TileNodeTypeString 0x0008
+#define TileNodeTypeOp 0x0010
+
+        public:
+        u_short tile_type = 0;
+        int64_t id = 0;
+        Operation *op = nullptr;
+        TileNode *oprand1 = nullptr;
+        TileNode *oprand2 = nullptr;
+        bool match(TreeNode *);
     };
 
     class Tile {
         public:
-        Tile();
+        // Tile();
         /**
          * @brief check if current tile matches a tree.
          * 
@@ -26,12 +34,18 @@ namespace L3 {
         bool match(TreeNode *, vector<TreeNode *> &subtrees);
         int64_t getSize();
         // void accept();
-        vector<L2::Instruction *> getInstructions();
+        // vector<L2::Instruction *> getInstructions();
         
         private:
-        TileNode *root;
         int64_t size = -1;
-        vector<L2::Instruction *> instructions;
+        // vector<L2::Instruction *> instructions;
+        protected:
+        TileNode *root;
+    };
+
+    class Tile_math: public Tile {
+        public:
+        Tile_math(std::string op);
     };
 
     /**
@@ -40,5 +54,5 @@ namespace L3 {
      * @param root the root of the tree to be tiled
      * @param res the result
      */
-    void tiling(TreeNode *root, vector<Tile *>&res);
+    void tiling(TreeNode *root, vector<Tile *>&res, const vector<Tile *> all_tiles);
 }
