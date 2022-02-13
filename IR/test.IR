@@ -1,0 +1,42 @@
+define int64 :isPrime(int64 %x){
+   :start
+   int64 %i
+   %i <- 2
+   br :loop
+
+   :loop
+   int64 %square
+   int64 %check
+   int64 %start
+   %square <- %i * %i
+   %check <- %square > %x
+   %start <- 1
+   br %check :ret_true :mod
+
+   :mod
+   int64 %mult
+   int64 %same
+   %mult <- %start * %i
+   %same <- %mult = %x
+   br %same :ret_false :continue
+
+   :continue
+   int64 %smaller
+   %smaller <- %mult < %x
+   %start <- %start + 1
+   br %smaller :mod :increment
+
+   :increment
+   %i <- %i + 1
+   br :loop
+
+   :ret_true
+   int64 %res1
+   %res1 <- 1
+   return %res1
+
+   :ret_false
+   int64 %res2
+   %res2 <- 0
+   return %res2
+}

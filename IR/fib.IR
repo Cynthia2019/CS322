@@ -1,0 +1,51 @@
+define int64 :main(){
+  :entry
+  int64 %in
+  int64 %ret
+  %in <- call input()
+  %in <- %in - 1
+  %in <- %in >> 1
+  %ret <- call :fib(%in)
+  return %ret
+}
+define int64 :fib(int64 %in){
+  :fib_start
+  int64 %smaller
+  %smaller <- %in < 2
+  br %smaller :fib_end :loop_setup
+
+  :loop_setup
+  int64 %p
+  int64 %q
+  int64 %r
+  int64 %i
+  int64 %out
+  %p <- 0
+  %q <- 0
+  %r <- 1
+  %i <- 2
+  %out <- %i = %in
+  br %out :fib_loop_next :fib_loop
+
+  :fib_loop
+  int64 %check
+  %p <- %q
+  %q <- %r
+  %r <- %p + %q
+  %i <- %i + 1
+  %check <- %i <= %in
+  br %check :fib_loop :fib_loop_next
+
+  :fib_loop_next
+  int64 %res
+  %res <- %r << 1
+  %res <- %res + 1
+  call print(%res)
+  return %res
+
+  :fib_end
+  %res <- %in << 1
+  %res <- %res + 1
+  call print(%res)
+  return %res
+}
