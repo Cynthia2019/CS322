@@ -34,7 +34,7 @@ namespace L3
     int64_t get (void); 
     bool operator == (const Number &other); 
     std::string toString(void) override; 
-    ItemType getType(void) { return item_number; }
+    ItemType getType(void) override { return item_number; }
   private: 
     int64_t num;
   };
@@ -46,7 +46,7 @@ namespace L3
     string get(); 
     bool operator== (const Label &other); 
     string toString(void) override; 
-    ItemType getType(void) { return item_label; }
+    ItemType getType(void) override { return item_label; }
   private: 
     string labelname;
   };
@@ -58,7 +58,7 @@ namespace L3
     string get (void); 
     bool operator == (const Variable &other); 
     string toString(void) override;
-    ItemType getType(void) { return item_variable; }
+    ItemType getType(void) override { return item_variable; }
   private: 
     string variableName;
   };
@@ -69,7 +69,7 @@ namespace L3
     String(string sName);
     string get(); 
     string toString() override; 
-    ItemType getType(void) { return item_string; }
+    ItemType getType(void) override { return item_string; }
     private: 
     string sName;
   };
@@ -81,7 +81,7 @@ class Operation : public Item
     string get (void); 
     // bool operator == (const Operation &other) const; 
     string toString(void) override;
-    ItemType getType(void) { return item_operation; }
+    ItemType getType(void) override { return item_operation; }
   private: 
     string op;
   };

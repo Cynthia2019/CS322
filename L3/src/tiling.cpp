@@ -184,7 +184,6 @@ namespace L3 {
         }
         return size;
     }
-
     Tile_math::Tile_math(std::string op) {
         this->root = new TileNode();
         root->id = 0;
@@ -198,6 +197,29 @@ namespace L3 {
         root->oprand2->tile_type |= TileNodeTypeNumber;
         root->oprand2->tile_type |= TileNodeTypeVariable;
         root->oprand2->id = 2;
+    }
+    Tile_math_specialized::Tile_math_specialized(std::string op, bool left) {
+        this->root = new TileNode();
+        root->id = 0;
+        root->tile_type |= TileNodeTypeVariable;
+        root->op = new Operation(op);
+        root->oprand1 = new TileNode();
+        root->oprand2 = new TileNode();
+        //dst = oprand1
+        if (left) {
+            root->oprand1->tile_type |= TileNodeTypeVariable;
+            root->oprand1->id = 0;
+            root->oprand2->tile_type |= TileNodeTypeNumber;
+            root->oprand2->tile_type |= TileNodeTypeVariable;
+            root->oprand2->id = 1;
+        } else { //dst = oprand2
+            root->oprand2->tile_type |= TileNodeTypeVariable;
+            root->oprand2->id = 0;
+            root->oprand1->tile_type |= TileNodeTypeNumber;
+            root->oprand1->tile_type |= TileNodeTypeVariable;
+            root->oprand1->id = 1;
+        }
+
     }
 
     Tile_assign::Tile_assign() {
@@ -318,7 +340,7 @@ namespace L3 {
             if (t->match(root, subtrees)) {
                 flag = true;
                 cout << "matched: " << endl;
-                root->printNode(root);
+                root->printNode(root, 0);
                 res.push_back(t);
                 break;
             }

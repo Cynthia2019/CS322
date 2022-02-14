@@ -5,7 +5,7 @@
 #include <set>
 #include <map>
 
-#include <architecture.h>
+#include "architecture.h"
 
 using namespace std;
 

@@ -10,16 +10,20 @@ using namespace std;
 extern bool is_debug;
 
 namespace L3 {
+    constexpr int count = 10;
     TreeNode::TreeNode(Item* item) {
         val = item;
     }
-    void TreeNode::printNode(TreeNode* node){
+    void TreeNode::printNode(TreeNode* node, int space){
         if(node == nullptr) return ;
-        if(node->val == nullptr) cout << "bug" << endl;
-        cout << node->val->toString() << endl;
-        if(node->op != nullptr) cout << node->op->toString() << endl; 
-        if(node->oprand1 != nullptr) printNode(node->oprand1) ; 
-        if (node->oprand2 != nullptr) printNode(node->oprand2);
+        space += count;
+        if (node->oprand2 != nullptr) printNode(node->oprand2, space);
+        for(int i = count; i < space; i++) cout <<" ";
+        if(node->op != nullptr) {
+            cout << node->val->toString() << "   " << node->op->toString() << endl;
+        }
+        else {cout << node->val->toString() << endl;}
+        if(node->oprand1 != nullptr) printNode(node->oprand1, space) ; 
     }
     Tree::Tree(Instruction* i) {
         this->instruction = i;
@@ -29,7 +33,7 @@ namespace L3 {
     }
     void Tree::printTree(Tree* tree){
         if(tree->root == nullptr) return; 
-        tree->root->printNode(tree->root); 
+        tree->root->printNode(tree->root, 0); 
     }
     void Tree::visit(Instruction_ret_not* i) {
         TreeNode* node = new TreeNode(i->op);
@@ -48,6 +52,7 @@ namespace L3 {
     void Tree::visit(Instruction_assignment* i) {
          
         TreeNode* node = new TreeNode(i->dst);
+        node->op = new Operation("<-");
         node->oprand1 = new TreeNode(i->src); 
         root = node;
         uses = i->uses; 
@@ -139,7 +144,7 @@ namespace L3 {
     //check if there is no definitions of variables used by T2 between T2 and T1
     bool checkDependency(int a, int b, Tree* T2, Variable* v, vector<Tree*>& trees){
         //between [T2,T1)
-        for(int i = a; i < b; i++){
+        for(int i = a; i <= b; i++){
             Tree* t = trees[i]; 
             //check v not used
             for(Item* item : t->uses){
@@ -200,7 +205,17 @@ namespace L3 {
         }
         return trees;
     }
-    void mergeTrees(Context* context, AnalysisResult* res){
+    vector<Tile*> getAllTiles() {
+        vector<Tile *> alltiles;
+        //math tile: 
+        vector<string> math_op = {"*", "+", "-", "&", ">>","<<"}; 
+        for(string op : math_op){
+            Tile* tile = new Tile_math(op); 
+            alltiles.push_back(tile);
+        }
+        return alltiles;
+    }
+    vector<Tree*> mergeTrees(Context* context, AnalysisResult* res){
         int64_t size = context->instructions.size(); 
         vector<Tree*> trees = getAllTree(context); 
         for(int i = 0; i < size; i++){
@@ -217,13 +232,12 @@ namespace L3 {
                     }
                     //condition 1: T1 uses T2 root
                     if(T1->root->oprand1 && T1->root->oprand1->val == T2->root->val){
-                        cout << "match" << endl;
                         //condition A, T2->root->val dead after T1
                         bool dead = checkDead(j+1, T2->root->val, res, trees);
                         bool only = checkOnlyUsedByT1(j+1, T2->root->val, context->instructions);
                         if(dead || only) {
                             //condition B
-                            bool notDependent = checkDependency(i, j, T2, v, trees); 
+                            bool notDependent = checkDependency(i+1, j-1, T2, v, trees); 
                             //T1 defines v
                             if(T1->root->val == T2->root->val) notDependent = false;
                             //another oprand in T1 uses v 
@@ -242,7 +256,7 @@ namespace L3 {
                         bool only = checkOnlyUsedByT1(j+1, T2->root->val, context->instructions);
                         if(dead || only) {
                             //condition B
-                            bool notDependent = checkDependency(i, j, T2, v, trees); 
+                            bool notDependent = checkDependency(i+1, j-1, T2, v, trees); 
                             //T1 defines v
                             if(T1->root->val == T2->root->val) notDependent = false;
                             //another oprand in T1 uses v 
@@ -258,12 +272,7 @@ namespace L3 {
                 }
             }
         }
-
-        vector<Tile *> alltiles;
-        Tile_math *tile = new Tile_math("*");
-        alltiles.push_back(tile);
-        tile = new Tile_math("+");
-        alltiles.push_back(tile);
+        vector<Tile *> alltiles = getAllTiles();
         cout << "tree after merge: " << endl;
         vector<TreeNode *> subtrees;
         for(Tree* t : trees){
@@ -271,8 +280,9 @@ namespace L3 {
             cout << "new tree: " << endl ;
             t->printTree(t);
             tiling(t->root, tiled, alltiles);
-            // cout << tiled.size() << endl;
+             cout << tiled.size() << endl;
         }
+        return trees;
     }
     void instructionSelection(Program p, Function* f){        
         //perform liveness analysis on instructions
@@ -282,9 +292,10 @@ namespace L3 {
         }
         AnalysisResult* res = computeLiveness(f);
         vector<Context*> ctx = identifyContext(f); 
+        vector<Tree*> merged; 
         for(Context* c : ctx){
             cout << "merge trees in a context" << endl;
-            mergeTrees(c, res); 
+            merged = mergeTrees(c, res); 
         }
     }
 }

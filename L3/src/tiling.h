@@ -1,4 +1,6 @@
 #include <L3.h>
+#include <../L2/src/L2.h>
+#include <stdint.h>
 // #include <L2.h>
 #include <instructionSelect.h>
 
@@ -27,7 +29,7 @@ namespace L3 {
 #define TileNodeTypeOp 0x0010
 
         public:
-        u_short tile_type = 0;
+        unsigned short tile_type = 0;
         int64_t id = 0;
         Operation *op = nullptr;
         TileNode *oprand1 = nullptr;
@@ -63,6 +65,23 @@ namespace L3 {
     class Tile_math: public Tile {
         public:
         Tile_math(std::string op);
+    };
+
+    class Tile_math_basic : public Tile_math {
+        public:
+        Tile_math_basic(string op);
+    }; 
+    class Tile_math_same_1 : public Tile_math {
+        public:
+        Tile_math_same_1(string op);
+    };
+    class Tile_math_same_2 : public Tile_math {
+        public:
+        Tile_math_same_2(string op);
+    };
+    class Tile_math_same_12 : public Tile_math {
+        public:
+        Tile_math_same_12(string op);
     };
 
     class Tile_assign: public Tile {
