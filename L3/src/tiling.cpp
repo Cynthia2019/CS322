@@ -6,7 +6,6 @@ using namespace std;
 
 extern bool is_debug;
 namespace L3 {
-    Tile::Tile();
     bool TileNode::isLeaf() {
         return oprand1 == nullptr && oprand2 == nullptr;
     }
