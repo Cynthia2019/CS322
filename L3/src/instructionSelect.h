@@ -14,6 +14,7 @@ namespace L3 {
     vector<Context *> identifyContext(Function *f);
     class TreeNode {
         public: 
+        bool isroot = true;
         TreeNode(Item* item); 
         Item* val = nullptr; 
         Operation* op = nullptr;
