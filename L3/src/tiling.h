@@ -7,6 +7,21 @@
 #include <instructionSelect.h>
 
 namespace L3 {
+    
+    class TileRule {
+        public:
+        virtual bool verify(TreeNode *tree) = 0;
+    };
+
+    class TileRule_one: public TileRule {
+        public:
+        bool verify(TreeNode *tree) override;
+    };
+
+    class TileRule_1248: public TileRule {
+        public:
+        bool verify(TreeNode *) override;
+    };
 
     class TileNode {
 #define TileNodeTypeNumber 0x0001
@@ -23,6 +38,7 @@ namespace L3 {
         TileNode *oprand2 = nullptr;
         bool match(TreeNode *);
         bool isLeaf();
+        TileRule *rule = nullptr;
     };
 
     class Tile {
@@ -96,6 +112,19 @@ namespace L3 {
         public:
         Tile_math_specialized(std::string, bool left);
     };
+
+    class Tile_increment: public Tile {
+        public:
+        Tile_increment(bool inc_or_dec, bool left);
+    };
+
+    class Tile_at: public Tile {
+        public:
+        Tile_at();
+    };
+
+    // class Tile_
+
     /**
      * @brief do tiling using biggest munch
      * 
@@ -103,4 +132,6 @@ namespace L3 {
      * @param res the result
      */
     void tiling(TreeNode *root, vector<Tile *>&res, const vector<Tile *> all_tiles);
+
+    vector<Tile *> getAllTiles();
 }

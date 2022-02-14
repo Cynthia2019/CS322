@@ -205,16 +205,16 @@ namespace L3 {
         }
         return trees;
     }
-    vector<Tile*> getAllTiles() {
-        vector<Tile *> alltiles;
-        //math tile: 
-        vector<string> math_op = {"*", "+", "-", "&", ">>","<<"}; 
-        for(string op : math_op){
-            Tile* tile = new Tile_math(op); 
-            alltiles.push_back(tile);
-        }
-        return alltiles;
-    }
+    // vector<Tile*> getAllTiles() {
+    //     vector<Tile *> alltiles;
+    //     //math tile: 
+    //     vector<string> math_op = {"*", "+", "-", "&", ">>","<<"}; 
+    //     for(string op : math_op){
+    //         Tile* tile = new Tile_math(op); 
+    //         alltiles.push_back(tile);
+    //     }
+    //     return alltiles;
+    // }
     vector<Tree*> mergeTrees(Context* context, AnalysisResult* res){
         int64_t size = context->instructions.size(); 
         vector<Tree*> trees = getAllTree(context); 
