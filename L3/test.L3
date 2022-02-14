@@ -1,8 +1,4 @@
-define :main(%in) {
-    %square <- %mid * %mid
-    %smaller <- %square < %in
-    br %smaller :perfect_leftPlus
-
-    :perfect_true
-    return 3
+define :main() {
+    %v <- 1
+    return 
 } 

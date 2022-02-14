@@ -5,6 +5,7 @@
 #include <iostream>
 #include <algorithm>
 #include <tiling.h>
+#include <codegenerator.h>
 using namespace std; 
 
 extern bool is_debug;
@@ -14,13 +15,19 @@ namespace L3 {
     TreeNode::TreeNode(Item* item) {
         val = item;
     }
+    TreeNode::TreeNode() {
+        val = nullptr;
+    }
     void TreeNode::printNode(TreeNode* node, int space){
         if(node == nullptr) return ;
         space += count;
         if (node->oprand2 != nullptr) printNode(node->oprand2, space);
         for(int i = count; i < space; i++) cout <<" ";
-        if(node->op != nullptr) {
+        if(node->op != nullptr && node->val != nullptr) {
             cout << node->val->toString() << "   " << node->op->toString() << endl;
+        }
+        else if(node->op != nullptr) {
+            cout << node->op->toString() << endl;
         }
         else {cout << node->val->toString() << endl;}
         if(node->oprand1 != nullptr) printNode(node->oprand1, space) ; 
@@ -42,7 +49,6 @@ namespace L3 {
         define = i->define;
     }
     void Tree::visit(Instruction_ret_t* i) {
-         
         TreeNode* node = new TreeNode(i->op);
         node->oprand1 = new TreeNode(i->arg); 
         root = node;
@@ -50,7 +56,6 @@ namespace L3 {
         define = i->define;
     }
     void Tree::visit(Instruction_assignment* i) {
-         
         TreeNode* node = new TreeNode(i->dst);
         node->op = new Operation("<-");
         node->oprand1 = new TreeNode(i->src); 
@@ -59,7 +64,6 @@ namespace L3 {
         define = i->define;
     }
     void Tree::visit(Instruction_math* i) {
-         
         TreeNode* node = new TreeNode(i->dst); 
         node->oprand1 = new TreeNode(i->oprand1); 
         node->op = dynamic_cast<Operation*>(i->op); 
@@ -88,7 +92,6 @@ namespace L3 {
         define = i->define;
     }
     void Tree::visit(Instruction_store* i) {
-         
         TreeNode* node = new TreeNode(i->dst); 
         node->oprand1 = new TreeNode(i->src); 
         node->op = dynamic_cast<Operation*>(i->op);  
@@ -97,7 +100,6 @@ namespace L3 {
         define = i->define;
     }
     void Tree::visit(Instruction_br_t* i) {
-         
         TreeNode* node = new TreeNode(i->op); 
         node->oprand1 = new TreeNode(i->condition); 
         node->oprand2 = new TreeNode(i->label); 
@@ -106,7 +108,6 @@ namespace L3 {
         define = i->define;
     }
     void Tree::visit(Instruction_br_label* i) {
-         
         TreeNode* node = new TreeNode(i->op); 
         node->oprand1 = new TreeNode(i->label); 
         root = node;
@@ -265,21 +266,12 @@ namespace L3 {
                 }
             }
         }
-        vector<Tile *> alltiles = getAllTiles();
-        cout << "tree after merge: " << endl;
         vector <Tree *> merged_trees;
         for (auto t : trees) {
             // t->printTree(t);
             if (t->root->isroot) {
                 merged_trees.push_back(t);
             }
-        }
-
-        for (auto t : merged_trees) {
-            vector<Tile *> tiled;
-            cout << "new tree: " << endl;
-            t->printTree(t);
-            tiling(t->root, tiled, alltiles);
         }
         return merged_trees;
     }
@@ -291,10 +283,23 @@ namespace L3 {
         }
         AnalysisResult* res = computeLiveness(f);
         vector<Context*> ctx = identifyContext(f); 
+        vector<Tile*> alltiles = getAllTiles();
         vector<Tree*> merged; 
         for(Context* c : ctx){
             cout << "merge trees in a context" << endl;
             merged = mergeTrees(c, res); 
+            for (auto t : merged) {
+                vector<Tile *> tiled;
+                cout << "merged tree: " << endl;
+                t->printTree(t);
+                //search for matched tiles
+                tiling(t->root, tiled, alltiles);
+                if(is_debug) cout << "# of matched tiles: " << tiled.size() << endl;
+                //assign this set of tiles that can cover the tree to this tree
+                t->tiles = tiled; 
+
+                CodeGen* codegen = new CodeGen(f, t);
+            }
         }
     }
 }

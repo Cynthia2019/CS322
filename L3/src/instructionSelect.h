@@ -15,6 +15,7 @@ namespace L3 {
     class TreeNode {
         public: 
         bool isroot = true;
+        TreeNode(); 
         TreeNode(Item* item); 
         Item* val = nullptr; 
         Operation* op = nullptr;
@@ -30,6 +31,7 @@ class Tree : public Visitor{
         bool isEmpty() {return root == nullptr;};
         vector<Item*> uses; 
         vector<Item*> define;
+        vector<string> L2_instructions;
         Instruction* getInstruction();
         void printTree(Tree* tree);
 
