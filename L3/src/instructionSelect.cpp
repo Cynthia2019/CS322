@@ -52,6 +52,7 @@ namespace L3 {
     void Tree::visit(Instruction_assignment* i) {
          
         TreeNode* node = new TreeNode(i->dst);
+        node->op = new Operation("<-");
         node->oprand1 = new TreeNode(i->src); 
         root = node;
         uses = i->uses; 
@@ -291,9 +292,10 @@ namespace L3 {
         }
         AnalysisResult* res = computeLiveness(f);
         vector<Context*> ctx = identifyContext(f); 
+        vector<Tree*> merged; 
         for(Context* c : ctx){
             cout << "merge trees in a context" << endl;
-            mergeTrees(c, res); 
+            merged = mergeTrees(c, res); 
         }
     }
 }

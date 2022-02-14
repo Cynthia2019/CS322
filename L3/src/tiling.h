@@ -47,11 +47,10 @@ namespace L3 {
     };
 
     class Tile_math: public Tile {
-        Tile_math();
+        public:
         Tile_math(std::string op);
     };
 
-<<<<<<< HEAD
     class Tile_math_basic : public Tile_math {
         public:
         Tile_math_basic(string op);
@@ -69,7 +68,6 @@ namespace L3 {
         Tile_math_same_12(string op);
     };
 
-=======
     class Tile_assign: public Tile {
         public:
         Tile_assign();
@@ -92,8 +90,7 @@ namespace L3 {
     class Tile_math_specialized: public Tile {
         public:
         Tile_math_specialized(std::string, bool left);
-    }
->>>>>>> 08ffd74e8ced3afa8c8fba1305a350aa8dd4bda6
+    };
     /**
      * @brief do tiling using biggest munch
      * 
