@@ -9,8 +9,8 @@ extern bool is_debug;
 namespace L3 {
 
     bool TileRule_one::verify(TreeNode *tree) {
-        Number *n;
-        if (n = dynamic_cast<Number *>(tree->val)) {
+        Number *n = dynamic_cast<Number *>(tree->val);
+        if (n) {
             return n->get() == 1;
         } else {
             return false;
@@ -18,8 +18,8 @@ namespace L3 {
     }
 
     bool TileRule_1248::verify(TreeNode *tree) {
-        Number *n;
-        if (n = dynamic_cast<Number *>(tree->val)) {
+        Number *n = dynamic_cast<Number *>(tree->val);
+        if (n) {
             return n->get() == 1 || n->get() == 2 || n->get() == 4 || n->get() == 8;
         } else {
             return false;
@@ -293,8 +293,9 @@ namespace L3 {
         root->oprand1 = new TileNode(); 
         root->oprand1->tile_type |= TileNodeTypeVariable; 
         root->oprand1->tile_type |= TileNodeTypeNumber;
-        root->oprand1->id = 1;         
-    }
+        root->oprand1->id = 1;   
+    }      
+
     Tile_increment::Tile_increment(bool is_increment, bool left) {
         root = new TileNode();
         root->id = 0;

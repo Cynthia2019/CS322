@@ -17,6 +17,8 @@ namespace L3{
      void visit(Tile_load *t) ;
      void visit(Tile_store *t) ;
      void visit(Tile_assign *t) ;
+     void visit(Tile_increment *t); 
+     void visit(Tile_at *t); 
     private: 
      Tree* tree;
      std::ofstream& outputFile;

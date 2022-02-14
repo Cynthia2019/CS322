@@ -18,6 +18,7 @@
 #include <tiling.h>
 #include <globalize.h>
 // #include <codegenerator.h>
+#include <codegenerator.h>
 
 using namespace std;
 

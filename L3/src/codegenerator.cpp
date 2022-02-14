@@ -14,11 +14,19 @@ namespace L3 {
     tree(tree), outputFile(outputFile) {}
 
     void CodeGen::visit(Tile_return* t){
-        outputFile << "return\n";
+        this->outputFile << "\treturn\n";
     }
     void CodeGen::visit(Tile_return_t* t){
-        outputFile << this->tree->root->oprand1->val->toString() << " <- rdi\n";
+        string line = "\t" + this->tree->root->oprand1->val->toString() + " <- rdi\n";
+        this->outputFile << line;
+        line = "\trax <- " + this->tree->root->oprand1->val->toString() + "\n";
+        this->outputFile << line; 
+        this->outputFile << "\treturn\n";
     }
+    void CodeGen::visit(Tile_assign* t){
+
+    }
+
     void generate_code(Program p){
 
     }
