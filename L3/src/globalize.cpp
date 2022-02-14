@@ -11,8 +11,8 @@ namespace L3 {
         vector<Label *> labels;
         for (auto f : p->functions) {
             for (auto i : f->instructions) {
-                Instruction_label *l;
-                if (l = dynamic_cast<Instruction_label *>(i)) {
+                Instruction_label *l = dynamic_cast<Instruction_label *>(i);
+                if (l) {
                     labels.push_back(l->label);
                 }
             }
@@ -30,8 +30,8 @@ namespace L3 {
         for (auto f : p->functions) {
             ::string fname = f->name.substr(1);
             for (auto i : f->instructions) {
-                Instruction_label *l;
-                if (l = dynamic_cast<Instruction_label *>(i)) {
+                Instruction_label *l = dynamic_cast<Instruction_label *>(i);
+                if (l) {
                     ::string old = l->label->get().substr(1);
                     l->label = new Label(llg + fname + old);
                     cout << "label: " << l->label->get() << endl;

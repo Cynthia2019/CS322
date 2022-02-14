@@ -75,7 +75,7 @@ namespace L3 {
         }
         bool curr = tile->match(tree); // match op and type
         if (!curr) {
-            if (is_debug) cout << "op or type not match" << endl;
+            // if (is_debug) cout << "op or type not match" << endl;
             return false;
         }
 
@@ -283,12 +283,14 @@ namespace L3 {
 
     Tile_return::Tile_return() {
         root = new TileNode(); 
+        root->op = new Operation("return"); 
         root->id = 0; 
         root->tile_type |= TileNodeTypeOp;
     }
     Tile_return_t::Tile_return_t() {
         root = new TileNode(); 
         root->id = 0; 
+        root->op = new Operation("return"); 
         root->tile_type |= TileNodeTypeOp;
         root->oprand1 = new TileNode(); 
         root->oprand1->tile_type |= TileNodeTypeVariable; 

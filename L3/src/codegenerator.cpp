@@ -65,7 +65,6 @@ namespace L3 {
         string dst = this->tree->root->val->toString(); 
         string oprand1 = this->tree->root->oprand1->val->toString();
         //need to know current number of item on stack 
-        string M = to_string(this->f->sizeOfStack * 8);
         string line = "\t mem" + dst + " 0 <- " + oprand1 + '\n'; 
         this->outputFile << line; 
     }
@@ -74,11 +73,41 @@ namespace L3 {
         string line = "\t goto " + label + '\n'; 
         this->outputFile << line; 
     }
+    //TODO might need fix
     void CodeGen::visit(Tile_br_t* t){
         string label = this->tree->root->oprand2->val->toString(); 
-        string condition = this->tree->root->oprand2->val->toString();
-        string line = "\t cjump " + condition  + label + '\n'; 
+        Item* condition = this->tree->root->oprand1->val;
+        Number* n = dynamic_cast<Number*>(condition); 
+        string line; 
+        if(n != nullptr){
+            line = "\t cjump 1 = 1 " + label + '\n'; 
+        }
+        else {
+            //condition is a variable, find the two nodes in the tree that define this variable
+            line = "\t cjump " + condition->toString() + " = 1 " + label + "\n";   
+        }
         this->outputFile << line; 
+    }
+
+    void Codegen::visit(Tile_increment* t){
+        string dst = this->tree->root->val->toString(); 
+        string line; 
+        if(this->root->op->toString() == "+"){
+            line = dst + "++";
+        }
+        else {
+            line = dst + '--';
+        }
+        this->outputFile << line; 
+    }
+
+    void Codegen::visit(Tile_at* t){
+        string dst = this->tree->root->val->toString(); 
+        string src_add = this->tree->root->oprand2->val->toString(); 
+        string src_mult = this->tree->root->oprand1->oprand1->val->toString(); 
+        string src_const = this->tree->root->oprand1->oprand2->val->toString(); 
+        string line = "\t" + dst + " @ " + src_add + " " + src_mult + " " + src_const + "\n";
+        this->outputFile << line;        
     }
 
     void generate_code(Program p){

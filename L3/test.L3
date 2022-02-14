@@ -1,8 +1,8 @@
-define :main() {
-    %input <- call input()
-    %input <- %input - 1
-    %input <- %input >> 1
-    %ret <- call :perfect(%input)
-    call print(%ret)
-    return
-}
+define :main(%in) {
+    %square <- %mid * %mid
+    %smaller <- %square < %in
+    br %smaller :perfect_leftPlus
+
+    :perfect_true
+    return 3
+} 
