@@ -7,7 +7,7 @@ namespace L3{
   void generate_code(Program p);
   class CodeGen {
     public:
-    CodeGen(Tree* tree, std::ofstream &outputFile); 
+    CodeGen(Function* f, Tree* tree, std::ofstream &outputFile); 
      void visit(Tile_return_t *t) ;
      void visit(Tile_return *t) ;
      void visit(Tile_br *t) ;

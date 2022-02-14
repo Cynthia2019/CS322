@@ -260,6 +260,7 @@ class Instruction_br_t : public Instruction_br
     Variable* newVariable(std::string variableName);
     Function(); 
     void format_function();
+    int64_t sizeOfStack;
   };
 
   /*
