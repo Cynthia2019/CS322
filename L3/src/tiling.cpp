@@ -41,11 +41,9 @@ namespace L3 {
                 return false;
             }
         }
-
         if (rule && !rule->verify(tree)) {
             return false; // it obeys our rule
         }
-
         ItemType t = tree->val->getType();
         switch (t) {
         case item_label:
@@ -68,14 +66,14 @@ namespace L3 {
             std::map<pair<short, int64_t>, TreeNode *> &nodemap) {
         if (tile == nullptr) {
             return true; // tile is null, it matches any tree
-        }
+        }        
         if (tree == nullptr) {
             if (is_debug) cout << "tree pt is null" << endl;
             return false; // tile has this node, tree doen't have
         }
         bool curr = tile->match(tree); // match op and type
         if (!curr) {
-            if (is_debug) cout << "op or type not match" << endl;
+            // if (is_debug) cout << "op or type not match" << endl;
             return false;
         }
 
@@ -338,7 +336,15 @@ namespace L3 {
             return;
         }
         if (root->oprand1 == nullptr && root->oprand2 == nullptr) {
+            //if it is a return
+            Tile_return* r = new Tile_return(); 
+            if(r->match(root, subtrees)) {
+                flag = true;
+                cout << "matched: " << endl;
+                root->printNode(root, 0);
+                res.push_back(r);
             return; // a leaf node skip
+            }
         }
         for (auto t :all_tiles) {
             if (t->match(root, subtrees)) {
@@ -395,6 +401,8 @@ namespace L3 {
         Tile *ass = new Tile_assign();
         Tile *load = new Tile_load();
         Tile *store = new Tile_store();
+        Tile *ret = new Tile_return(); 
+        Tile *ret_t = new Tile_return_t();
 
 
         vector<Tile *> all_tiles = {
@@ -429,6 +437,8 @@ namespace L3 {
             ass,
             load,
             store,
+            ret,
+            ret_t
         };
 
         return all_tiles;

@@ -1,8 +1,4 @@
 define :main() {
-    %input <- call input()
-    %input <- %input - 1
-    %input <- %input >> 1
-    %ret <- call :perfect(%input)
-    call print(%ret)
-    return
-}
+    %v <- 1
+    return 
+} 
