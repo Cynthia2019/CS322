@@ -138,6 +138,8 @@ namespace L3 {
                 context = new Context();
             }
         }
+
+        return context_list;
    }
 
     //check if there is no definitions of variables used by T2 between T2 and T1
