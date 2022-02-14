@@ -156,11 +156,68 @@ namespace L3 {
         root->oprand1 = new TileNode();
         root->oprand1->tile_type |= TileNodeTypeNumber;
         root->oprand1->tile_type |= TileNodeTypeVariable;
-        root->oprand1->id = 0;
+        root->oprand1->id = 1;
         root->oprand2 = new TileNode();
         root->oprand2->tile_type |= TileNodeTypeNumber;
         root->oprand2->tile_type |= TileNodeTypeVariable;
-        root->oprand2->id = 1;
+        root->oprand2->id = 2;
+    }
+
+    Tile_assign::Tile_assign() {
+        root = new TileNode();
+        root->op = new Operation("<-");
+        root->id = 0;
+        root->tile_type |= TileNodeTypeVariable;
+        root->oprand1 = new TileNode();
+        root->oprand1->tile_type |= TileNodeTypeVariable;
+        root->oprand1->tile_type |= TileNodeTypeLabel;
+        root->oprand1->tile_type |= TileNodeTypeNumber;
+        root->id = 1;
+    }
+
+    Tile_load::Tile_load() {
+        root = new TileNode();
+        root->op = new Operation("load");
+        root->id = 0;
+        root->tile_type |= TileNodeTypeVariable;
+        root->oprand1 = new TileNode();
+        root->oprand1->tile_type |= TileNodeTypeVariable;
+        root->id = 1;
+    }
+
+    Tile_store::Tile_store() {
+        root = new TileNode();
+        root->op = new Operation("store");
+        root->id = 0;
+        root->tile_type |= TileNodeTypeVariable;
+        root->oprand1 = new TileNode();
+        root->oprand1->tile_type |= TileNodeTypeVariable;
+        root->oprand1->tile_type |= TileNodeTypeLabel;
+        root->oprand1->tile_type |= TileNodeTypeNumber;
+        root->id = 1;
+    }
+
+    Tile_math_specialized::Tile_math_specialized(std::string op, bool left) {
+        this->root = new TileNode();
+        root->id = 0;
+        root->tile_type |= TileNodeTypeVariable;
+        root->op = new Operation(op);
+        root->oprand1 = new TileNode();
+        root->oprand2 = new TileNode();
+        if (left) {
+            root->oprand1->tile_type |= TileNodeTypeVariable;
+            root->oprand1->id = 0;
+            root->oprand2->tile_type |= TileNodeTypeNumber;
+            root->oprand2->tile_type |= TileNodeTypeVariable;
+            root->oprand2->id = 1;
+        } else {
+            root->oprand2->tile_type |= TileNodeTypeVariable;
+            root->oprand2->id = 0;
+            root->oprand1->tile_type |= TileNodeTypeNumber;
+            root->oprand1->tile_type |= TileNodeTypeVariable;
+            root->oprand1->id = 1;
+        }
+
     }
 
     void tiling(TreeNode *root, vector<Tile *>&res, const vector<Tile *> all_tiles) {

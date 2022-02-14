@@ -49,6 +49,29 @@ namespace L3 {
         Tile_math(std::string op);
     };
 
+    class Tile_assign: public Tile {
+        public:
+        Tile_assign();
+    };
+
+    class Tile_load: public Tile {
+        public:
+        Tile_load();
+    };
+
+    class Tile_store: public Tile {
+        public:
+        Tile_store();
+    };
+
+    /**
+     * @brief *= += -= <<= >>= &=
+     * 
+     */
+    class Tile_math_specialized: public Tile {
+        public:
+        Tile_math_specialized(std::string, bool left);
+    }
     /**
      * @brief do tiling using biggest munch
      * 
