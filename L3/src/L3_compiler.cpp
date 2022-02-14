@@ -16,7 +16,7 @@
 #include <parser.h>
 #include <instructionSelect.h>
 #include <tiling.h>
-// #include <codegenerator.h>
+#include <codegenerator.h>
 
 using namespace std;
 

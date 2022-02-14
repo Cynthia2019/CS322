@@ -123,8 +123,6 @@ namespace L3 {
         Tile_at();
     };
 
-    // class Tile_
-
     /**
      * @brief do tiling using biggest munch
      * 
