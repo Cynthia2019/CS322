@@ -93,7 +93,7 @@ namespace L3 {
             nodemap[{tile->tile_type, tile->id}] = tree;
         }
 
-        if (tile->isLeaf()) {
+        if (tile->isLeaf() && (!tree->isroot)) {
             if (is_debug) cout << "pushing: " << endl;
             subtrees.push_back(tree);
         }
@@ -118,52 +118,7 @@ namespace L3 {
     bool Tile::match(TreeNode *t, vector<TreeNode *> &subtrees) {
         std::map<pair<short, int64_t>, TreeNode *> nodemap;
         return match_helper(root, t, subtrees, nodemap);
-        // queue<TileNode *> tileque;
-        // queue<TreeNode *> treeque;
-        // vector<TreeNode *> subt;
-
-        // tileque.push(this->root);
-        // treeque.push(t);
-
-
-        // while (!tileque.empty()) {
-        //     TileNode *currtile = tileque.front();
-        //     tileque.pop();
-        //     TreeNode *currtree = treeque.front();
-        //     treeque.pop();
-        //     if (currtree == nullptr) {
-        //         return false;
-        //     }
-        //     if (currtile->op->toString() != currtree->op->toString()) {
-        //         return false;
-        //     }
-
-        //     // TODO: if val matches
-        //     if (currtile->val != currtree->val) {
-        //         return false;
-        //     }
-
-        //     if (currtile->oprand1) {
-        //         tileque.push(currtile->oprand1);
-        //         treeque.push(currtree->oprand1);
-        //     } else if (currtree->oprand1){
-        //         subt.push_back(currtree->oprand1);
-        //     }
-        //     if (currtile->oprand2) {
-        //         tileque.push(currtile->oprand2);
-        //         treeque.push(currtree->oprand2);
-        //     } else if (currtree->oprand2){
-        //         subt.push_back(currtree->oprand2);
-        //     }
-        // }
-
-        // subtrees = subt;
-        // return true;
     }
-
-    // vector<L2::Instruction *> Tile::getInstructions() {
-    //     return instructions;
-    // }
 
     int64_t Tile::getSize() {
         if (size == -1) {
@@ -186,6 +141,7 @@ namespace L3 {
         return size;
     }
     Tile_math::Tile_math(std::string op) {
+        name = "tile_math";
         this->root = new TileNode();
         root->id = 0;
         root->tile_type |= TileNodeTypeVariable;
@@ -201,6 +157,7 @@ namespace L3 {
     }
 
     Tile_compare::Tile_compare(std::string op) {
+        name = "tile_compare";
         this->root = new TileNode();
         root->id = 0;
         root->tile_type |= TileNodeTypeVariable;
@@ -216,6 +173,7 @@ namespace L3 {
     }
 
     Tile_math_specialized::Tile_math_specialized(std::string op, bool left) {
+        name = "tile_math_specialized";
         this->root = new TileNode();
         root->id = 0;
         root->tile_type |= TileNodeTypeVariable;
@@ -240,6 +198,7 @@ namespace L3 {
     }
 
     Tile_assign::Tile_assign() {
+        name = "tile_assign";
         root = new TileNode();
         root->op = new Operation("<-");
         root->id = 0;
@@ -252,6 +211,7 @@ namespace L3 {
     }
 
     Tile_load::Tile_load() {
+        name = "tile_load";
         root = new TileNode();
         root->op = new Operation("load");
         root->id = 0;
@@ -262,6 +222,7 @@ namespace L3 {
     }
 
     Tile_store::Tile_store() {
+        name = "tile_store";
         root = new TileNode();
         root->op = new Operation("store");
         root->id = 0;
@@ -274,6 +235,7 @@ namespace L3 {
     }
 
     Tile_br::Tile_br() {
+        name = "tile_br";
         root = new TileNode(); 
         root->op = new Operation("br"); 
         root->id = 0; 
@@ -284,6 +246,7 @@ namespace L3 {
     }
 
     Tile_br_t::Tile_br_t() {
+        name = "tile_br_t";
         root = new TileNode(); 
         root->op = new Operation("br"); 
         root->id = 0; 
@@ -298,11 +261,13 @@ namespace L3 {
     }
 
     Tile_return::Tile_return() {
+        name = "tile_return";
         root = new TileNode(); 
         root->id = 0; 
         root->tile_type |= TileNodeTypeOp;
     }
     Tile_return_t::Tile_return_t() {
+        name = "tile_return_t";
         root = new TileNode(); 
         root->id = 0; 
         root->tile_type |= TileNodeTypeOp;
@@ -313,6 +278,7 @@ namespace L3 {
     }      
 
     Tile_increment::Tile_increment(bool is_increment, bool left) {
+        name = "tile_increment";
         root = new TileNode();
         root->id = 0;
         root->tile_type |= TileNodeTypeVariable;
@@ -340,6 +306,7 @@ namespace L3 {
     }
 
     Tile_at::Tile_at() {
+        name = "tile_at";
         root = new TileNode();
         root->id = 0;
         root->op = new Operation("+");
@@ -367,14 +334,16 @@ namespace L3 {
     void tiling(TreeNode *root, vector<Tile *>&res, const vector<Tile *> all_tiles) {
         vector<TreeNode *> subtrees;
         bool flag = false;
+        if (root == nullptr) {
+            return;
+        }
         if (root->oprand1 == nullptr && root->oprand2 == nullptr) {
             return; // a leaf node skip
         }
         for (auto t :all_tiles) {
             if (t->match(root, subtrees)) {
                 flag = true;
-                cout << "matched: " << endl;
-                root->printNode(root, 0);
+                cout << "matched to tile: " << t->name << endl;
                 res.push_back(t);
                 break;
             }

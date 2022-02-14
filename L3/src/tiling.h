@@ -43,6 +43,7 @@ namespace L3 {
 
     class Tile {
         public:
+        std::string name;
         // Tile();
         /**
          * @brief check if current tile matches a tree.
