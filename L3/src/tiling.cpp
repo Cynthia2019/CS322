@@ -256,28 +256,6 @@ namespace L3 {
         root->oprand1->id = 1;
     }
 
-    Tile_math_specialized::Tile_math_specialized(std::string op, bool left) {
-        this->root = new TileNode();
-        root->id = 0;
-        root->tile_type |= TileNodeTypeVariable;
-        root->op = new Operation(op);
-        root->oprand1 = new TileNode();
-        root->oprand2 = new TileNode();
-        if (left) {
-            root->oprand1->tile_type |= TileNodeTypeVariable;
-            root->oprand1->id = 0;
-            root->oprand2->tile_type |= TileNodeTypeNumber;
-            root->oprand2->tile_type |= TileNodeTypeVariable;
-            root->oprand2->id = 1;
-        } else {
-            root->oprand2->tile_type |= TileNodeTypeVariable;
-            root->oprand2->id = 0;
-            root->oprand1->tile_type |= TileNodeTypeNumber;
-            root->oprand1->tile_type |= TileNodeTypeVariable;
-            root->oprand1->id = 1;
-        }
-    }
-
     Tile_increment::Tile_increment(bool is_increment, bool left) {
         root = new TileNode();
         root->id = 0;
