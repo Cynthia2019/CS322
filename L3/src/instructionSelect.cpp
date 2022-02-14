@@ -237,6 +237,7 @@ namespace L3 {
                             if(notDependent && noMemoryInst){
                                 //merge
                                 T1->root->oprand1 = T2->root; 
+                                T2->root->isroot = false;
                             }
                         }
                     }
@@ -256,6 +257,7 @@ namespace L3 {
                             if(notDependent && noMemoryInst){
                                 //merge
                                 T1->root->oprand2 = T2->root; 
+                                T2->root->isroot = false;
                             }
                         }
                     }
@@ -265,14 +267,21 @@ namespace L3 {
         }
         vector<Tile *> alltiles = getAllTiles();
         cout << "tree after merge: " << endl;
-        vector<TreeNode *> subtrees;
-        for(Tree* t : trees){
+        vector <Tree *> merged_trees;
+        for (auto t : trees) {
+            // t->printTree(t);
+            if (t->root->isroot) {
+                merged_trees.push_back(t);
+            }
+        }
+
+        for (auto t : merged_trees) {
             vector<Tile *> tiled;
-            cout << "new tree: " << endl ;
+            cout << "new tree: " << endl;
             t->printTree(t);
             tiling(t->root, tiled, alltiles);
         }
-        return trees;
+        return merged_trees;
     }
     void instructionSelection(Program p, Function* f){        
         //perform liveness analysis on instructions
