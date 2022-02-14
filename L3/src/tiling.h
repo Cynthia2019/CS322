@@ -69,6 +69,11 @@ namespace L3 {
         Tile_math(std::string op);
     };
 
+    class Tile_compare: public Tile {
+        public:
+        Tile_compare(std::string op);
+    };
+
     class Tile_assign: public Tile {
         public:
         Tile_assign();

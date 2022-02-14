@@ -199,6 +199,22 @@ namespace L3 {
         root->oprand2->tile_type |= TileNodeTypeVariable;
         root->oprand2->id = 2;
     }
+
+    Tile_compare::Tile_compare(std::string op) {
+        this->root = new TileNode();
+        root->id = 0;
+        root->tile_type |= TileNodeTypeVariable;
+        root->op = new Operation(op);
+        root->oprand1 = new TileNode();
+        root->oprand1->tile_type |= TileNodeTypeNumber;
+        root->oprand1->tile_type |= TileNodeTypeVariable;
+        root->oprand1->id = 1;
+        root->oprand2 = new TileNode();
+        root->oprand2->tile_type |= TileNodeTypeNumber;
+        root->oprand2->tile_type |= TileNodeTypeVariable;
+        root->oprand2->id = 2;
+    }
+
     Tile_math_specialized::Tile_math_specialized(std::string op, bool left) {
         this->root = new TileNode();
         root->id = 0;
@@ -400,6 +416,13 @@ namespace L3 {
         Tile *and_g = new Tile_math("&");
         Tile *sl_g = new Tile_math("<<");
         Tile *sr_g = new Tile_math(">>");
+
+        Tile *equal = new Tile_compare("=");
+        Tile *greater = new Tile_compare(">");
+        Tile *less = new Tile_compare("<");
+        Tile *ge = new Tile_compare(">=");
+        Tile *le = new Tile_compare("<=");
+
         Tile *ass = new Tile_assign();
         Tile *load = new Tile_load();
         Tile *store = new Tile_store();
@@ -429,6 +452,11 @@ namespace L3 {
             and_g,
             sl_g,
             sr_g,
+            equal,
+            greater,
+            less,
+            ge,
+            le,
             ass,
             load,
             store,
