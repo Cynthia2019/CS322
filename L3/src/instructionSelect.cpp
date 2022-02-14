@@ -138,9 +138,9 @@ namespace L3 {
                 context = new Context();
             }
         }
-
         return context_list;
-    }
+   }
+
     //check if there is no definitions of variables used by T2 between T2 and T1
     bool checkDependency(int a, int b, Tree* T2, Variable* v, vector<Tree*>& trees){
         //between [T2,T1)
@@ -204,16 +204,6 @@ namespace L3 {
             trees.push_back(t);
         }
         return trees;
-    }
-    vector<Tile*> getAllTiles() {
-        vector<Tile *> alltiles;
-        //math tile: 
-        vector<string> math_op = {"*", "+", "-", "&", ">>","<<"}; 
-        for(string op : math_op){
-            Tile* tile = new Tile_math(op); 
-            alltiles.push_back(tile);
-        }
-        return alltiles;
     }
     vector<Tree*> mergeTrees(Context* context, AnalysisResult* res){
         int64_t size = context->instructions.size(); 

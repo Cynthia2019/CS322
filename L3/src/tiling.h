@@ -130,6 +130,5 @@ namespace L3 {
      * @param res the result
      */
     void tiling(TreeNode *root, vector<Tile *>&res, const vector<Tile *> all_tiles);
-
     vector<Tile *> getAllTiles();
 }

@@ -11,7 +11,7 @@ extern bool is_debug;
 
 namespace L3 {
     CodeGen::CodeGen(Tree* tree, std::ofstream &outputFile) : 
-    tree(tree), outputFile(outputFile) {};
+    tree(tree), outputFile(outputFile) {}
 
     void CodeGen::visit(Tile_return* t){
         this->outputFile << "\treturn\n";
