@@ -1,3 +1,4 @@
+
 #include <tiling.h>
 #include <iostream>
 #include <queue>
@@ -203,7 +204,7 @@ namespace L3 {
         root->tile_type |= TileNodeTypeVariable;
         root->oprand1 = new TileNode();
         root->oprand1->tile_type |= TileNodeTypeVariable;
-        root->id = 1;
+        root->oprand1->id = 1;
     }
 
     Tile_store::Tile_store() {
@@ -215,7 +216,46 @@ namespace L3 {
         root->oprand1->tile_type |= TileNodeTypeVariable;
         root->oprand1->tile_type |= TileNodeTypeLabel;
         root->oprand1->tile_type |= TileNodeTypeNumber;
-        root->id = 1;
+        root->oprand1->id = 1;
+    }
+
+    Tile_br::Tile_br() {
+        root = new TileNode(); 
+        root->op = new Operation("br"); 
+        root->id = 0; 
+        root->tile_type |= TileNodeTypeOp; 
+        root->oprand1 = new TileNode(); 
+        root->oprand1->tile_type |= TileNodeTypeLabel;
+        root->oprand1->id = 1; 
+    }
+
+    Tile_br_t::Tile_br_t() {
+        root = new TileNode(); 
+        root->op = new Operation("br"); 
+        root->id = 0; 
+        root->tile_type |= TileNodeTypeOp; 
+        root->oprand1 = new TileNode(); 
+        root->oprand1->tile_type |= TileNodeTypeVariable;
+        root->oprand1->tile_type |= TileNodeTypeNumber;
+        root->oprand1->id = 1; 
+        root->oprand2 = new TileNode(); 
+        root->oprand2->tile_type |= TileNodeTypeLabel;
+        root->oprand2->id = 2; 
+    }
+
+    Tile_return::Tile_return() {
+        root = new TileNode(); 
+        root->id = 0; 
+        root->tile_type |= TileNodeTypeOp;
+    }
+    Tile_return_t::Tile_return_t() {
+        root = new TileNode(); 
+        root->id = 0; 
+        root->tile_type |= TileNodeTypeOp;
+        root->oprand1 = new TileNode(); 
+        root->oprand1->tile_type |= TileNodeTypeVariable; 
+        root->oprand1->tile_type |= TileNodeTypeNumber;
+        root->oprand1->id = 1;         
     }
 
     void tiling(TreeNode *root, vector<Tile *>&res, const vector<Tile *> all_tiles) {

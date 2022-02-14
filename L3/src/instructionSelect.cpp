@@ -280,7 +280,6 @@ namespace L3 {
             cout << "new tree: " << endl ;
             t->printTree(t);
             tiling(t->root, tiled, alltiles);
-             cout << tiled.size() << endl;
         }
         return trees;
     }

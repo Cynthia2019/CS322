@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include "L3.h"
+#include <tiling.h>
 using namespace std;
 namespace L3 {
     class Context{
@@ -27,6 +28,7 @@ class Tree : public Visitor{
         bool isEmpty() {return root == nullptr;};
         vector<Item*> uses; 
         vector<Item*> define;
+        vector<Tile*> tiles;
         Instruction* getInstruction();
         void printTree(Tree* tree);
 

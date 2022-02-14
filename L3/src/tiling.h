@@ -1,3 +1,5 @@
+
+#pragma once
 #include <L3.h>
 #include <../L2/src/L2.h>
 #include <stdint.h>
@@ -51,23 +53,6 @@ namespace L3 {
         Tile_math(std::string op);
     };
 
-    class Tile_math_basic : public Tile_math {
-        public:
-        Tile_math_basic(string op);
-    }; 
-    class Tile_math_same_1 : public Tile_math {
-        public:
-        Tile_math_same_1(string op);
-    };
-    class Tile_math_same_2 : public Tile_math {
-        public:
-        Tile_math_same_2(string op);
-    };
-    class Tile_math_same_12 : public Tile_math {
-        public:
-        Tile_math_same_12(string op);
-    };
-
     class Tile_assign: public Tile {
         public:
         Tile_assign();
@@ -81,6 +66,26 @@ namespace L3 {
     class Tile_store: public Tile {
         public:
         Tile_store();
+    };
+
+    class Tile_br: public Tile {
+        public: 
+        Tile_br();
+    };
+
+    class Tile_br_t: public Tile {
+        public: 
+        Tile_br_t();
+    };
+
+    class Tile_return : public Tile {
+        public:
+        Tile_return();
+    };
+
+    class Tile_return_t : public Tile {
+        public:
+        Tile_return_t();
     };
 
     /**
