@@ -16,6 +16,7 @@
 #include <parser.h>
 #include <instructionSelect.h>
 #include <tiling.h>
+#include <globalize.h>
 // #include <codegenerator.h>
 
 using namespace std;
@@ -81,6 +82,8 @@ int main(
     * Parse the L3 program.
     */
   p = L3::parse_file(argv[optind]);
+  L3::labelGlobalize(&p);
+  
   cout << "\nInstruction select: " << endl;
   for(L3::Function* f : p.functions){
     L3::instructionSelection(p, f);
