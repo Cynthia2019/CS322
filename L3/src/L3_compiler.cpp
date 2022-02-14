@@ -15,6 +15,7 @@
 #include <L3.h>
 #include <parser.h>
 #include <instructionSelect.h>
+#include <tiling.h>
 // #include <codegenerator.h>
 
 using namespace std;
@@ -38,13 +39,14 @@ int main(
    * Check the compiler arguments.
    */
   auto verbose = false;
+  bool tiling_test = false;
   if (argc < 2)
   {
     print_help(argv[0]);
     return 1;
   }
   int32_t opt;
-  while ((opt = getopt(argc, argv, "vg:O:sli")) != -1)
+  while ((opt = getopt(argc, argv, "vg:O:slit")) != -1)
   {
     switch (opt)
     {
@@ -61,6 +63,10 @@ int main(
       verbose = true;
       is_debug = true;
       break;
+    
+    case 't':
+      tiling_test = true;
+      break;
 
     default:
       print_help(argv[0]);
@@ -74,13 +80,19 @@ int main(
 /*
     * Parse the L3 program.
     */
-p = L3::parse_file(argv[optind]);
-cout << "\nInstruction select: " << endl;
-for(L3::Function* f : p.functions){
-  L3::instructionSelection(p, f);
-  cout << endl;
-}
-//test instruction select
+  p = L3::parse_file(argv[optind]);
+  cout << "\nInstruction select: " << endl;
+  for(L3::Function* f : p.functions){
+    L3::instructionSelection(p, f);
+    cout << endl;
+  }
+  //test instruction select
+
+  if (tiling_test) {
+    // L3::TreeNode *
+    // L3::tiling();
+    
+  }
 
 
 

@@ -4,6 +4,7 @@
 #include <string> 
 #include <iostream>
 #include <algorithm>
+#include <tiling.h>
 using namespace std; 
 
 extern bool is_debug;
@@ -203,7 +204,17 @@ namespace L3 {
         }
         return trees;
     }
-    void mergeTrees(Context* context, AnalysisResult* res){
+    vector<Tile*> getAllTiles() {
+        vector<Tile *> alltiles;
+        //math tile: 
+        vector<string> math_op = {"*", "+", "-", "&", ">>","<<"}; 
+        for(string op : math_op){
+            Tile* tile = new Tile_math(op); 
+            alltiles.push_back(tile);
+        }
+        return alltiles;
+    }
+    vector<Tree*> mergeTrees(Context* context, AnalysisResult* res){
         int64_t size = context->instructions.size(); 
         vector<Tree*> trees = getAllTree(context); 
         for(int i = 0; i < size; i++){
@@ -220,7 +231,6 @@ namespace L3 {
                     }
                     //condition 1: T1 uses T2 root
                     if(T1->root->oprand1 && T1->root->oprand1->val == T2->root->val){
-                        cout << "match" << endl;
                         //condition A, T2->root->val dead after T1
                         bool dead = checkDead(j+1, T2->root->val, res, trees);
                         bool only = checkOnlyUsedByT1(j+1, T2->root->val, context->instructions);
@@ -261,11 +271,17 @@ namespace L3 {
                 }
             }
         }
+        vector<Tile *> alltiles = getAllTiles();
         cout << "tree after merge: " << endl;
+        vector<TreeNode *> subtrees;
         for(Tree* t : trees){
+            vector<Tile *> tiled;
             cout << "new tree: " << endl ;
             t->printTree(t);
+            tiling(t->root, tiled, alltiles);
+             cout << tiled.size() << endl;
         }
+        return trees;
     }
     void instructionSelection(Program p, Function* f){        
         //perform liveness analysis on instructions

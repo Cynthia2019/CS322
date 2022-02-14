@@ -470,7 +470,6 @@ template <>
          Number* i = new Number(std::stoll(args)); 
         list_of_args.push_back(i);
       }
-      cout << "list of args size: " << list_of_args.size() << endl;
     }
   };
   // action for + - & * << >>
