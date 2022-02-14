@@ -1,11 +1,12 @@
+#pragma once
 #include <string>
 #include "L3.h"
-#include <tiling.h>
+// #include "tiling.h"
 using namespace std;
 namespace L3 {
     class Context{
         public:
-        void inline add(Instruction *i) { instructions.push_back(i);};
+        void inline add(Instruction *i) { instructions.push_back(i);}
         bool inline isEmpty() { return instructions.size() == 0; }
         vector<Instruction *> instructions;
     };

@@ -1,3 +1,4 @@
+#pragma once
 #include "L3.h"
 #include "instructionSelect.h"
 #include <string>

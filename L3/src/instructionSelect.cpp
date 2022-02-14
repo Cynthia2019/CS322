@@ -138,9 +138,8 @@ namespace L3 {
                 context = new Context();
             }
         }
+   }
 
-        return context_list;
-    }
     //check if there is no definitions of variables used by T2 between T2 and T1
     bool checkDependency(int a, int b, Tree* T2, Variable* v, vector<Tree*>& trees){
         //between [T2,T1)

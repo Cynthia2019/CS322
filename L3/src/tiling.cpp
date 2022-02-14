@@ -294,6 +294,7 @@ namespace L3 {
         root->oprand1->tile_type |= TileNodeTypeVariable; 
         root->oprand1->tile_type |= TileNodeTypeNumber;
         root->oprand1->id = 1;         
+    }
     Tile_increment::Tile_increment(bool is_increment, bool left) {
         root = new TileNode();
         root->id = 0;
