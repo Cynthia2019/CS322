@@ -91,6 +91,8 @@ namespace L3 {
             nodemap[{tile->tile_type, tile->id}] = tree;
         }
 
+        auto nodemap_clone = nodemap;
+
         if (tile->isLeaf() && (!tree->isroot)) {
             if (is_debug) cout << "adding: " << tree->val->toString() << endl;
             subtrees.insert(tree);
@@ -102,6 +104,8 @@ namespace L3 {
             tile->matched_node = tree;
             return true;
         }
+
+        nodemap = nodemap_clone; // restore
 
         left = match_helper(tile->oprand1, tree->oprand2, subtrees, nodemap);
         right = match_helper(tile->oprand2, tree->oprand1, subtrees, nodemap);
@@ -366,7 +370,6 @@ namespace L3 {
             }
             delete t_clone;
         }
-
 
         if (!flag) {
             cerr << "warning: cannot match to any tile." << endl;
