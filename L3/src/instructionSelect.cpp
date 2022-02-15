@@ -121,8 +121,11 @@ namespace L3 {
    vector<Context *> identifyContext(Function *f) {
         vector<Context *> context_list;
         Context *context = new Context();
+        context->start = 0;
 
-        for (auto i : f->instructions) {
+        for (int idx = 0; idx < f->instructions.size(); idx++) {
+            Instruction *i = f->instructions[idx];
+
             Instruction_label *l = dynamic_cast<Instruction_label *>(i);
             Instruction_call *c = dynamic_cast<Instruction_call *>(i);
             
@@ -134,9 +137,11 @@ namespace L3 {
             Instruction_ret *r = dynamic_cast<Instruction_ret *>(i);
             if (l || c || b || r) {
                 if (!context->isEmpty()) {
+                    context->end = idx + 1;
                     context_list.push_back(context);
                 }
                 context = new Context();
+                context->start = idx + 1;
             }
         }
 

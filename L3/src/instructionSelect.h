@@ -9,6 +9,8 @@ namespace L3 {
         void inline add(Instruction *i) { instructions.push_back(i);}
         bool inline isEmpty() { return instructions.size() == 0; }
         vector<Instruction *> instructions;
+        int64_t start;
+        int64_t end;
     };
 
     vector<Context *> identifyContext(Function *f);

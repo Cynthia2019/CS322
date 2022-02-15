@@ -62,7 +62,7 @@ namespace L3 {
         }
     }
 
-    bool match_helper(TileNode *tile, TreeNode *tree, vector<TreeNode *> &subtrees,
+    bool match_helper(TileNode *tile, TreeNode *tree, std::set<TreeNode *> &subtrees,
             std::map<pair<short, int64_t>, TreeNode *> &nodemap) {
         if (tile == nullptr) {
             return true; // tile is null, it matches any tree
@@ -92,19 +92,23 @@ namespace L3 {
         }
 
         if (tile->isLeaf() && (!tree->isroot)) {
-            if (is_debug) cout << "pushing: " << endl;
-            subtrees.push_back(tree);
+            if (is_debug) cout << "adding: " << tree->val->toString() << endl;
+            subtrees.insert(tree);
         }
         bool left = match_helper(tile->oprand1, tree->oprand1, subtrees, nodemap);
         bool right = match_helper(tile->oprand2, tree->oprand2, subtrees, nodemap);
 
-        if (left && right)
+        if (left && right) {
+            tile->matched_node = tree;
             return true;
+        }
 
         left = match_helper(tile->oprand1, tree->oprand2, subtrees, nodemap);
         right = match_helper(tile->oprand2, tree->oprand1, subtrees, nodemap);
-        if (left && right)
+        if (left && right) {
+            tile->matched_node = tree;
             return true;
+        }
         
         if (mapchaged) {
             nodemap.erase({tile->tile_type, tile->id});
@@ -113,7 +117,7 @@ namespace L3 {
     }
 
     // TODO: what if tile is a line instead of a tree
-    bool Tile::match(TreeNode *t, vector<TreeNode *> &subtrees) {
+    bool Tile::match(TreeNode *t, set<TreeNode *> &subtrees) {
         std::map<pair<short, int64_t>, TreeNode *> nodemap;
         return match_helper(root, t, subtrees, nodemap);
     }
@@ -170,7 +174,7 @@ namespace L3 {
         root->oprand2->id = 2;
     }
 
-    Tile_math_specialized::Tile_math_specialized(std::string op, bool left) {
+    Tile_math_specialized::Tile_math_specialized(std::string op) {
         name = "tile_math_specialized";
         this->root = new TileNode();
         root->id = 0;
@@ -179,20 +183,19 @@ namespace L3 {
         root->oprand1 = new TileNode();
         root->oprand2 = new TileNode();
         //dst = oprand1
-        if (left) {
+        // if (left) {
             root->oprand1->tile_type |= TileNodeTypeVariable;
             root->oprand1->id = 0;
             root->oprand2->tile_type |= TileNodeTypeNumber;
             root->oprand2->tile_type |= TileNodeTypeVariable;
             root->oprand2->id = 1;
-        } else { //dst = oprand2
-            root->oprand2->tile_type |= TileNodeTypeVariable;
-            root->oprand2->id = 0;
-            root->oprand1->tile_type |= TileNodeTypeNumber;
-            root->oprand1->tile_type |= TileNodeTypeVariable;
-            root->oprand1->id = 1;
-        }
-
+        // } else { //dst = oprand2
+        //     root->oprand2->tile_type |= TileNodeTypeVariable;
+        //     root->oprand2->id = 0;
+        //     root->oprand1->tile_type |= TileNodeTypeNumber;
+        //     root->oprand1->tile_type |= TileNodeTypeVariable;
+        //     root->oprand1->id = 1;
+        // }
     }
 
     Tile_assign::Tile_assign() {
@@ -275,8 +278,9 @@ namespace L3 {
         root->oprand1->id = 1;   
     }      
 
-    Tile_increment::Tile_increment(bool is_increment, bool left) {
+    Tile_increment::Tile_increment(bool is_increment) {
         name = "tile_increment";
+        this->inc_or_dec = is_increment;
         root = new TileNode();
         root->id = 0;
         root->tile_type |= TileNodeTypeVariable;
@@ -294,13 +298,13 @@ namespace L3 {
         num->rule = new TileRule_one();
         num->id = 1;
 
-        if (left) {
-            root->oprand1 = var;
-            root->oprand2 = num;
-        } else {
-            root->oprand2 = var;
-            root->oprand1 = num;
-        }
+        // if (left) {
+        root->oprand1 = var;
+        root->oprand2 = num;
+        // } else {
+        //     root->oprand2 = var;
+        //     root->oprand1 = num;
+        // }
     }
 
     Tile_at::Tile_at() {
@@ -330,36 +334,41 @@ namespace L3 {
     }
 
     void tiling(TreeNode *root, vector<Tile *>&res, const vector<Tile *> all_tiles) {
-        vector<TreeNode *> subtrees;
         bool flag = false;
         if (root == nullptr) {
             return;
         }
-        if (root->oprand1 == nullptr && root->oprand2 == nullptr) {
-            //if it is a return
-            Tile_return* r = new Tile_return(); 
-            if(r->match(root, subtrees)) {
-                flag = true;
-                cout << "matched: " << endl;
-                root->printNode(root, 0);
-                res.push_back(r);
-            return; // a leaf node skip
-            }
-        }
+        // if (root->oprand1 == nullptr && root->oprand2 == nullptr) {
+        //     //if it is a return
+        //     // vector<TreeNode *> subtrees;
+        //     // Tile_return* r = new Tile_return(); 
+        //     // if(r->match(root, subtrees)) {
+        //     //     flag = true;
+        //     //     cout << "matched to tile: " << r->name << endl;
+        //     //     root->printNode(root, 0);
+        //     //     res.push_back(r);
+        //     return; // a leaf node skip
+        //     // }
+        // }
         for (auto t :all_tiles) {
-            if (t->match(root, subtrees)) {
+            set<TreeNode *> subtrees;
+            Tile *t_clone = t->clone();
+            cout << "tring to match to: " << t->name << endl;
+            if (t_clone->match(root, subtrees)) {
                 flag = true;
                 cout << "matched to tile: " << t->name << endl;
+                cout << "subtreesize: " << subtrees.size() << endl;
                 res.push_back(t);
+                for (auto sub: subtrees) {
+                    tiling(sub, res, all_tiles);
+                }
                 break;
             }
+            delete t_clone;
         }
 
-        if (flag) {
-            for (auto sub: subtrees) {
-                tiling(sub, res, all_tiles);
-            }
-        } else {
+
+        if (!flag) {
             cerr << "warning: cannot match to any tile." << endl;
         }
         return;
@@ -368,22 +377,22 @@ namespace L3 {
     
     vector<Tile *> getAllTiles() {
         Tile *at = new Tile_at();
-        Tile *inc_left = new Tile_increment("+", true);
+        Tile *inc_left = new Tile_increment("+");
         // Tile *inc_right = new Tile_increment("+", false);
-        Tile *dec_left = new Tile_increment("-", true);
+        Tile *dec_left = new Tile_increment("-");
         // Tile *dec_right = new Tile_increment("-", false);
-        Tile *plus_left = new Tile_math_specialized("+", true);
+        Tile *plus_left = new Tile_math_specialized("+");
         // Tile *plus_right = new Tile_math_specialized("+", false);
 
-        Tile *minus_left = new Tile_math_specialized("-", true);
+        Tile *minus_left = new Tile_math_specialized("-");
         // Tile *minus_right = new Tile_math_specialized("-", false);
-        Tile *mul_left = new Tile_math_specialized("*", true);
+        Tile *mul_left = new Tile_math_specialized("*");
         // Tile *mul_right = new Tile_math_specialized("*", false);
-        Tile *and_left = new Tile_math_specialized("&", true);
+        Tile *and_left = new Tile_math_specialized("&");
         // Tile *and_right = new Tile_math_specialized("&", false);
-        Tile *sl_left = new Tile_math_specialized("<<", true);
+        Tile *sl_left = new Tile_math_specialized("<<");
         // Tile *sl_right = new Tile_math_specialized("<<", false);
-        Tile *sr_left = new Tile_math_specialized(">>", true);
+        Tile *sr_left = new Tile_math_specialized(">>");
         // Tile *sr_right = new Tile_math_specialized(">>", false);
         Tile *plus_g = new Tile_math("+");
         Tile *minus_g = new Tile_math("-");
