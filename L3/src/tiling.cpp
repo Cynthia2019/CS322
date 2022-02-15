@@ -1,5 +1,6 @@
 
 #include <tiling.h>
+#include <codegenerator.h>
 #include <iostream>
 #include <queue>
 
@@ -337,6 +338,59 @@ namespace L3 {
         root->oprand1->oprand2->rule = new TileRule_1248();
     }
 
+    void Tile_math::accept(CodeGen *g) {
+        g->visit(this);
+    }
+
+    void Tile_compare::accept(CodeGen *g) {
+        g->visit(this);
+    }
+
+    void Tile_assign::accept(CodeGen *g) {
+            g->visit(this);
+    }
+
+    void Tile_load::accept(CodeGen *g) {
+            g->visit(this);
+    }
+
+    void Tile_store::accept(CodeGen *g) {
+            g->visit(this);
+    }
+
+    void Tile_br::accept(CodeGen *g) {
+            g->visit(this);
+    }
+
+    void Tile_br_t::accept(CodeGen *g) {
+            g->visit(this);
+    }
+
+    void Tile_return ::accept(CodeGen *g) {
+            g->visit(this);
+    }
+
+    void Tile_return_t ::accept(CodeGen *g) {
+            g->visit(this);
+    }
+
+    /**
+     * @brief *= += -= <<= >>= &=
+     * 
+     */
+    void Tile_math_specialized::accept(CodeGen *g) {
+            g->visit(this);
+    }
+
+    void Tile_increment::accept(CodeGen *g) {
+            g->visit(this);
+    }
+
+    void Tile_at::accept(CodeGen *g) {
+            g->visit(this);
+    }
+
+
     void tiling(TreeNode *root, vector<Tile *>&res, const vector<Tile *> all_tiles) {
         bool flag = false;
         if (root == nullptr) {
@@ -362,13 +416,13 @@ namespace L3 {
                 flag = true;
                 cout << "matched to tile: " << t->name << endl;
                 cout << "subtreesize: " << subtrees.size() << endl;
-                res.push_back(t);
+                res.push_back(t_clone);
                 for (auto sub: subtrees) {
                     tiling(sub, res, all_tiles);
                 }
                 break;
             }
-            delete t_clone;
+            //delete t_clone;
         }
 
         if (!flag) {

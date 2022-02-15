@@ -10,39 +10,46 @@ using namespace std;
 extern bool is_debug; 
 namespace L3{
 
-    CodeGen::CodeGen(Function *f, Tree* tree) : 
-    tree(tree) {}
+    CodeGen::CodeGen(/*Function *f*/) {}
 
     void CodeGen::visit(Tile_return* t){
-        this->tree->L2_instructions.push_back("\treturn\n");
+        TreeNode *tree = t->getTree();
+        L2_instructions.push_back("\treturn\n");
     }
     void CodeGen::visit(Tile_return_t* t){
-        string line = "\t" + this->tree->root->oprand1->val->toString() + " <- rdi\n";
-        this->tree->L2_instructions.push_back(line);
-        line = "\trax <- " + this->tree->root->oprand1->val->toString() + "\n";
-        this->tree->L2_instructions.push_back(line);
-        this->tree->L2_instructions.push_back("\treturn\n");
+        TreeNode *tree = t->getTree();
+        string line = "\t" + tree->oprand1->val->toString() + " <- rdi\n";
+        L2_instructions.push_back(line);
+        line = "\trax <- " + tree->oprand1->val->toString() + "\n";
+        L2_instructions.push_back(line);
+        L2_instructions.push_back("\treturn\n");
     }
     void CodeGen::visit(Tile_assign* t){
-        string line = "\t" + this->tree->root->val->toString() + " <- " + this->tree->root->oprand1->val->toString() + '\n';
-        this->tree->L2_instructions.push_back(line);
+        TreeNode *tree = t->getTree();
+        string line = "\t" + tree->val->toString() + " <- " + tree->oprand1->val->toString() + '\n';
+        L2_instructions.push_back(line);
     }
 
     void CodeGen::visit(Tile_math* t) {
-        string dst = this->tree->root->val->toString(); 
-        string oprand1 = this->tree->root->oprand1->val->toString();
-        string op = this->tree->root->op->toString(); 
-        string oprand2 = this->tree->root->oprand2->val->toString();
+        cout << "translating tile_math" << endl;
+        TreeNode *tree = t->getTree();
+        if (!tree) cout << "bug " << endl;
+        string dst = tree->val->toString(); 
+        string oprand1 = tree->oprand1->val->toString();
+        string op = tree->op->toString(); 
+        string oprand2 = tree->oprand2->val->toString();
         string line = '\t' + dst + " <- " + oprand1 + '\n'; 
-        this->tree->L2_instructions.push_back(line);
+        L2_instructions.push_back(line);
         line = '\t' + dst + " " + op + "= " + oprand2 + '\n';
-        this->tree->L2_instructions.push_back(line);
+        L2_instructions.push_back(line);
+        cout << "end translating tile_math" << endl;
     }
     void CodeGen::visit(Tile_math_specialized* t) {
-        string dst = this->tree->root->val->toString(); 
-        string oprand1 = this->tree->root->oprand1->val->toString();
-        string op = this->tree->root->op->toString(); 
-        string oprand2 = this->tree->root->oprand2->val->toString();
+        TreeNode *tree = t->getTree();
+        string dst = tree->val->toString(); 
+        string oprand1 = tree->oprand1->val->toString();
+        string op = tree->op->toString(); 
+        string oprand2 = tree->oprand2->val->toString();
         string line;
         if(dst == oprand1){
             line = '\t' + dst + " " + op + "= " + oprand1 + '\n';   
@@ -50,33 +57,50 @@ namespace L3{
         else {
             line = '\t' + dst + " " + op + "= " + oprand2 + '\n';   
         }
-        this->tree->L2_instructions.push_back(line);
+        L2_instructions.push_back(line);
     }
+
+    void CodeGen::visit(Tile_compare *t){
+        TreeNode *tree = t->getTree();
+        string dst = tree->val->toString(); 
+        string oprand1 = tree->oprand1->val->toString();
+        string op = tree->op->toString(); 
+        string oprand2 = tree->oprand2->val->toString();
+        string line = '\t' + dst + " <- " + oprand1 + '\n'; 
+        L2_instructions.push_back(line);
+        line = '\t' + dst + " " + op + "= " + oprand2 + '\n';
+        L2_instructions.push_back(line);
+    }
+
     void CodeGen::visit(Tile_load *t){
-        string dst = this->tree->root->val->toString(); 
-        string oprand1 = this->tree->root->oprand1->val->toString();
+        TreeNode *tree = t->getTree();
+        string dst = tree->val->toString(); 
+        string oprand1 = tree->oprand1->val->toString();
         //need to know current number of item on stack 
         // string M = to_string(this->f->sizeOfStack * 8);
         // string line = '\t' + dst + " <- mem " + oprand1 + " " + M + '\n'; 
         string line = '\t' + dst + " <- mem " + oprand1 + " 0\n"; 
-        this->tree->L2_instructions.push_back(line);
+        L2_instructions.push_back(line);
     }
     void CodeGen::visit(Tile_store *t){
-        string dst = this->tree->root->val->toString(); 
-        string oprand1 = this->tree->root->oprand1->val->toString();
+        TreeNode *tree = t->getTree();
+        string dst = tree->val->toString(); 
+        string oprand1 = tree->oprand1->val->toString();
         //need to know current number of item on stack 
         string line = "\t mem" + dst + " 0 <- " + oprand1 + '\n'; 
-        this->tree->L2_instructions.push_back(line);
+        L2_instructions.push_back(line);
     }
     void CodeGen::visit(Tile_br* t){
-        string label = this->tree->root->oprand1->val->toString(); 
+        TreeNode *tree = t->getTree();
+        string label = tree->oprand1->val->toString(); 
         string line = "\t goto " + label + '\n'; 
-        this->tree->L2_instructions.push_back(line);
+        L2_instructions.push_back(line);
     }
     //TODO might need fix
     void CodeGen::visit(Tile_br_t* t){
-        string label = this->tree->root->oprand2->val->toString(); 
-        Item* condition = this->tree->root->oprand1->val;
+        TreeNode *tree = t->getTree();
+        string label = tree->oprand2->val->toString(); 
+        Item* condition = tree->oprand1->val;
         Number* n = dynamic_cast<Number*>(condition); 
         string line; 
         if(n != nullptr){
@@ -86,28 +110,30 @@ namespace L3{
             //condition is a variable, find the two nodes in the tree that define this variable
             line = "\t cjump " + condition->toString() + " = 1 " + label + "\n";   
         }
-        this->tree->L2_instructions.push_back(line);
+        L2_instructions.push_back(line);
     }
 
     void CodeGen::visit(Tile_increment* t){
-        string dst = this->tree->root->val->toString(); 
+        TreeNode *tree = t->getTree();
+        string dst = tree->val->toString(); 
         string line; 
-        if(this->tree->root->op->toString() == "+"){
-            line = dst + "++";
+        if(tree->op->toString() == "+"){
+            line = "\t" + dst + "++";
         }
         else {
-            line = dst + "--";
+            line = "\t" + dst + "--";
         }
-        this->tree->L2_instructions.push_back(line);
+        L2_instructions.push_back(line);
     }
 
     void CodeGen::visit(Tile_at* t){
-        string dst = this->tree->root->val->toString(); 
-        string src_add = this->tree->root->oprand2->val->toString(); 
-        string src_mult = this->tree->root->oprand1->oprand1->val->toString(); 
-        string src_const = this->tree->root->oprand1->oprand2->val->toString(); 
+        TreeNode *tree = t->getTree();
+        string dst = tree->val->toString(); 
+        string src_add = tree->oprand2->val->toString(); 
+        string src_mult = tree->oprand1->oprand1->val->toString(); 
+        string src_const = tree->oprand1->oprand2->val->toString(); 
         string line = "\t" + dst + " @ " + src_add + " " + src_mult + " " + src_const + "\n";
-        this->tree->L2_instructions.push_back(line);       
+        L2_instructions.push_back(line);       
     }
 
     void generate_code(Program p){

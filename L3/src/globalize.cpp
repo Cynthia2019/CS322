@@ -33,7 +33,7 @@ namespace L3 {
                 Instruction_label *l = dynamic_cast<Instruction_label *>(i);
                 if (l) {
                     ::string old = l->label->get().substr(1);
-                    l->label = new Label(llg + fname + old);
+                    l->label = new Label(":" + llg + fname + old);
                     cout << "label: " << l->label->get() << endl;
                 }
             }

@@ -137,7 +137,11 @@ namespace L3 {
             Instruction_ret *r = dynamic_cast<Instruction_ret *>(i);
             if (l || c || b || r) {
                 if (!context->isEmpty()) {
-                    context->end = idx + 1;
+                    if (l || c) {
+                        context->end = idx;
+                    } else {
+                        context->end = idx + 1;
+                    }
                     context_list.push_back(context);
                 }
                 context = new Context();
@@ -280,6 +284,47 @@ namespace L3 {
         }
         return merged_trees;
     }
+
+    vector<std::string> translate_context(Context *c, AnalysisResult *res, vector<Tile *> alltiles) {
+        vector<Tree*> merged; 
+        CodeGen codegen;
+        cout << "merge trees in a context" << endl;
+        merged = mergeTrees(c, res); 
+        for (auto t : merged) {
+            cout << "merged tree: " << endl;
+            t->printTree(t);
+            //search for matched tiles
+            vector<Tile *> tiled;
+            tiling(t->root, tiled, alltiles);
+            if(is_debug) cout << "# of matched tiles: " << tiled.size() << endl;
+            //assign this set of tiles that can cover the tree to this tree
+
+            for (auto tile : tiled) {
+                tile->accept(&codegen);
+            }
+        }
+        return codegen.L2_instructions;
+    }
+
+    vector<std::string> translate_label_call(Instruction *i) {
+        Instruction_label *l = dynamic_cast<Instruction_label *>(i);
+        vector<std::string> res;
+        if (l) {
+            res.push_back("\t" + l->toString());
+            return res;
+        }
+
+        Instruction_call *c = dynamic_cast<Instruction_call *>(i);
+        if (c) {
+            //TODO: implement this
+            res.push_back("\tcall");
+            return res;
+        }
+
+        cerr << "not label or call" << endl;
+        return {};
+    }
+
     void instructionSelection(Program p, Function* f){        
         //perform liveness analysis on instructions
         GenKill genkill; 
@@ -289,22 +334,30 @@ namespace L3 {
         AnalysisResult* res = computeLiveness(f);
         vector<Context*> ctx = identifyContext(f); 
         vector<Tile*> alltiles = getAllTiles();
-        vector<Tree*> merged; 
-        for(Context* c : ctx){
-            cout << "merge trees in a context" << endl;
-            merged = mergeTrees(c, res); 
-            for (auto t : merged) {
-                vector<Tile *> tiled;
-                cout << "merged tree: " << endl;
-                t->printTree(t);
-                //search for matched tiles
-                tiling(t->root, tiled, alltiles);
-                if(is_debug) cout << "# of matched tiles: " << tiled.size() << endl;
-                //assign this set of tiles that can cover the tree to this tree
-                t->tiles = tiled; 
+        vector<std::string> all_instructions;
 
-                CodeGen* codegen = new CodeGen(f, t);
+        int64_t idx = 0;
+        for(Context* c : ctx){
+            while (idx != f->instructions.size() && idx != c->start) {
+                auto insts = translate_label_call(f->instructions[idx]);
+                all_instructions.insert(all_instructions.end(), insts.begin(), insts.end());
+                idx++;
             }
+            cout << "new context, line " << c->start << "to " << c->end << endl;
+            auto context_insts = translate_context(c, res, alltiles);
+            all_instructions.insert(all_instructions.end(),
+                    context_insts.begin(), context_insts.end());
+            idx = c->end;
+        }
+
+        while (idx != f->instructions.size()) {
+            auto insts = translate_label_call(f->instructions[idx]);
+            all_instructions.insert(all_instructions.end(), insts.begin(), insts.end());
+            idx++;
+        }
+
+        for (auto s : all_instructions) {
+            cout << s << endl;
         }
     }
 }

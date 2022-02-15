@@ -8,6 +8,7 @@
 
 namespace L3 {
     
+    class CodeGen;
     class TileRule {
         public:
         virtual bool verify(TreeNode *tree) = 0;
@@ -59,6 +60,8 @@ namespace L3 {
         // void accept();
         // vector<L2::Instruction *> getInstructions();
         virtual Tile *clone() = 0;
+        virtual void accept(CodeGen *) = 0;
+        TreeNode *getTree() { return root->matched_node; }
         
         private:
         int64_t size = -1;
@@ -71,54 +74,63 @@ namespace L3 {
         public:
         Tile_math(std::string op);
         Tile *clone() { return new Tile_math(root->op->toString()); };
+        void accept(CodeGen *g) override;
     };
 
     class Tile_compare: public Tile {
         public:
         Tile_compare(std::string op);
         Tile *clone() { return new Tile_compare(root->op->toString()); };
+        void accept(CodeGen *g) override;
     };
 
     class Tile_assign: public Tile {
         public:
         Tile_assign();
         Tile *clone() { return new Tile_assign(); };
+        void accept(CodeGen *g) override;
     };
 
     class Tile_load: public Tile {
         public:
         Tile_load();
         Tile *clone() { return new Tile_load(); };
+        void accept(CodeGen *g) override;
     };
 
     class Tile_store: public Tile {
         public:
         Tile_store();
         Tile *clone() { return new Tile_store(); };
+        void accept(CodeGen *g) override;
     };
 
     class Tile_br: public Tile {
         public: 
         Tile_br();
         Tile *clone() { return new Tile_br(); };
+        void accept(CodeGen *g) override;
     };
 
     class Tile_br_t: public Tile {
         public: 
         Tile_br_t();
         Tile *clone() { return new Tile_br_t(); };
+        void accept(CodeGen *g) override;
     };
 
     class Tile_return : public Tile {
         public:
         Tile_return();
         Tile *clone() { return new Tile_return(); };
+        void accept(CodeGen *g) override;
     };
 
     class Tile_return_t : public Tile {
         public:
         Tile_return_t();
         Tile *clone() { return new Tile_return_t(); };
+        void accept(CodeGen *g) override;
     };
 
     /**
@@ -129,6 +141,7 @@ namespace L3 {
         public:
         Tile_math_specialized(std::string);
         Tile *clone() { return new Tile_math_specialized(root->op->toString()); };
+        void accept(CodeGen *g) override;
     };
 
     class Tile_increment: public Tile {
@@ -136,12 +149,14 @@ namespace L3 {
         bool inc_or_dec;
         Tile_increment(bool inc_or_dec);
         Tile *clone() { return new Tile_increment(inc_or_dec); };
+        void accept(CodeGen *g) override;
     };
 
     class Tile_at: public Tile {
         public:
         Tile_at();
         Tile *clone() { return new Tile_at(); };
+        void accept(CodeGen *g) override;
     };
 
     /**
