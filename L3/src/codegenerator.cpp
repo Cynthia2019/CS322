@@ -12,6 +12,14 @@ using namespace std;
 extern bool is_debug; 
 namespace L3{
 
+    // string normal_var(string varname) {
+    //     return "%var_" + varname.substr(1);
+    // }
+
+    string temp_var(string varname) {
+        return "%tmp_" + varname.substr(1);
+    }
+
     CodeGen::CodeGen(/*Function *f*/) {}
 
     void CodeGen::visit(Tile_return* t){
@@ -39,30 +47,38 @@ namespace L3{
     void CodeGen::visit(Tile_math* t) {
         TreeNode *tree = t->getTree();
         if (!tree) cout << "bug " << endl;
-        string dst = tree->val->toString(); 
-        string oprand1 = tree->oprand1->val->toString();
+        string dst = tree->val->toString();
+        string oprand1 = t->root->oprand1->matched_node->val->toString();
         string op = tree->op->toString(); 
-        string oprand2 = tree->oprand2->val->toString();
-        string line = '\t' + dst + " <- " + oprand1 + '\n'; 
-        L2_instructions.push_back(line);
-        line = '\t' + dst + " " + op + "= " + oprand2 + '\n';
-        L2_instructions.push_back(line);
+        string oprand2 = t->root->oprand2->matched_node->val->toString();
+        if (op == "*" || op == "+" || op == "&") {
+            string line = '\t' + dst + " <- " + oprand1 + '\n'; 
+            L2_instructions.push_back(line);
+            line = '\t' + dst + " " + op + "= " + oprand2 + '\n';
+            L2_instructions.push_back(line);
+        } else if (op == "-" || op == "<<" || op == ">>") {
+            string tmp = temp_var("%tmp");
+            string line = '\t' + tmp + " <- " + oprand1 + '\n'; 
+            L2_instructions.push_back(line);
+            line = '\t' + tmp + " " + op + "= " + oprand2 + '\n'; 
+            L2_instructions.push_back(line);
+            line = '\t' + dst + " <- " + tmp + '\n'; 
+            L2_instructions.push_back(line);
+        }
+
     }
+
     void CodeGen::visit(Tile_math_specialized* t) {
         TreeNode *tree = t->getTree();
-        string dst = tree->val->toString(); 
-        string oprand1 = tree->oprand1->val->toString();
-        string op = tree->op->toString(); 
-        string oprand2 = tree->oprand2->val->toString();
-        string line;
-        if(dst == oprand1){
-            line = '\t' + dst + " " + op + "= " + oprand1 + '\n';   
-        }
-        else {
-            line = '\t' + dst + " " + op + "= " + oprand2 + '\n';   
-        }
+        string dst = t->root->matched_node->val->toString();
+
+        string other = t->root->oprand2->matched_node->val->toString();
+        string op = t->root->op->get();
+
+        string line = '\t' + dst + " " + op + "= " + other + '\n';   
         L2_instructions.push_back(line);
     }
+
 
     void CodeGen::visit(Tile_compare *t){
         TreeNode *tree = t->getTree();

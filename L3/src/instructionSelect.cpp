@@ -252,6 +252,9 @@ namespace L3 {
                                 //merge
                                 T1->root->oprand1 = T2->root; 
                                 T2->root->isroot = false;
+                                if (is_debug) {
+                                    cout << "merging T2 into T1" << endl;
+                                }
                             }
                         }
                     }
@@ -272,6 +275,9 @@ namespace L3 {
                                 //merge
                                 T1->root->oprand2 = T2->root; 
                                 T2->root->isroot = false;
+                                if (is_debug) {
+                                    cout << "merging T2 into T1" << endl;
+                                }
                             }
                         }
                     }
@@ -305,6 +311,10 @@ namespace L3 {
                 tile->accept(&codegen);
             }
         }
+
+        // for (auto s : codegen.L2_instructions) {
+        //     //cout << s << endl;
+        // }
         return codegen.L2_instructions;
     }
 
