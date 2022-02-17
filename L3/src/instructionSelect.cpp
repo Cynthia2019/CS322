@@ -231,10 +231,10 @@ namespace L3 {
             if(v != nullptr){
                 for(int j = i + 1; j < size; j++){
                     Tree* T1 = trees[j]; 
-                    if(is_debug) {
-                        cout << "T2: " << T2->getInstruction()->toString() << endl;
-                        cout << "T1: " << T1->getInstruction()->toString() << endl;
-                    }
+                    // if(is_debug) {
+                    //     cout << "T2: " << T2->getInstruction()->toString() << endl;
+                    //     cout << "T1: " << T1->getInstruction()->toString() << endl;
+                    // }
                     //condition 1: T1 uses T2 root
                     if(T1->root->oprand1 && T1->root->oprand1->val == T2->root->val){
                         //condition A, T2->root->val dead after T1

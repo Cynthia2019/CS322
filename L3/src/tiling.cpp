@@ -66,7 +66,7 @@ namespace L3 {
     bool match_helper(TileNode *tile, TreeNode *tree, std::set<TreeNode *> &subtrees,
             std::map<pair<short, int64_t>, TreeNode *> &nodemap) {
         //add by Cythia 
-        if(tile == nullptr && tree != nullptr) return false;
+        // if(tile == nullptr && tree != nullptr) return false;
         if (tile == nullptr) {
             return true; // tile is null, it matches any tree
         }        
@@ -126,7 +126,7 @@ namespace L3 {
     // TODO: what if tile is a line instead of a tree
     bool Tile::match(TreeNode *t, set<TreeNode *> &subtrees) {
         std::map<pair<short, int64_t>, TreeNode *> nodemap;
-        // cout << "tile name :" << name << endl;
+        if(is_debug)cout << "tile name :" << name << endl;
         return match_helper(root, t, subtrees, nodemap);
     }
 
