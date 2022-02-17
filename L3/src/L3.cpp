@@ -103,6 +103,7 @@ namespace L3
   string String::toString() {
       return this->sName;
   }
+  Empty::Empty() {}
 
 
 //   Instruction_ret * Instruction_ret::clone() { return new Instruction_ret(*this); }

@@ -53,8 +53,8 @@ namespace L3 {
             return tile_type & TileNodeTypeNumber;
         case item_variable:
             return tile_type & TileNodeTypeVariable;
-        case item_string:
-            return tile_type & TileNodeTypeString;
+        case item_empty:
+            return tile_type & TileNodeTypeEmpty;
         case item_operation:
             return tile_type & TileNodeTypeOp;
         default:
@@ -65,6 +65,8 @@ namespace L3 {
 
     bool match_helper(TileNode *tile, TreeNode *tree, std::set<TreeNode *> &subtrees,
             std::map<pair<short, int64_t>, TreeNode *> &nodemap) {
+        //add by Cythia 
+        if(tile == nullptr && tree != nullptr) return false;
         if (tile == nullptr) {
             return true; // tile is null, it matches any tree
         }        
@@ -124,6 +126,7 @@ namespace L3 {
     // TODO: what if tile is a line instead of a tree
     bool Tile::match(TreeNode *t, set<TreeNode *> &subtrees) {
         std::map<pair<short, int64_t>, TreeNode *> nodemap;
+        // cout << "tile name :" << name << endl;
         return match_helper(root, t, subtrees, nodemap);
     }
 
@@ -162,6 +165,9 @@ namespace L3 {
         root->oprand2->tile_type |= TileNodeTypeVariable;
         root->oprand2->id = 2;
     }
+    Tile* Tile_math::clone() {
+        return new Tile_math(root->op->toString()); 
+    }
 
     Tile_compare::Tile_compare(std::string op) {
         name = "tile_compare";
@@ -178,6 +184,9 @@ namespace L3 {
         root->oprand2->tile_type |= TileNodeTypeVariable;
         root->oprand2->id = 2;
     }
+    Tile* Tile_compare::clone() {
+        return new Tile_compare(root->op->toString());
+    }
 
     Tile_math_specialized::Tile_math_specialized(std::string op) {
         name = "tile_math_specialized";
@@ -187,22 +196,15 @@ namespace L3 {
         root->op = new Operation(op);
         root->oprand1 = new TileNode();
         root->oprand2 = new TileNode();
-        //dst = oprand1
-        // if (left) {
-            root->oprand1->tile_type |= TileNodeTypeVariable;
-            root->oprand1->id = 0;
-            root->oprand2->tile_type |= TileNodeTypeNumber;
-            root->oprand2->tile_type |= TileNodeTypeVariable;
-            root->oprand2->id = 1;
-        // } else { //dst = oprand2
-        //     root->oprand2->tile_type |= TileNodeTypeVariable;
-        //     root->oprand2->id = 0;
-        //     root->oprand1->tile_type |= TileNodeTypeNumber;
-        //     root->oprand1->tile_type |= TileNodeTypeVariable;
-        //     root->oprand1->id = 1;
-        // }
+        root->oprand1->tile_type |= TileNodeTypeVariable;
+        root->oprand1->id = 0;
+        root->oprand2->tile_type |= TileNodeTypeNumber;
+        root->oprand2->tile_type |= TileNodeTypeVariable;
+        root->oprand2->id = 1;
     }
-
+    Tile* Tile_math_specialized::clone() {
+        return new Tile_math_specialized(root->op->toString()); 
+    }
     Tile_assign::Tile_assign() {
         name = "tile_assign";
         root = new TileNode();
@@ -216,6 +218,10 @@ namespace L3 {
         root->id = 1;
     }
 
+    Tile* Tile_assign::clone() {
+        return new Tile_assign();
+    }
+
     Tile_load::Tile_load() {
         name = "tile_load";
         root = new TileNode();
@@ -227,6 +233,9 @@ namespace L3 {
         root->oprand1->id = 1;
     }
 
+    Tile* Tile_load::clone() {
+        return new Tile_load();
+    }
     Tile_store::Tile_store() {
         name = "tile_store";
         root = new TileNode();
@@ -239,16 +248,22 @@ namespace L3 {
         root->oprand1->tile_type |= TileNodeTypeNumber;
         root->oprand1->id = 1;
     }
+    Tile* Tile_store::clone() {
+        return new Tile_store();
+    }
 
     Tile_br::Tile_br() {
         name = "tile_br";
         root = new TileNode(); 
         root->op = new Operation("br"); 
         root->id = 0; 
-        root->tile_type |= TileNodeTypeOp; 
+        root->tile_type |= TileNodeTypeEmpty; 
         root->oprand1 = new TileNode(); 
         root->oprand1->tile_type |= TileNodeTypeLabel;
         root->oprand1->id = 1; 
+    }
+    Tile* Tile_br::clone() {
+        return new Tile_br();
     }
 
     Tile_br_t::Tile_br_t() {
@@ -256,7 +271,7 @@ namespace L3 {
         root = new TileNode(); 
         root->op = new Operation("br"); 
         root->id = 0; 
-        root->tile_type |= TileNodeTypeOp; 
+        root->tile_type |= TileNodeTypeEmpty; 
         root->oprand1 = new TileNode(); 
         root->oprand1->tile_type |= TileNodeTypeVariable;
         root->oprand1->tile_type |= TileNodeTypeNumber;
@@ -265,23 +280,34 @@ namespace L3 {
         root->oprand2->tile_type |= TileNodeTypeLabel;
         root->oprand2->id = 2; 
     }
+    Tile* Tile_br_t::clone() {
+        return new Tile_br_t();
+    } 
 
     Tile_return::Tile_return() {
         name = "tile_return";
         root = new TileNode(); 
+        root->op = new Operation("return");
         root->id = 0; 
-        root->tile_type |= TileNodeTypeOp;
+        root->tile_type |= TileNodeTypeEmpty;
     }
+    Tile* Tile_return::clone() {
+        return new Tile_return();
+    } 
     Tile_return_t::Tile_return_t() {
         name = "tile_return_t";
         root = new TileNode(); 
+        root->op = new Operation("return");
         root->id = 0; 
-        root->tile_type |= TileNodeTypeOp;
+        root->tile_type |= TileNodeTypeEmpty;
         root->oprand1 = new TileNode(); 
         root->oprand1->tile_type |= TileNodeTypeVariable; 
         root->oprand1->tile_type |= TileNodeTypeNumber;
         root->oprand1->id = 1;   
     }      
+    Tile* Tile_return_t::clone() {
+        return new Tile_return_t();
+    } 
 
     Tile_increment::Tile_increment(bool is_increment) {
         name = "tile_increment";
@@ -311,7 +337,7 @@ namespace L3 {
         //     root->oprand1 = num;
         // }
     }
-
+    Tile* Tile_increment::clone() { return new Tile_increment(inc_or_dec); }
     Tile_at::Tile_at() {
         name = "tile_at";
         root = new TileNode();
@@ -337,6 +363,7 @@ namespace L3 {
         root->oprand1->oprand2->id = 4;
         root->oprand1->oprand2->rule = new TileRule_1248();
     }
+    Tile* Tile_at::clone() { return new Tile_at(); }
 
     void Tile_math::accept(CodeGen *g) {
         g->visit(this);
@@ -411,11 +438,11 @@ namespace L3 {
         for (auto t :all_tiles) {
             set<TreeNode *> subtrees;
             Tile *t_clone = t->clone();
-            cout << "tring to match to: " << t->name << endl;
+            // cout << "tring to match to: " << t->name << endl;
             if (t_clone->match(root, subtrees)) {
                 flag = true;
-                cout << "matched to tile: " << t->name << endl;
-                cout << "subtreesize: " << subtrees.size() << endl;
+                if(is_debug) cout << "matched to tile: " << t->name << endl;
+                // cout << "subtreesize: " << subtrees.size() << endl;
                 res.push_back(t_clone);
                 for (auto sub: subtrees) {
                     tiling(sub, res, all_tiles);
@@ -441,15 +468,15 @@ namespace L3 {
         Tile *plus_left = new Tile_math_specialized("+");
         // Tile *plus_right = new Tile_math_specialized("+", false);
 
-        Tile *minus_left = new Tile_math_specialized("-");
+        // Tile *minus_left = new Tile_math_specialized("-");
         // Tile *minus_right = new Tile_math_specialized("-", false);
         Tile *mul_left = new Tile_math_specialized("*");
         // Tile *mul_right = new Tile_math_specialized("*", false);
         Tile *and_left = new Tile_math_specialized("&");
         // Tile *and_right = new Tile_math_specialized("&", false);
-        Tile *sl_left = new Tile_math_specialized("<<");
+        // Tile *sl_left = new Tile_math_specialized("<<");
         // Tile *sl_right = new Tile_math_specialized("<<", false);
-        Tile *sr_left = new Tile_math_specialized(">>");
+        // Tile *sr_left = new Tile_math_specialized(">>");
         // Tile *sr_right = new Tile_math_specialized(">>", false);
         Tile *plus_g = new Tile_math("+");
         Tile *minus_g = new Tile_math("-");
@@ -469,7 +496,8 @@ namespace L3 {
         Tile *store = new Tile_store();
         Tile *ret = new Tile_return(); 
         Tile *ret_t = new Tile_return_t();
-
+        Tile *br = new Tile_br(); 
+        Tile *br_t = new Tile_br_t();
 
         vector<Tile *> all_tiles = {
             at,
@@ -479,15 +507,15 @@ namespace L3 {
             // dec_right,
             plus_left,
             // plus_right,
-            minus_left,
+            // minus_left,
             // minus_right,
             mul_left,
             // mul_right,
             and_left,
             // and_right,
-            sl_left,
+            // sl_left,
             // sl_right,
-            sr_left,
+            // sr_left,
             // sr_right,
             plus_g,
             minus_g,
@@ -504,7 +532,9 @@ namespace L3 {
             load,
             store,
             ret,
-            ret_t
+            ret_t,
+            br,
+            br_t
         };
 
         return all_tiles;

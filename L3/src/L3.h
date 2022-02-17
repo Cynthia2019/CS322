@@ -17,7 +17,8 @@ namespace L3
     item_label,
     item_variable,
     item_string,
-    item_operation
+    item_operation,
+    item_empty
   };
 
   class Item
@@ -84,6 +85,14 @@ class Operation : public Item
     ItemType getType(void) override { return item_operation; }
   private: 
     string op;
+  };
+
+class Empty : public Item 
+  {
+    public:
+    Empty(); 
+    string toString() override {return "";};
+    ItemType getType(void) override { return item_empty; }
   };
   /*
    * Instruction interface.

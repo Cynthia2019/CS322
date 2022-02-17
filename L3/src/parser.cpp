@@ -234,6 +234,7 @@ namespace L3
                                          Label_rule,
                                          variable_rule,
                                          call_string_rule>,
+                                     seps,
                                      TAOCPP_PEGTL_STRING("("),
                                      args_rule,
                                      TAOCPP_PEGTL_STRING(")")>
@@ -250,6 +251,7 @@ namespace L3
                                          Label_rule,
                                          variable_rule,
                                          call_string_rule>,
+                                    seps,
                                      TAOCPP_PEGTL_STRING("("),
                                      args_rule,
                                      TAOCPP_PEGTL_STRING(")")>
@@ -274,6 +276,7 @@ namespace L3
   {
   };
   struct Instruction_rule : pegtl::sor<
+                                pegtl::seq<pegtl::at<Instruction_label_rule>, Instruction_label_rule>,
                                 pegtl::seq<pegtl::at<Instruction_br_label_rule>, Instruction_br_label_rule>,
                                 pegtl::seq<pegtl::at<Instruction_br_t_rule>, Instruction_br_t_rule>,
                                 pegtl::seq<pegtl::at<Instruction_return_t_rule>, Instruction_return_t_rule>,
@@ -284,8 +287,7 @@ namespace L3
                                 pegtl::seq<pegtl::at<Instruction_store_rule>, Instruction_store_rule>,
                                 pegtl::seq<pegtl::at<Instruction_call_rule>, Instruction_call_rule>,
                                 pegtl::seq<pegtl::at<Instruction_call_assignment_rule>, Instruction_call_assignment_rule>,
-                                pegtl::seq<pegtl::at<Instruction_assignment_rule>, Instruction_assignment_rule>,
-                                pegtl::seq<pegtl::at<Instruction_label_rule>, Instruction_label_rule>>
+                                pegtl::seq<pegtl::at<Instruction_assignment_rule>, Instruction_assignment_rule>>
   {
   };
 
@@ -616,8 +618,7 @@ template <>
         cout << "firing Instruction_call_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       auto i = new Instruction_call_noassign();
-      // if (is_debug)
-      //   cout << "args size: " << list_of_args.size() << endl;
+      reverse(list_of_args.begin(), list_of_args.end());
       while(!list_of_args.empty()) {
           i->args.push_back(list_of_args.back());
           list_of_args.pop_back();
@@ -648,7 +649,6 @@ template <>
       i->callee = parsed_items.back();
       parsed_items.pop_back();
       i->dst = dynamic_cast<Variable*>(parsed_items.back());;
-      if (!i->dst) cout << "bug" << endl;
        parsed_items.pop_back();
       currentF->instructions.push_back(i);
     }

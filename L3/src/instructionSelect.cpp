@@ -43,13 +43,15 @@ namespace L3 {
         tree->root->printNode(tree->root, 0); 
     }
     void Tree::visit(Instruction_ret_not* i) {
-        TreeNode* node = new TreeNode(i->op);
+        TreeNode* node = new TreeNode(new Empty());
+        node->op = i->op;
         root = node;
         uses = i->uses; 
         define = i->define;
     }
     void Tree::visit(Instruction_ret_t* i) {
-        TreeNode* node = new TreeNode(i->op);
+        TreeNode* node = new TreeNode(new Empty());
+        node->op = i->op;
         node->oprand1 = new TreeNode(i->arg); 
         root = node;
         uses = i->uses; 
@@ -100,7 +102,8 @@ namespace L3 {
         define = i->define;
     }
     void Tree::visit(Instruction_br_t* i) {
-        TreeNode* node = new TreeNode(i->op); 
+        TreeNode* node = new TreeNode(new Empty()); 
+        node->op = i->op;
         node->oprand1 = new TreeNode(i->condition); 
         node->oprand2 = new TreeNode(i->label); 
         root = node;
@@ -108,7 +111,8 @@ namespace L3 {
         define = i->define;
     }
     void Tree::visit(Instruction_br_label* i) {
-        TreeNode* node = new TreeNode(i->op); 
+        TreeNode* node = new TreeNode(new Empty()); 
+        node->op = i->op;
         node->oprand1 = new TreeNode(i->label); 
         root = node;
         uses = i->uses; 
@@ -288,17 +292,15 @@ namespace L3 {
     vector<std::string> translate_context(Context *c, AnalysisResult *res, vector<Tile *> alltiles) {
         vector<Tree*> merged; 
         CodeGen codegen;
-        cout << "merge trees in a context" << endl;
         merged = mergeTrees(c, res); 
         for (auto t : merged) {
-            cout << "merged tree: " << endl;
-            t->printTree(t);
+            if(is_debug) t->printTree(t);
             //search for matched tiles
             vector<Tile *> tiled;
             tiling(t->root, tiled, alltiles);
             if(is_debug) cout << "# of matched tiles: " << tiled.size() << endl;
             //assign this set of tiles that can cover the tree to this tree
-
+            reverse(tiled.begin(), tiled.end());
             for (auto tile : tiled) {
                 tile->accept(&codegen);
             }
@@ -310,14 +312,103 @@ namespace L3 {
         Instruction_label *l = dynamic_cast<Instruction_label *>(i);
         vector<std::string> res;
         if (l) {
-            res.push_back("\t" + l->toString());
+            res.push_back("\t" + l->toString() + '\n');
             return res;
         }
 
-        Instruction_call *c = dynamic_cast<Instruction_call *>(i);
+        Instruction_call_noassign *c = dynamic_cast<Instruction_call_noassign *>(i);
         if (c) {
-            //TODO: implement this
-            res.push_back("\tcall");
+            vector<L2::Architecture::RegisterID> arguments = L2::Architecture::get_argument_regs();
+            string s;
+            //input 
+            if(c->callee->toString() == "input"){
+                s = "\tcall input 0\n";
+                res.push_back(s);
+                return res;
+            }
+            //print
+            else if(c->callee->toString() == "print"){
+                res.push_back("\trdi <- " + c->args[0]->toString() + "\n");
+                res.push_back("\tcall print 1\n"); 
+                return res;
+            }
+            else if(c->callee->toString() == "allocate"){
+                for(int idx= 0; idx < c->args.size(); idx++){
+                    s = "\t" + L2::Architecture::fromRegisterToString(arguments[idx]) + " <- " + c->args[idx]->toString() + "\n"; 
+                    res.push_back(s);
+                }
+                res.push_back("\tcall allocate 2\n"); 
+                return res;                
+            }
+            else if(c->callee->toString() == "tensor-error"){
+                for(int idx= 0; idx < c->args.size(); idx++){
+                    s = "\t" + L2::Architecture::fromRegisterToString(arguments[idx]) + " <- " + c->args[idx]->toString() + "\n"; 
+                    res.push_back(s);
+                }
+                res.push_back("\tcall tensor-error " + to_string(c->args.size()) + "\n");
+                return res;   
+            }
+            else {
+                for(int idx= 0; idx < min(c->args.size(), arguments.size()); idx++){
+                    s = "\t" + L2::Architecture::fromRegisterToString(arguments[idx]) + " <- " + c->args[idx]->toString() + "\n"; 
+                    res.push_back(s);
+                }
+                if(c->args.size() > 6){
+                    res.push_back("\tr10 <- " + to_string((c->args.size() - 6 - 1) * 8));
+                }
+                res.push_back("\tcall" + c->callee->toString() + " " + to_string(c->args.size()) + "\n");        
+            }
+            return res;
+        }
+        Instruction_call_assignment* a = dynamic_cast<Instruction_call_assignment*>(i);
+        if(a) {
+            vector<L2::Architecture::RegisterID> arguments = L2::Architecture::get_argument_regs();
+            string s;
+            //input 
+            if(a->callee->toString() == "input"){
+                res.push_back("\tcall input 0\n");
+                res.push_back(a->dst->toString() + " <- rax\n");
+                return res;
+            }
+            //print
+            else if(a->callee->toString() == "print"){
+                res.push_back("\trdi <- " + c->args[0]->toString() + "\n");
+                res.push_back("\tcall print 1\n"); 
+                res.push_back("\t" + a->dst->toString() + " <- rax\n");
+                return res;
+            }
+            //allocate
+            else if(a->callee->toString() == "allocate"){
+                for(int idx= 0; idx < a->args.size(); idx++){
+                    s = "\t" + L2::Architecture::fromRegisterToString(arguments[idx]) + " <- " + a->args[idx]->toString() + "\n"; 
+                    res.push_back(s);
+                }
+                res.push_back("\tcall allocate 2\n"); 
+                res.push_back("\t" + a->dst->toString() + " <- rax\n");
+                return res;                
+            }
+            else if(a->callee->toString() == "tensor-error"){
+                for(int idx= 0; idx < a->args.size(); idx++){
+                    s = "\t" + L2::Architecture::fromRegisterToString(arguments[idx]) + " <- " + a->args[idx]->toString() + "\n"; 
+                    res.push_back(s);
+                }
+                res.push_back("\tcall tensor-error " + to_string(a->args.size()) + "\n");
+                res.push_back("\t" + a->dst->toString() + " <- rax\n");
+                return res;   
+            }
+            else {
+                res.push_back("\tmem rsp -8 <- " + a->callee->toString() + "_ret\n");
+                for(int idx= 0; idx < min(c->args.size(), arguments.size()); idx++){
+                    s = "\t" + L2::Architecture::fromRegisterToString(arguments[idx]) + " <- " + c->args[idx]->toString() + "\n"; 
+                    res.push_back(s);
+                }
+                if(c->args.size() > 6){
+                    res.push_back("\tr10 <- " + to_string((c->args.size() - 6 - 1) * 8));
+                }
+                res.push_back("\tcall" + c->callee->toString() + " " + to_string(c->args.size()) + "\n");   
+                res.push_back("\t" + a->callee->toString() + "_ret\n"); 
+                res.push_back("\t" + a->dst->toString() + " <- rax\n");     
+            }
             return res;
         }
 
@@ -325,7 +416,7 @@ namespace L3 {
         return {};
     }
 
-    void instructionSelection(Program p, Function* f){        
+    vector<std::string> instructionSelection(Program p, Function* f){        
         //perform liveness analysis on instructions
         GenKill genkill; 
         for(Instruction* i : f->instructions) {
@@ -343,7 +434,6 @@ namespace L3 {
                 all_instructions.insert(all_instructions.end(), insts.begin(), insts.end());
                 idx++;
             }
-            cout << "new context, line " << c->start << "to " << c->end << endl;
             auto context_insts = translate_context(c, res, alltiles);
             all_instructions.insert(all_instructions.end(),
                     context_insts.begin(), context_insts.end());
@@ -355,9 +445,11 @@ namespace L3 {
             all_instructions.insert(all_instructions.end(), insts.begin(), insts.end());
             idx++;
         }
-
-        for (auto s : all_instructions) {
-            cout << s << endl;
+        if(is_debug){
+            for (auto s : all_instructions) {
+            cout << "instruction: " << s << endl;
+            }        
         }
+        return all_instructions;
     }
 }

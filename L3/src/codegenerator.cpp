@@ -4,6 +4,8 @@
 #include <iostream>
 #include <fstream>
 #include <unordered_map>
+#include <globalize.h>
+#include <instructionSelect.h>
 
 using namespace std;
 
@@ -18,8 +20,12 @@ namespace L3{
     }
     void CodeGen::visit(Tile_return_t* t){
         TreeNode *tree = t->getTree();
-        string line = "\t" + tree->oprand1->val->toString() + " <- rdi\n";
-        L2_instructions.push_back(line);
+        Variable* arg = dynamic_cast<Variable*>(tree->val); 
+        string line;
+        if(arg){
+            line = "\t" + tree->oprand1->val->toString() + " <- rdi\n";
+            L2_instructions.push_back(line);
+        }
         line = "\trax <- " + tree->oprand1->val->toString() + "\n";
         L2_instructions.push_back(line);
         L2_instructions.push_back("\treturn\n");
@@ -31,7 +37,6 @@ namespace L3{
     }
 
     void CodeGen::visit(Tile_math* t) {
-        cout << "translating tile_math" << endl;
         TreeNode *tree = t->getTree();
         if (!tree) cout << "bug " << endl;
         string dst = tree->val->toString(); 
@@ -42,7 +47,6 @@ namespace L3{
         L2_instructions.push_back(line);
         line = '\t' + dst + " " + op + "= " + oprand2 + '\n';
         L2_instructions.push_back(line);
-        cout << "end translating tile_math" << endl;
     }
     void CodeGen::visit(Tile_math_specialized* t) {
         TreeNode *tree = t->getTree();
@@ -66,9 +70,20 @@ namespace L3{
         string oprand1 = tree->oprand1->val->toString();
         string op = tree->op->toString(); 
         string oprand2 = tree->oprand2->val->toString();
-        string line = '\t' + dst + " <- " + oprand1 + '\n'; 
-        L2_instructions.push_back(line);
-        line = '\t' + dst + " " + op + "= " + oprand2 + '\n';
+        string line;
+        // string line = '\t' + dst + " <- " + oprand1 + '\n'; 
+        // L2_instructions.push_back(line);
+        // line = '\t' + dst + " " + op + "= " + oprand2 + '\n';
+        // L2_instructions.push_back(line);
+        if(op == ">="){
+            line = '\t' + dst + " <- " + oprand2 + " <= " + oprand1 +  '\n'; 
+        }
+        else if(op == ">"){
+            line = '\t' + dst + " <- " + oprand2 + " < " + oprand1 +  '\n'; 
+        }
+        else {
+            line = '\t' + dst + " <- " + oprand1 + " " + op + " " + oprand2 +  '\n'; 
+        }
         L2_instructions.push_back(line);
     }
 
@@ -87,13 +102,13 @@ namespace L3{
         string dst = tree->val->toString(); 
         string oprand1 = tree->oprand1->val->toString();
         //need to know current number of item on stack 
-        string line = "\t mem" + dst + " 0 <- " + oprand1 + '\n'; 
+        string line = "\tmem" + dst + " 0 <- " + oprand1 + '\n'; 
         L2_instructions.push_back(line);
     }
     void CodeGen::visit(Tile_br* t){
         TreeNode *tree = t->getTree();
         string label = tree->oprand1->val->toString(); 
-        string line = "\t goto " + label + '\n'; 
+        string line = "\tgoto " + label + '\n'; 
         L2_instructions.push_back(line);
     }
     //TODO might need fix
@@ -104,7 +119,8 @@ namespace L3{
         Number* n = dynamic_cast<Number*>(condition); 
         string line; 
         if(n != nullptr){
-            line = "\t cjump 1 = 1 " + label + '\n'; 
+            if(n->get() == 0) line = "\tcjump 0 = 1 " + label + '\n'; 
+            else line = "\tcjump 1 = 1 " + label + '\n'; 
         }
         else {
             //condition is a variable, find the two nodes in the tree that define this variable
@@ -118,10 +134,10 @@ namespace L3{
         string dst = tree->val->toString(); 
         string line; 
         if(tree->op->toString() == "+"){
-            line = "\t" + dst + "++";
+            line = "\t" + dst + "++\n";
         }
         else {
-            line = "\t" + dst + "--";
+            line = "\t" + dst + "--\n";
         }
         L2_instructions.push_back(line);
     }
@@ -140,19 +156,25 @@ namespace L3{
         /* 
         * Open the output file.
         */ 
-        // std::ofstream outputFile;
-        // outputFile.open("prog.L2");
-        // outputFile << "(:main" << endl;
-        // for(Function* f : p.functions){
-        //     //initialize function setup 
-        //     outputFile << "(" << f->name << endl; 
-        //     outputFile << "\t" << f->arguments.size() << endl;
-        //     //step 1: instruction selection
+       //globalize labels
+        L3::labelGlobalize(&p);
+        std::ofstream outputFile;
+        outputFile.open("prog.L2");
+        outputFile << "(:main" << endl;  
+        for(Function* f : p.functions){
+            //step 1: instruction selection
+            vector<string> L2_instructions = L3::instructionSelection(p, f);
+            //initialize function setup 
+            outputFile << "\t(" << f->name << endl; 
+            outputFile << "\t\t" << f->arguments.size() << endl;
+            //step 2: output L2 instructions
+            for(string s : L2_instructions){
+                outputFile << "\t" << s; 
+            }
+            outputFile << "\t)\n"; 
 
-        //     outputFile << ")\n"; 
-
-        // }
-        // outputFile << ")\n" << endl;
+        }
+        outputFile << ")\n" << endl;
         return;
     }
 }

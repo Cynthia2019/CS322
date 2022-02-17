@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include "L3.h"
+#include <architecture.h>
 using namespace std;
 namespace L3 {
     class Tile;
@@ -52,5 +53,5 @@ class Tree : public Visitor{
         private: 
             Instruction* instruction;
     };
-    void instructionSelection(Program p, Function* f);
+    vector<string> instructionSelection(Program p, Function* f);
 }

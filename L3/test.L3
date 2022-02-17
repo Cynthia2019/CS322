@@ -1,4 +1,6 @@
-define :main() {
-    %v <- 1
-    return 
-} 
+define :main () {
+ :entry
+ %p <- call allocate (5, 1)
+ return 
+}
+

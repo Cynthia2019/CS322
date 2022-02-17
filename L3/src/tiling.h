@@ -1,9 +1,7 @@
 
 #pragma once
 #include <L3.h>
-#include <../L2/src/L2.h>
 #include <stdint.h>
-// #include <L2.h>
 #include <instructionSelect.h>
 
 namespace L3 {
@@ -28,7 +26,7 @@ namespace L3 {
 #define TileNodeTypeNumber 0x0001
 #define TileNodeTypeVariable 0x0002
 #define TileNodeTypeLabel 0x0004
-#define TileNodeTypeString 0x0008
+#define TileNodeTypeEmpty 0x0008
 #define TileNodeTypeOp 0x0010
 
         public:
@@ -36,6 +34,7 @@ namespace L3 {
         unsigned short tile_type = 0;
         int64_t id = 0;
         Operation *op = nullptr;
+        bool left = true;
         TileNode *oprand1 = nullptr;
         TileNode *oprand2 = nullptr;
         bool match(TreeNode *);
@@ -73,63 +72,63 @@ namespace L3 {
     class Tile_math: public Tile {
         public:
         Tile_math(std::string op);
-        Tile *clone() { return new Tile_math(root->op->toString()); };
+        Tile *clone() override;
         void accept(CodeGen *g) override;
     };
 
     class Tile_compare: public Tile {
         public:
         Tile_compare(std::string op);
-        Tile *clone() { return new Tile_compare(root->op->toString()); };
+        Tile *clone() override;
         void accept(CodeGen *g) override;
     };
 
     class Tile_assign: public Tile {
         public:
         Tile_assign();
-        Tile *clone() { return new Tile_assign(); };
+        Tile *clone() override;
         void accept(CodeGen *g) override;
     };
 
     class Tile_load: public Tile {
         public:
         Tile_load();
-        Tile *clone() { return new Tile_load(); };
+        Tile *clone() override;
         void accept(CodeGen *g) override;
     };
 
     class Tile_store: public Tile {
         public:
         Tile_store();
-        Tile *clone() { return new Tile_store(); };
+        Tile *clone() override;
         void accept(CodeGen *g) override;
     };
 
     class Tile_br: public Tile {
         public: 
         Tile_br();
-        Tile *clone() { return new Tile_br(); };
+        Tile *clone() override;
         void accept(CodeGen *g) override;
     };
 
     class Tile_br_t: public Tile {
         public: 
         Tile_br_t();
-        Tile *clone() { return new Tile_br_t(); };
+        Tile *clone() override;
         void accept(CodeGen *g) override;
     };
 
     class Tile_return : public Tile {
         public:
         Tile_return();
-        Tile *clone() { return new Tile_return(); };
+        Tile *clone() override;
         void accept(CodeGen *g) override;
     };
 
     class Tile_return_t : public Tile {
         public:
         Tile_return_t();
-        Tile *clone() { return new Tile_return_t(); };
+        Tile *clone() override;
         void accept(CodeGen *g) override;
     };
 
@@ -140,7 +139,8 @@ namespace L3 {
     class Tile_math_specialized: public Tile {
         public:
         Tile_math_specialized(std::string);
-        Tile *clone() { return new Tile_math_specialized(root->op->toString()); };
+
+        Tile *clone() override;
         void accept(CodeGen *g) override;
     };
 
@@ -148,14 +148,14 @@ namespace L3 {
         public:
         bool inc_or_dec;
         Tile_increment(bool inc_or_dec);
-        Tile *clone() { return new Tile_increment(inc_or_dec); };
+        Tile *clone() override;
         void accept(CodeGen *g) override;
     };
 
     class Tile_at: public Tile {
         public:
         Tile_at();
-        Tile *clone() { return new Tile_at(); };
+        Tile *clone() override;
         void accept(CodeGen *g) override;
     };
 

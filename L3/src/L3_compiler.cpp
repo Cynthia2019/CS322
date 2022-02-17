@@ -14,10 +14,6 @@
 
 #include <L3.h>
 #include <parser.h>
-#include <instructionSelect.h>
-#include <tiling.h>
-#include <globalize.h>
-// #include <codegenerator.h>
 #include <codegenerator.h>
 
 using namespace std;
@@ -34,7 +30,7 @@ int main(
     int argc,
     char **argv)
 {
-  auto enable_code_generator = false;
+  auto enable_code_generator = true;
   int32_t optLevel = 3;
 
   /*
@@ -83,31 +79,17 @@ int main(
     * Parse the L3 program.
     */
   p = L3::parse_file(argv[optind]);
-  L3::labelGlobalize(&p);
-  
-  cout << "\nInstruction select: " << endl;
-  for(L3::Function* f : p.functions){
-    L3::instructionSelection(p, f);
-    cout << endl;
-  }
-  //test instruction select
-
-  if (tiling_test) {
-    // L3::TreeNode *
-    // L3::tiling();
-    
-  }
 
 
 
   /*
    * Generate the target code.
    */
-//   if (enable_code_generator)
-//   {
-//     // TODO
-//     L3::generate_code(p);
-//   }
+  if (enable_code_generator)
+  {
+    // TODO
+    L3::generate_code(p);
+  }
 
   return 0;
 }
