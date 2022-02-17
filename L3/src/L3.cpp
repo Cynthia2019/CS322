@@ -11,7 +11,8 @@ namespace L3
   //Function 
   Function::Function(void) {}
 
-  Variable* Function::newVariable(std::string variableName){
+  Variable* Function::newVariable(std::string variable){
+    std::string variableName = "%var_" + variable.substr(1);
     if(Function::variables.find(variableName) != Function::variables.end()){
       return Function::variables[variableName];
     }

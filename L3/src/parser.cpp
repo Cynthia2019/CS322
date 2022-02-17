@@ -405,8 +405,7 @@ namespace L3
       //   cout << "firing variable_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       std::string var_name = in.string(); 
-      Variable *i = currentF->newVariable("%var_" + var_name.substr(1));
-      currentF->variables[var_name] = i;
+      Variable *i = currentF->newVariable(var_name);
       parsed_items.push_back(i);
     }
   };    
@@ -427,9 +426,15 @@ template <>
           std::string temp = vars.substr(0, n); 
           temp.erase(std::remove_if(temp.begin(), temp.end(), [](unsigned char x){return std::isspace(x);}), temp.end()); 
           Variable *i = currentF->newVariable(temp);
-          currentF->variables[temp] = i;
           currentF->arguments.push_back(i);
           vars = vars.substr(n);
+      }
+      size_t idx = 0;
+      while (idx < vars.length() && vars[idx] == ' ') { idx++; }
+      vars = vars.substr(idx);
+      if (vars.length() != 0) {
+        Variable *i = currentF->newVariable(vars);
+        currentF->arguments.push_back(i);
       }
     }
   };
@@ -452,7 +457,6 @@ template <>
           if(is_debug) cout << "args: " << temp << endl;
           if(temp[0] == '%'){
             Variable *i = currentF->newVariable(temp);
-            currentF->variables[temp] = i;
             list_of_args.push_back(i);
           }
           else {
@@ -465,7 +469,6 @@ template <>
       args.erase(std::remove_if(args.begin(), args.end(), [](unsigned char x){return std::isspace(x);}), args.end()); 
       if(args[0] == '%'){
           Variable* i = currentF->newVariable(args); 
-          currentF->variables[args] = i; 
           list_of_args.push_back(i);
       }
       else {

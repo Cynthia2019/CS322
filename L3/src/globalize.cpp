@@ -19,6 +19,7 @@ namespace L3 {
                 }
             }
         }
+        p->ll = "";
 
         if (labels.size() == 0)
             return;
@@ -26,6 +27,7 @@ namespace L3 {
 
 
         ::string llg = labels[0]->get().substr(1);
+        p->ll = llg;
         llg = llg + "_global_";
 
         for (auto f : p->functions) {

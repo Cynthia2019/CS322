@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <globalize.h>
 #include <instructionSelect.h>
+#include <architecture.h>
 
 using namespace std;
 
