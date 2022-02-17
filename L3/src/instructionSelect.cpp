@@ -520,10 +520,8 @@ namespace L3 {
                 all_instructions.push_back(line);
                 idx++;
             }
- 
-
-
         }
+
         int64_t idx = 0;
         int64_t counter = 0;
         for(Context* c : ctx){

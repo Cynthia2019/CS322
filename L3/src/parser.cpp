@@ -44,6 +44,7 @@ namespace L3
    */
   std::vector<Item *> parsed_items = {};
   std::vector<Item *> list_of_args = {}; 
+  std::vector<Item *> parameter_list = {}; 
 
   /*
    *map from string to registerid
@@ -101,17 +102,21 @@ namespace L3
   struct number_rule : number {};
 
   struct variable_rule : variable {};
+  struct parameter_rule :variable {};
   struct variables_rule :   pegtl::sor<
-                                variable,
                                 pegtl::seq<
-                                    variable,
+                                    parameter_rule,
                                     pegtl::star<
                                         pegtl::seq<
+                                            seps,
                                             pegtl::one<','>,
-                                            variable
+                                            seps,
+                                            parameter_rule,
+                                            seps
                                                 >
                                             >
                                         >,
+                                parameter_rule,
                                 seps
                                 > {};
   struct args_rule :   pegtl::sor<
@@ -338,14 +343,39 @@ namespace L3
   };
 
   template <>
+  struct action<Function_rule>
+  {
+    template <typename Input>
+    static void apply(const Input &in, Program &p)
+    {
+      if (is_debug) cout << "firing Function_rule" << endl;
+    }
+  };
+
+  template <>
+  struct action<parameter_rule>
+  {
+    template <typename Input>
+    static void apply(const Input &in, Program &p)
+    {
+      auto currentF = p.functions.back();
+      //parameter_list.push_back(in.string());
+      Variable *v = currentF->newVariable(in.string());
+      currentF->arguments.push_back(v);
+    }
+  };
+
+  template <>
   struct action<function_name>
   {
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
+      if (is_debug) cout << "new function: " << in.string() << endl;
       auto newF = new Function();
       newF->name = in.string();
       newF->isMain = in.string() == ":main";
+      parameter_list = {};
       p.functions.push_back(newF);
     }
   };
@@ -418,24 +448,24 @@ template <>
     {
       if (is_debug)
         cout << "firing variables_rule: " << in.string() << endl;
-      auto currentF = p.functions.back();
-      std::string vars = in.string(); 
-      while(vars.find(',') != vars.npos){
-          int n = vars.find(','); 
-          //eliminate any space in 0-n
-          std::string temp = vars.substr(0, n); 
-          temp.erase(std::remove_if(temp.begin(), temp.end(), [](unsigned char x){return std::isspace(x);}), temp.end()); 
-          Variable *i = currentF->newVariable(temp);
-          currentF->arguments.push_back(i);
-          vars = vars.substr(n);
-      }
-      size_t idx = 0;
-      while (idx < vars.length() && vars[idx] == ' ') { idx++; }
-      vars = vars.substr(idx);
-      if (vars.length() != 0) {
-        Variable *i = currentF->newVariable(vars);
-        currentF->arguments.push_back(i);
-      }
+      // auto currentF = p.functions.back();
+      // std::string vars = in.string(); 
+      // while(vars.find(',') != vars.npos){
+      //     int n = vars.find(','); 
+      //     //eliminate any space in 0-n
+      //     std::string temp = vars.substr(0, n); 
+      //     temp.erase(std::remove_if(temp.begin(), temp.end(), [](unsigned char x){return std::isspace(x);}), temp.end()); 
+      //     Variable *i = currentF->newVariable(temp);
+      //     currentF->arguments.push_back(i);
+      //     vars = vars.substr(n);
+      // }
+      // size_t idx = 0;
+      // while (idx < vars.length() && vars[idx] == ' ') { idx++; }
+      // vars = vars.substr(idx);
+      // if (vars.length() != 0) {
+      //   Variable *i = currentF->newVariable(vars);
+      //   currentF->arguments.push_back(i);
+      // }
     }
   };
 template <>
