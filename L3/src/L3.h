@@ -281,6 +281,7 @@ class Instruction_br_t : public Instruction_br
   //  std::string entryPointLabel;
     bool hasMain; 
     std::vector<Function *> functions;
+    std::string ll;
     Program();
   //  std::map<Architecture::RegisterID, Register*> registers; 
   //  Register* getRegister(Architecture::RegisterID rid); 

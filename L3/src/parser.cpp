@@ -44,6 +44,7 @@ namespace L3
    */
   std::vector<Item *> parsed_items = {};
   std::vector<Item *> list_of_args = {}; 
+  std::vector<Item *> parameter_list = {}; 
 
   /*
    *map from string to registerid
@@ -101,17 +102,21 @@ namespace L3
   struct number_rule : number {};
 
   struct variable_rule : variable {};
+  struct parameter_rule :variable {};
   struct variables_rule :   pegtl::sor<
-                                variable,
                                 pegtl::seq<
-                                    variable,
+                                    parameter_rule,
                                     pegtl::star<
                                         pegtl::seq<
+                                            seps,
                                             pegtl::one<','>,
-                                            variable
+                                            seps,
+                                            parameter_rule,
+                                            seps
                                                 >
                                             >
                                         >,
+                                parameter_rule,
                                 seps
                                 > {};
   struct args_rule :   pegtl::sor<
@@ -338,14 +343,39 @@ namespace L3
   };
 
   template <>
+  struct action<Function_rule>
+  {
+    template <typename Input>
+    static void apply(const Input &in, Program &p)
+    {
+      if (is_debug) cout << "firing Function_rule" << endl;
+    }
+  };
+
+  template <>
+  struct action<parameter_rule>
+  {
+    template <typename Input>
+    static void apply(const Input &in, Program &p)
+    {
+      auto currentF = p.functions.back();
+      //parameter_list.push_back(in.string());
+      Variable *v = currentF->newVariable(in.string());
+      currentF->arguments.push_back(v);
+    }
+  };
+
+  template <>
   struct action<function_name>
   {
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
+      if (is_debug) cout << "new function: " << in.string() << endl;
       auto newF = new Function();
       newF->name = in.string();
       newF->isMain = in.string() == ":main";
+      parameter_list = {};
       p.functions.push_back(newF);
     }
   };
@@ -405,8 +435,7 @@ namespace L3
       //   cout << "firing variable_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       std::string var_name = in.string(); 
-      Variable *i = currentF->newVariable("%var_" + var_name.substr(1));
-      currentF->variables[var_name] = i;
+      Variable *i = currentF->newVariable(var_name);
       parsed_items.push_back(i);
     }
   };    

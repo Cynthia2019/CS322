@@ -223,7 +223,7 @@ namespace L2 {
 
   int64_t spillMultiple(Program *p, Function *f, vector<Variable *> tospill, 
       std::unordered_map<Variable *, bool> &newVariable, std::string prefix, int64_t start_pos) {
-    ::cout << "spill multiple" << endl;
+    //::cout << "spill multiple" << endl;
 
     // ostream &os = ::cout;
     // int64_t lineno = 0;
@@ -234,14 +234,14 @@ namespace L2 {
     for (auto v : tospill) {
       //TODO: check spilled variable
       // if (is_debug) {
-        f->format_function();
-        cout << v->toString() << endl;
+        //f->format_function();
+        //cout << v->toString() << endl;
       // }
       bool spilled = spillOne(p, f, v, prefix + "S" + to_string(prefix_count) + "_", newVariable, start_pos);
       if (spilled) {
         // if (is_debug) {
-          cout << v->toString() << " spilled" << endl;
-          f->format_function();
+         // cout << v->toString() << " spilled" << endl;
+          //f->format_function();
         // }
         spill_variable_nb++;
         start_pos++;
