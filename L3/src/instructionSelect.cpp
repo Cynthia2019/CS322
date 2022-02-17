@@ -318,7 +318,8 @@ namespace L3 {
         return codegen.L2_instructions;
     }
 
-    vector<std::string> translate_label_call(Instruction *i, string longest, int64_t &counter) {
+    //vector<std::string> translate_label_call(Instruction *i, string longest, int64_t &counter) {
+    vector<std::string> translate_label_call(Instruction *i, string fname, int64_t &counter) {
         Instruction_label *l = dynamic_cast<Instruction_label *>(i);
         vector<std::string> res;
         if (l) {
@@ -359,72 +360,29 @@ namespace L3 {
                 // return res;   
             }
             else {
-                string ret_label = ":" + longest + "_ret_" + c->callee->toString().substr(1) + to_string(counter);
+               // string ret_label = ":" + longest + "_ret_" + c->callee->toString().substr(1) + to_string(counter);
+               string ret_label = ":" + c->callee->toString().substr(1) + "_ret_" + fname.substr(1)+ "_" + to_string(counter);
                 counter++;
-                s = "\tmem rsp -8 <-" + ret_label + "\n";
+                s = "\tmem rsp -8 <- " + ret_label + "\n";
                 res.push_back(s);
                 for(int idx= 0; idx < c->args.size(); idx++){
                     if (idx >= 6) {
                         s = "\tmem rsp -" + to_string((idx - 4) * 8) + " <- " + c->args[idx]->toString() + "\n";
                         res.push_back(s);
                     } else {
+                 
                         s = "\t" + L2::Architecture::fromRegisterToString(arguments[idx]) + " <- " + c->args[idx]->toString() + "\n"; 
                         res.push_back(s);
                     }
                 }
-                // if(c->args.size() > 6){
-                //     res.push_back("\tr10 <- " + to_string((c->args.size() - 6 - 1) * 8));
-                // }
-                res.push_back("\tcall" + c->callee->toString() + " " + to_string(c->args.size()) + "\n");        
+                res.push_back("\tcall " + c->callee->toString() + " " + to_string(c->args.size()) + "\n");        
                 res.push_back("\t" + ret_label + "\n"); 
 
                 // return res;
             }
             Instruction_call_assignment* a = dynamic_cast<Instruction_call_assignment*>(i);
             if(a) {
-                res.push_back(a->dst->toString() + " <- rax\n");
-                return res;
-            }
-            //print
-            else if(a->callee->toString() == "print"){
-                res.push_back("\trdi <- " + a->args[0]->toString() + "\n");
-                res.push_back("\tcall print 1\n"); 
                 res.push_back("\t" + a->dst->toString() + " <- rax\n");
-                return res;
-            }
-            //allocate
-            else if(a->callee->toString() == "allocate"){
-                for(int idx= 0; idx < a->args.size(); idx++){
-                    s = "\t" + L2::Architecture::fromRegisterToString(arguments[idx]) + " <- " + a->args[idx]->toString() + "\n"; 
-                    res.push_back(s);
-                }
-                res.push_back("\tcall allocate 2\n"); 
-                res.push_back("\t" + a->dst->toString() + " <- rax\n");
-                return res;                
-            }
-            else if(a->callee->toString() == "tensor-error"){
-                for(int idx= 0; idx < a->args.size(); idx++){
-                    s = "\t" + L2::Architecture::fromRegisterToString(arguments[idx]) + " <- " + a->args[idx]->toString() + "\n"; 
-                    res.push_back(s);
-                }
-                res.push_back("\tcall tensor-error " + to_string(a->args.size()) + "\n");
-                res.push_back("\t" + a->dst->toString() + " <- rax\n");
-                return res;   
-            }
-            else {
-                res.push_back("\tmem rsp -8 <- " + a->callee->toString() + "_ret\n");
-                for(int idx= 0; idx < min(a->args.size(), arguments.size()); idx++){
-                    s = "\t" + L2::Architecture::fromRegisterToString(arguments[idx]) + " <- " + a->args[idx]->toString() + "\n"; 
-                    res.push_back(s);
-                }
-                int count = 1;
-                for(int idx = 6; idx < a->args.size(); idx++){
-                    res.push_back("\t\tmem rsp -" + to_string(count * 8) + " <- " + a->args[idx]->toString()  + "\n");
-                    count++;
-                }
-                res.push_back("\tcall " + a->callee->toString() + " " + to_string(a->args.size()) + "\n");   
-                res.push_back("\t" + a->callee->toString() + "_ret\n"); 
-                res.push_back("\t" + a->dst->toString() + " <- rax\n");     
             }
             return res;
         }
@@ -563,12 +521,12 @@ namespace L3 {
                 idx++;
             }
         }
-
         int64_t idx = 0;
         int64_t counter = 0;
         for(Context* c : ctx){
             while (idx != f->instructions.size() && idx != c->start) {
-                auto insts = translate_label_call(f->instructions[idx], p.ll, counter);
+                //auto insts = translate_label_call(f->instructions[idx], p.ll, counter);
+                auto insts = translate_label_call(f->instructions[idx], f->name, counter);
                 all_instructions.insert(all_instructions.end(), insts.begin(), insts.end());
                 idx++;
             }
@@ -579,7 +537,8 @@ namespace L3 {
         }
 
         while (idx != f->instructions.size()) {
-            auto insts = translate_label_call(f->instructions[idx], p.ll, counter);
+            //auto insts = translate_label_call(f->instructions[idx], p.ll, counter);
+            auto insts = translate_label_call(f->instructions[idx], f->name, counter);
             all_instructions.insert(all_instructions.end(), insts.begin(), insts.end());
             idx++;
         }

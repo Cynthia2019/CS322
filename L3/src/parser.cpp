@@ -102,21 +102,21 @@ namespace L3
   struct number_rule : number {};
 
   struct variable_rule : variable {};
-  struct parameter_rule :variable {};
+  // struct parameter_rule :variable {};
   struct variables_rule :   pegtl::sor<
                                 pegtl::seq<
-                                    parameter_rule,
+                                    variable,
                                     pegtl::star<
                                         pegtl::seq<
                                             seps,
                                             pegtl::one<','>,
                                             seps,
-                                            parameter_rule,
+                                            variable,
                                             seps
                                                 >
                                             >
                                         >,
-                                parameter_rule,
+                                variable,
                                 seps
                                 > {};
   struct args_rule :   pegtl::sor<
@@ -125,7 +125,7 @@ namespace L3
                                     pegtl::star<
                                         pegtl::seq<
                                             pegtl::one<','>,
-                                            seps,
+                                            pegtl::sor<seps, pegtl::eol>,
                                             pegtl::sor<variable_rule, number_rule>
                                                 >
                                             >
@@ -241,7 +241,9 @@ namespace L3
                                          call_string_rule>,
                                      seps,
                                      TAOCPP_PEGTL_STRING("("),
+                                     pegtl::sor<seps, pegtl::eol>,
                                      args_rule,
+                                     pegtl::sor<seps, pegtl::eol>,
                                      TAOCPP_PEGTL_STRING(")")>
   {
   };
@@ -258,7 +260,9 @@ namespace L3
                                          call_string_rule>,
                                     seps,
                                      TAOCPP_PEGTL_STRING("("),
+                                     pegtl::sor<seps, pegtl::eol>,
                                      args_rule,
+                                     pegtl::sor<seps, pegtl::eol>,
                                      TAOCPP_PEGTL_STRING(")")>
   {
   };
@@ -352,18 +356,18 @@ namespace L3
     }
   };
 
-  template <>
-  struct action<parameter_rule>
-  {
-    template <typename Input>
-    static void apply(const Input &in, Program &p)
-    {
-      auto currentF = p.functions.back();
-      //parameter_list.push_back(in.string());
-      Variable *v = currentF->newVariable(in.string());
-      currentF->arguments.push_back(v);
-    }
-  };
+  // template <>
+  // struct action<parameter_rule>
+  // {
+  //   template <typename Input>
+  //   static void apply(const Input &in, Program &p)
+  //   {
+  //     auto currentF = p.functions.back();
+  //     //parameter_list.push_back(in.string());
+  //     Variable *v = currentF->newVariable(in.string());
+  //     currentF->arguments.push_back(v);
+  //   }
+  // };
 
   template <>
   struct action<function_name>
@@ -455,27 +459,25 @@ template <>
           //eliminate any space in 0-n
           std::string temp = vars.substr(0, n); 
           temp.erase(std::remove_if(temp.begin(), temp.end(), [](unsigned char x){return std::isspace(x);}), temp.end()); 
-          if(temp[0] == '%'){
-            Variable *i = currentF->newVariable("%var_" + temp.substr(1));
+          if(temp.size() == 0) continue;
+          else if(temp[0] == '%'){
+            Variable *i = currentF->newVariable(temp);
             currentF->variables[temp] = i;
             currentF->arguments.push_back(i);
           }
-          else if(temp.size() == 0) continue;
           else {
               Number* i = new Number(std::stoll(temp)); 
               currentF->arguments.push_back(i);
           }
           vars = vars.substr(n+1);
       }
-      if(is_debug) cout << "vars after parsed: " << vars << endl;
       vars.erase(std::remove_if(vars.begin(), vars.end(), [](unsigned char x){return std::isspace(x);}), vars.end()); 
-      if(vars[0] == '%'){
-          Variable* i = currentF->newVariable("%var_" + vars.substr(1)); 
+      if(is_debug) cout << "vars after parsed: " << vars << " size: " << vars.size() << endl;
+      if(vars.size() == 0) return ;
+      else if(vars[0] == '%'){
+          Variable* i = currentF->newVariable(vars); 
           currentF->variables[vars] = i; 
           currentF->arguments.push_back(i);
-      }
-      else if(vars.size() == 0) {
-        return ;
       }
       else {
          Number* i = new Number(std::stoll(vars)); 
@@ -501,7 +503,7 @@ template <>
           temp.erase(std::remove_if(temp.begin(), temp.end(), [](unsigned char x){return std::isspace(x);}), temp.end()); 
           if(is_debug) cout << "args: " << temp << endl;
           if(temp[0] == '%'){
-            Variable *i = currentF->newVariable("%var_" + temp.substr(1));
+            Variable *i = currentF->newVariable(temp);
             currentF->variables[temp] = i;
             list_of_args.push_back(i);
           }
@@ -514,7 +516,7 @@ template <>
       if(is_debug) cout << "args after parsed: " << args << endl;
       args.erase(std::remove_if(args.begin(), args.end(), [](unsigned char x){return std::isspace(x);}), args.end()); 
       if(args[0] == '%'){
-          Variable* i = currentF->newVariable("%var_" + args.substr(1)); 
+          Variable* i = currentF->newVariable(args); 
           currentF->variables[args] = i; 
           list_of_args.push_back(i);
       }

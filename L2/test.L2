@@ -1,0 +1,25 @@
+(:main
+	(:main
+		0
+		:entry_global_main_entry
+		%var_callerFP <- :myOtherF
+		mem rsp -8 <-%var_callerFP_ret 
+		rdi <- 2
+		call %var_callerFP 1
+		%var_callerFP_ret 
+		%var_v <- rax
+		rdi <- %var_v
+		call print 1
+		return
+	)
+	(:myOtherF
+		1
+		%var_p <- rdi
+		:entry_global_myOtherF_entry
+		%var_r <- %var_p
+		%var_r += 1
+		rax <- %var_r
+		return
+	)
+)
+

@@ -1,7 +1,11 @@
-define :main () {
- :entry
- %callerFP <- call :myF ()
- %v <- call %callerFP (2)
- call print (%v)
- return 
+define :main() {
+    call :print_letter(
+          11001110011,
+          11001110011,
+          11000000011,
+          11001110011,
+          11001110011
+    )
+
+    return
 }

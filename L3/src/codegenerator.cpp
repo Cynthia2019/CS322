@@ -43,7 +43,6 @@ namespace L3{
         TreeNode *tree = t->getTree();
         string dst = tree->val->toString();
         string oprand = t->root->oprand1->matched_node->val->toString();
-
         string line = "\t" + dst + " <- " + oprand + '\n';
         L2_instructions.push_back(line);
     }
@@ -147,7 +146,7 @@ namespace L3{
         }
         else {
             //condition is a variable, find the two nodes in the tree that define this variable
-            line = "\t cjump " + condition->toString() + " = 1 " + label + "\n";   
+            line = "\tcjump " + condition->toString() + " = 1 " + label + "\n";   
         }
         L2_instructions.push_back(line);
     }
@@ -192,14 +191,14 @@ namespace L3{
             outputFile << "\t(" << f->name << endl; 
             outputFile << "\t\t" << f->arguments.size() << endl;
             //output arguments
-            for(int i = 0; i < min((int)f->arguments.size(), 6); i++){
-                outputFile << "\t\t" << f->arguments[i]->toString() << " <- " << L2::Architecture::fromRegisterToString(args[i]) << "\n";
-            }
-            int count = 1; 
-            for(int i = 6; i < f->arguments.size(); i++){
-                outputFile << "\t\tmem rsp -" << to_string(count * 8) << " <- " << f->arguments[i] << "\n";
-                count++;
-            }
+            // for(int i = 0; i < min((int)f->arguments.size(), 6); i++){
+            //     outputFile << "\t\t" << f->arguments[i]->toString() << " <- " << L2::Architecture::fromRegisterToString(args[i]) << "\n";
+            // }
+            // int count = 1; 
+            // for(int i = 6; i < f->arguments.size(); i++){
+            //     outputFile << "\t\tmem rsp -" << to_string(count * 8) << " <- " << f->arguments[i] << "\n";
+            //     count++;
+            // }
             //step 2: output L2 instructions
             for(string s : L2_instructions){
                 outputFile << "\t" << s; 
