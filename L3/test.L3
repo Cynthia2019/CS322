@@ -1,6 +1,7 @@
 define :main () {
  :entry
- %p <- call allocate (5, 1)
+ %callerFP <- call :myF ()
+ %v <- call %callerFP (2)
+ call print (%v)
  return 
 }
-

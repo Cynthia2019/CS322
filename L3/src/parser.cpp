@@ -426,10 +426,31 @@ template <>
           //eliminate any space in 0-n
           std::string temp = vars.substr(0, n); 
           temp.erase(std::remove_if(temp.begin(), temp.end(), [](unsigned char x){return std::isspace(x);}), temp.end()); 
-          Variable *i = currentF->newVariable(temp);
-          currentF->variables[temp] = i;
+          if(temp[0] == '%'){
+            Variable *i = currentF->newVariable("%var_" + temp.substr(1));
+            currentF->variables[temp] = i;
+            currentF->arguments.push_back(i);
+          }
+          else if(temp.size() == 0) continue;
+          else {
+              Number* i = new Number(std::stoll(temp)); 
+              currentF->arguments.push_back(i);
+          }
+          vars = vars.substr(n+1);
+      }
+      if(is_debug) cout << "vars after parsed: " << vars << endl;
+      vars.erase(std::remove_if(vars.begin(), vars.end(), [](unsigned char x){return std::isspace(x);}), vars.end()); 
+      if(vars[0] == '%'){
+          Variable* i = currentF->newVariable("%var_" + vars.substr(1)); 
+          currentF->variables[vars] = i; 
           currentF->arguments.push_back(i);
-          vars = vars.substr(n);
+      }
+      else if(vars.size() == 0) {
+        return ;
+      }
+      else {
+         Number* i = new Number(std::stoll(vars)); 
+        currentF->arguments.push_back(i);
       }
     }
   };
@@ -451,7 +472,7 @@ template <>
           temp.erase(std::remove_if(temp.begin(), temp.end(), [](unsigned char x){return std::isspace(x);}), temp.end()); 
           if(is_debug) cout << "args: " << temp << endl;
           if(temp[0] == '%'){
-            Variable *i = currentF->newVariable(temp);
+            Variable *i = currentF->newVariable("%var_" + temp.substr(1));
             currentF->variables[temp] = i;
             list_of_args.push_back(i);
           }
@@ -464,7 +485,7 @@ template <>
       if(is_debug) cout << "args after parsed: " << args << endl;
       args.erase(std::remove_if(args.begin(), args.end(), [](unsigned char x){return std::isspace(x);}), args.end()); 
       if(args[0] == '%'){
-          Variable* i = currentF->newVariable(args); 
+          Variable* i = currentF->newVariable("%var_" + args.substr(1)); 
           currentF->variables[args] = i; 
           list_of_args.push_back(i);
       }

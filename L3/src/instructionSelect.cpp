@@ -363,10 +363,12 @@ namespace L3 {
                     s = "\t" + L2::Architecture::fromRegisterToString(arguments[idx]) + " <- " + c->args[idx]->toString() + "\n"; 
                     res.push_back(s);
                 }
-                if(c->args.size() > 6){
-                    res.push_back("\tr10 <- " + to_string((c->args.size() - 6 - 1) * 8));
+                int count = 1;
+                for(int idx = 6; idx < c->args.size(); idx++){
+                    res.push_back("\t\tmem rsp -" + to_string(count * 8) + " <- " + c->args[idx]->toString() + "\n");
+                    count++;
                 }
-                res.push_back("\tcall" + c->callee->toString() + " " + to_string(c->args.size()) + "\n");        
+                res.push_back("\tcall " + c->callee->toString() + " " + to_string(c->args.size()) + "\n");        
             }
             return res;
         }
@@ -382,7 +384,7 @@ namespace L3 {
             }
             //print
             else if(a->callee->toString() == "print"){
-                res.push_back("\trdi <- " + c->args[0]->toString() + "\n");
+                res.push_back("\trdi <- " + a->args[0]->toString() + "\n");
                 res.push_back("\tcall print 1\n"); 
                 res.push_back("\t" + a->dst->toString() + " <- rax\n");
                 return res;
@@ -408,14 +410,16 @@ namespace L3 {
             }
             else {
                 res.push_back("\tmem rsp -8 <- " + a->callee->toString() + "_ret\n");
-                for(int idx= 0; idx < min(c->args.size(), arguments.size()); idx++){
-                    s = "\t" + L2::Architecture::fromRegisterToString(arguments[idx]) + " <- " + c->args[idx]->toString() + "\n"; 
+                for(int idx= 0; idx < min(a->args.size(), arguments.size()); idx++){
+                    s = "\t" + L2::Architecture::fromRegisterToString(arguments[idx]) + " <- " + a->args[idx]->toString() + "\n"; 
                     res.push_back(s);
                 }
-                if(c->args.size() > 6){
-                    res.push_back("\tr10 <- " + to_string((c->args.size() - 6 - 1) * 8));
+                int count = 1;
+                for(int idx = 6; idx < a->args.size(); idx++){
+                    res.push_back("\t\tmem rsp -" + to_string(count * 8) + " <- " + a->args[idx]->toString()  + "\n");
+                    count++;
                 }
-                res.push_back("\tcall" + c->callee->toString() + " " + to_string(c->args.size()) + "\n");   
+                res.push_back("\tcall " + a->callee->toString() + " " + to_string(a->args.size()) + "\n");   
                 res.push_back("\t" + a->callee->toString() + "_ret\n"); 
                 res.push_back("\t" + a->dst->toString() + " <- rax\n");     
             }
@@ -436,7 +440,6 @@ namespace L3 {
         vector<Context*> ctx = identifyContext(f); 
         vector<Tile*> alltiles = getAllTiles();
         vector<std::string> all_instructions;
-
         int64_t idx = 0;
         for(Context* c : ctx){
             while (idx != f->instructions.size() && idx != c->start) {

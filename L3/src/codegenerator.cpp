@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <globalize.h>
 #include <instructionSelect.h>
+#include <architecture.h>
 
 using namespace std;
 
@@ -183,12 +184,22 @@ namespace L3{
         std::ofstream outputFile;
         outputFile.open("prog.L2");
         outputFile << "(:main" << endl;  
+        vector<L2::Architecture::RegisterID> args = L2::Architecture::get_argument_regs();
         for(Function* f : p.functions){
             //step 1: instruction selection
             vector<string> L2_instructions = L3::instructionSelection(p, f);
             //initialize function setup 
             outputFile << "\t(" << f->name << endl; 
             outputFile << "\t\t" << f->arguments.size() << endl;
+            //output arguments
+            for(int i = 0; i < min((int)f->arguments.size(), 6); i++){
+                outputFile << "\t\t" << f->arguments[i]->toString() << " <- " << L2::Architecture::fromRegisterToString(args[i]) << "\n";
+            }
+            int count = 1; 
+            for(int i = 6; i < f->arguments.size(); i++){
+                outputFile << "\t\tmem rsp -" << to_string(count * 8) << " <- " << f->arguments[i] << "\n";
+                count++;
+            }
             //step 2: output L2 instructions
             for(string s : L2_instructions){
                 outputFile << "\t" << s; 
