@@ -313,7 +313,7 @@ namespace L3 {
         }
 
         // for (auto s : codegen.L2_instructions) {
-        //     //cout << s << endl;
+        //     cout << s << endl;
         // }
         return codegen.L2_instructions;
     }

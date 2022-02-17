@@ -40,7 +40,10 @@ namespace L3{
     }
     void CodeGen::visit(Tile_assign* t){
         TreeNode *tree = t->getTree();
-        string line = "\t" + tree->val->toString() + " <- " + tree->oprand1->val->toString() + '\n';
+        string dst = tree->val->toString();
+        string oprand = t->root->oprand1->matched_node->val->toString();
+
+        string line = "\t" + dst + " <- " + oprand + '\n';
         L2_instructions.push_back(line);
     }
 
@@ -161,9 +164,9 @@ namespace L3{
     void CodeGen::visit(Tile_at* t){
         TreeNode *tree = t->getTree();
         string dst = tree->val->toString(); 
-        string src_add = tree->oprand2->val->toString(); 
-        string src_mult = tree->oprand1->oprand1->val->toString(); 
-        string src_const = tree->oprand1->oprand2->val->toString(); 
+        string src_add = t->root->oprand2->matched_node->val->toString(); 
+        string src_mult = t->root->oprand1->oprand1->matched_node->val->toString(); 
+        string src_const = t->root->oprand1->oprand2->matched_node->val->toString(); 
         string line = "\t" + dst + " @ " + src_add + " " + src_mult + " " + src_const + "\n";
         L2_instructions.push_back(line);       
     }

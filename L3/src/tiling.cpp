@@ -63,10 +63,8 @@ namespace L3 {
         }
     }
 
-    bool match_helper(TileNode *tile, TreeNode *tree, std::set<TreeNode *> &subtrees,
+    bool match_helper(TileNode *tile, TreeNode *tree,
             std::map<pair<short, int64_t>, TreeNode *> &nodemap) {
-        //add by Cythia 
-       // if(tile == nullptr && tree != nullptr) return false;
         if (tile == nullptr) {
             return true; // tile is null, it matches any tree
         }        
@@ -96,12 +94,12 @@ namespace L3 {
 
         auto nodemap_clone = nodemap;
 
-        if (tile->isLeaf() && (!tree->isroot)) {
-            if (is_debug) cout << "adding: " << tree->val->toString() << endl;
-            subtrees.insert(tree);
-        }
-        bool left = match_helper(tile->oprand1, tree->oprand1, subtrees, nodemap);
-        bool right = match_helper(tile->oprand2, tree->oprand2, subtrees, nodemap);
+        // if (tile->isLeaf() && (!tree->isroot)) {
+        //     if (is_debug) cout << "adding: " << tree->val->toString() << endl;
+        //     subtrees.insert(tree);
+        // }
+        bool left = match_helper(tile->oprand1, tree->oprand1, nodemap);
+        bool right = match_helper(tile->oprand2, tree->oprand2, nodemap);
 
         if (left && right) {
             tile->matched_node = tree;
@@ -116,8 +114,8 @@ namespace L3 {
 
         nodemap = nodemap_clone; // restore
 
-        left = match_helper(tile->oprand1, tree->oprand2, subtrees, nodemap);
-        right = match_helper(tile->oprand2, tree->oprand1, subtrees, nodemap);
+        left = match_helper(tile->oprand1, tree->oprand2, nodemap);
+        right = match_helper(tile->oprand2, tree->oprand1, nodemap);
         if (left && right) {
             tile->matched_node = tree;
             return true;
@@ -129,11 +127,27 @@ namespace L3 {
         return false;
     }
 
-    // TODO: what if tile is a line instead of a tree
+    void getSubTrees(TileNode *root, set<TreeNode *> &subtrees) {
+        if (root == 0) {
+            return;
+        }
+
+        if (root->isLeaf() && (!root->matched_node->isroot)) {
+            if (is_debug) cout << "adding " << root->matched_node->val->toString() << endl;
+            subtrees.insert(root->matched_node);
+        } else {
+            getSubTrees(root->oprand1, subtrees);
+            getSubTrees(root->oprand2, subtrees);
+        }
+        return;
+    }
+
     bool Tile::match(TreeNode *t, set<TreeNode *> &subtrees) {
         std::map<pair<short, int64_t>, TreeNode *> nodemap;
         // cout << "tile name :" << name << endl;
-        return match_helper(root, t, subtrees, nodemap);
+        bool matched = match_helper(root, t, nodemap);
+        if (matched) getSubTrees(root, subtrees);
+        return matched;
     }
 
     int64_t Tile::getSize() {
