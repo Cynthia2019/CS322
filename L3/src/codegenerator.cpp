@@ -31,10 +31,10 @@ namespace L3{
         Variable* arg = dynamic_cast<Variable*>(tree->val); 
         string line;
         if(arg){
-            line = "\t" + tree->oprand1->val->toString() + " <- rdi\n";
+            line = "\t" + t->root->oprand1->matched_node->val->toString() + " <- rdi\n";
             L2_instructions.push_back(line);
         }
-        line = "\trax <- " + tree->oprand1->val->toString() + "\n";
+        line = "\trax <- " + t->root->oprand1->matched_node->val->toString() + "\n";
         L2_instructions.push_back(line);
         L2_instructions.push_back("\treturn\n");
     }
@@ -72,7 +72,6 @@ namespace L3{
     }
 
     void CodeGen::visit(Tile_math_specialized* t) {
-        TreeNode *tree = t->getTree();
         string dst = t->root->matched_node->val->toString();
 
         string other = t->root->oprand2->matched_node->val->toString();
@@ -86,9 +85,9 @@ namespace L3{
     void CodeGen::visit(Tile_compare *t){
         TreeNode *tree = t->getTree();
         string dst = tree->val->toString(); 
-        string oprand1 = tree->oprand1->val->toString();
+        string oprand1 = t->root->oprand1->matched_node->val->toString();
         string op = tree->op->toString(); 
-        string oprand2 = tree->oprand2->val->toString();
+        string oprand2 = t->root->oprand2->matched_node->val->toString();
         string line;
         // string line = '\t' + dst + " <- " + oprand1 + '\n'; 
         // L2_instructions.push_back(line);
@@ -109,7 +108,7 @@ namespace L3{
     void CodeGen::visit(Tile_load *t){
         TreeNode *tree = t->getTree();
         string dst = tree->val->toString(); 
-        string oprand1 = tree->oprand1->val->toString();
+        string oprand1 = t->root->oprand1->matched_node->val->toString();
         //need to know current number of item on stack 
         // string M = to_string(this->f->sizeOfStack * 8);
         // string line = '\t' + dst + " <- mem " + oprand1 + " " + M + '\n'; 
@@ -119,14 +118,14 @@ namespace L3{
     void CodeGen::visit(Tile_store *t){
         TreeNode *tree = t->getTree();
         string dst = tree->val->toString(); 
-        string oprand1 = tree->oprand1->val->toString();
+        string oprand1 = t->root->oprand1->matched_node->val->toString();
         //need to know current number of item on stack 
         string line = "\tmem" + dst + " 0 <- " + oprand1 + '\n'; 
         L2_instructions.push_back(line);
     }
     void CodeGen::visit(Tile_br* t){
         TreeNode *tree = t->getTree();
-        string label = tree->oprand1->val->toString(); 
+        string label = t->root->oprand1->matched_node->val->toString();
         string line = "\tgoto " + label + '\n'; 
         L2_instructions.push_back(line);
     }
