@@ -132,6 +132,10 @@ namespace L3{
     //TODO might need fix
     void CodeGen::visit(Tile_br_t* t){
         TreeNode *tree = t->getTree();
+        while (!(tree->oprand1 && tree->oprand2)) {
+            if (tree->oprand1) tree = tree->oprand1;
+            if (tree->oprand2) tree = tree->oprand2;
+        }
         string label = tree->oprand2->val->toString(); 
         Item* condition = tree->oprand1->val;
         Number* n = dynamic_cast<Number*>(condition); 

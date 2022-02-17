@@ -552,10 +552,10 @@ namespace L3 {
             ass,
             load,
             store,
-            ret,
             ret_t,
+            ret,
+            br_t,
             br,
-            br_t
         };
 
         return all_tiles;
