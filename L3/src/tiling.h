@@ -35,6 +35,8 @@ namespace L3 {
         int64_t id = 0;
         Operation *op = nullptr;
         bool left = true;
+        bool noflip = false;
+        
         TileNode *oprand1 = nullptr;
         TileNode *oprand2 = nullptr;
         bool match(TreeNode *);
@@ -61,12 +63,11 @@ namespace L3 {
         virtual Tile *clone() = 0;
         virtual void accept(CodeGen *) = 0;
         TreeNode *getTree() { return root->matched_node; }
+        TileNode *root;
         
         private:
         int64_t size = -1;
         // vector<L2::Instruction *> instructions;
-        protected:
-        TileNode *root;
     };
 
     class Tile_math: public Tile {

@@ -63,10 +63,8 @@ namespace L3 {
         }
     }
 
-    bool match_helper(TileNode *tile, TreeNode *tree, std::set<TreeNode *> &subtrees,
+    bool match_helper(TileNode *tile, TreeNode *tree,
             std::map<pair<short, int64_t>, TreeNode *> &nodemap) {
-        //add by Cythia 
-        // if(tile == nullptr && tree != nullptr) return false;
         if (tile == nullptr) {
             return true; // tile is null, it matches any tree
         }        
@@ -96,22 +94,28 @@ namespace L3 {
 
         auto nodemap_clone = nodemap;
 
-        if (tile->isLeaf() && (!tree->isroot)) {
-            if (is_debug) cout << "adding: " << tree->val->toString() << endl;
-            subtrees.insert(tree);
-        }
-        bool left = match_helper(tile->oprand1, tree->oprand1, subtrees, nodemap);
-        bool right = match_helper(tile->oprand2, tree->oprand2, subtrees, nodemap);
+        // if (tile->isLeaf() && (!tree->isroot)) {
+        //     if (is_debug) cout << "adding: " << tree->val->toString() << endl;
+        //     subtrees.insert(tree);
+        // }
+        bool left = match_helper(tile->oprand1, tree->oprand1, nodemap);
+        bool right = match_helper(tile->oprand2, tree->oprand2, nodemap);
 
         if (left && right) {
             tile->matched_node = tree;
             return true;
         }
 
+        if (tile->noflip) {
+            if (mapchaged)
+                nodemap.erase({tile->tile_type, tile->id});
+            return false;
+        }
+
         nodemap = nodemap_clone; // restore
 
-        left = match_helper(tile->oprand1, tree->oprand2, subtrees, nodemap);
-        right = match_helper(tile->oprand2, tree->oprand1, subtrees, nodemap);
+        left = match_helper(tile->oprand1, tree->oprand2, nodemap);
+        right = match_helper(tile->oprand2, tree->oprand1, nodemap);
         if (left && right) {
             tile->matched_node = tree;
             return true;
@@ -123,11 +127,27 @@ namespace L3 {
         return false;
     }
 
-    // TODO: what if tile is a line instead of a tree
+    void getSubTrees(TileNode *root, set<TreeNode *> &subtrees) {
+        if (root == 0) {
+            return;
+        }
+
+        if (root->isLeaf() && (!root->matched_node->isroot)) {
+            if (is_debug) cout << "adding " << root->matched_node->val->toString() << endl;
+            subtrees.insert(root->matched_node);
+        } else {
+            getSubTrees(root->oprand1, subtrees);
+            getSubTrees(root->oprand2, subtrees);
+        }
+        return;
+    }
+
     bool Tile::match(TreeNode *t, set<TreeNode *> &subtrees) {
         std::map<pair<short, int64_t>, TreeNode *> nodemap;
-        if(is_debug)cout << "tile name :" << name << endl;
-        return match_helper(root, t, subtrees, nodemap);
+        // cout << "tile name :" << name << endl;
+        bool matched = match_helper(root, t, nodemap);
+        if (matched) getSubTrees(root, subtrees);
+        return matched;
     }
 
     int64_t Tile::getSize() {
@@ -193,6 +213,9 @@ namespace L3 {
         this->root = new TileNode();
         root->id = 0;
         root->tile_type |= TileNodeTypeVariable;
+        if (op == "-" || op == "<<" || op == ">>") {
+            root->noflip = true;
+        }
         root->op = new Operation(op);
         root->oprand1 = new TileNode();
         root->oprand2 = new TileNode();
@@ -468,15 +491,15 @@ namespace L3 {
         Tile *plus_left = new Tile_math_specialized("+");
         // Tile *plus_right = new Tile_math_specialized("+", false);
 
-        // Tile *minus_left = new Tile_math_specialized("-");
+        Tile *minus_left = new Tile_math_specialized("-");
         // Tile *minus_right = new Tile_math_specialized("-", false);
         Tile *mul_left = new Tile_math_specialized("*");
         // Tile *mul_right = new Tile_math_specialized("*", false);
         Tile *and_left = new Tile_math_specialized("&");
         // Tile *and_right = new Tile_math_specialized("&", false);
-        // Tile *sl_left = new Tile_math_specialized("<<");
+        Tile *sl_left = new Tile_math_specialized("<<");
         // Tile *sl_right = new Tile_math_specialized("<<", false);
-        // Tile *sr_left = new Tile_math_specialized(">>");
+        Tile *sr_left = new Tile_math_specialized(">>");
         // Tile *sr_right = new Tile_math_specialized(">>", false);
         Tile *plus_g = new Tile_math("+");
         Tile *minus_g = new Tile_math("-");
@@ -502,20 +525,18 @@ namespace L3 {
         vector<Tile *> all_tiles = {
             at,
             inc_left,
-            // inc_right,
             dec_left,
-            // dec_right,
             plus_left,
             // plus_right,
-            // minus_left,
+            minus_left,
             // minus_right,
             mul_left,
             // mul_right,
             and_left,
             // and_right,
-            // sl_left,
+            sl_left,
             // sl_right,
-            // sr_left,
+            sr_left,
             // sr_right,
             plus_g,
             minus_g,
@@ -531,10 +552,10 @@ namespace L3 {
             ass,
             load,
             store,
-            ret,
             ret_t,
+            ret,
+            br_t,
             br,
-            br_t
         };
 
         return all_tiles;

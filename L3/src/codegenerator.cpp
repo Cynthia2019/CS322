@@ -12,6 +12,14 @@ using namespace std;
 extern bool is_debug; 
 namespace L3{
 
+    // string normal_var(string varname) {
+    //     return "%var_" + varname.substr(1);
+    // }
+
+    string temp_var(string varname) {
+        return "%tmp_" + varname.substr(1);
+    }
+
     CodeGen::CodeGen(/*Function *f*/) {}
 
     void CodeGen::visit(Tile_return* t){
@@ -23,53 +31,63 @@ namespace L3{
         Variable* arg = dynamic_cast<Variable*>(tree->val); 
         string line;
         if(arg){
-            line = "\t" + tree->oprand1->val->toString() + " <- rdi\n";
+            line = "\t" + t->root->oprand1->matched_node->val->toString() + " <- rdi\n";
             L2_instructions.push_back(line);
         }
-        line = "\trax <- " + tree->oprand1->val->toString() + "\n";
+        line = "\trax <- " + t->root->oprand1->matched_node->val->toString() + "\n";
         L2_instructions.push_back(line);
         L2_instructions.push_back("\treturn\n");
     }
     void CodeGen::visit(Tile_assign* t){
         TreeNode *tree = t->getTree();
-        string line = "\t" + tree->val->toString() + " <- " + tree->oprand1->val->toString() + '\n';
+        string dst = tree->val->toString();
+        string oprand = t->root->oprand1->matched_node->val->toString();
+
+        string line = "\t" + dst + " <- " + oprand + '\n';
         L2_instructions.push_back(line);
     }
 
     void CodeGen::visit(Tile_math* t) {
         TreeNode *tree = t->getTree();
         if (!tree) cout << "bug " << endl;
-        string dst = tree->val->toString(); 
-        string oprand1 = tree->oprand1->val->toString();
+        string dst = tree->val->toString();
+        string oprand1 = t->root->oprand1->matched_node->val->toString();
         string op = tree->op->toString(); 
-        string oprand2 = tree->oprand2->val->toString();
-        string line = '\t' + dst + " <- " + oprand1 + '\n'; 
-        L2_instructions.push_back(line);
-        line = '\t' + dst + " " + op + "= " + oprand2 + '\n';
-        L2_instructions.push_back(line);
+        string oprand2 = t->root->oprand2->matched_node->val->toString();
+        if (op == "*" || op == "+" || op == "&") {
+            string line = '\t' + dst + " <- " + oprand1 + '\n'; 
+            L2_instructions.push_back(line);
+            line = '\t' + dst + " " + op + "= " + oprand2 + '\n';
+            L2_instructions.push_back(line);
+        } else if (op == "-" || op == "<<" || op == ">>") {
+            string tmp = temp_var("%tmp");
+            string line = '\t' + tmp + " <- " + oprand1 + '\n'; 
+            L2_instructions.push_back(line);
+            line = '\t' + tmp + " " + op + "= " + oprand2 + '\n'; 
+            L2_instructions.push_back(line);
+            line = '\t' + dst + " <- " + tmp + '\n'; 
+            L2_instructions.push_back(line);
+        }
+
     }
+
     void CodeGen::visit(Tile_math_specialized* t) {
-        TreeNode *tree = t->getTree();
-        string dst = tree->val->toString(); 
-        string oprand1 = tree->oprand1->val->toString();
-        string op = tree->op->toString(); 
-        string oprand2 = tree->oprand2->val->toString();
-        string line;
-        if(dst == oprand1){
-            line = '\t' + dst + " " + op + "= " + oprand1 + '\n';   
-        }
-        else {
-            line = '\t' + dst + " " + op + "= " + oprand2 + '\n';   
-        }
+        string dst = t->root->matched_node->val->toString();
+
+        string other = t->root->oprand2->matched_node->val->toString();
+        string op = t->root->op->get();
+
+        string line = '\t' + dst + " " + op + "= " + other + '\n';   
         L2_instructions.push_back(line);
     }
+
 
     void CodeGen::visit(Tile_compare *t){
         TreeNode *tree = t->getTree();
         string dst = tree->val->toString(); 
-        string oprand1 = tree->oprand1->val->toString();
+        string oprand1 = t->root->oprand1->matched_node->val->toString();
         string op = tree->op->toString(); 
-        string oprand2 = tree->oprand2->val->toString();
+        string oprand2 = t->root->oprand2->matched_node->val->toString();
         string line;
         // string line = '\t' + dst + " <- " + oprand1 + '\n'; 
         // L2_instructions.push_back(line);
@@ -90,7 +108,7 @@ namespace L3{
     void CodeGen::visit(Tile_load *t){
         TreeNode *tree = t->getTree();
         string dst = tree->val->toString(); 
-        string oprand1 = tree->oprand1->val->toString();
+        string oprand1 = t->root->oprand1->matched_node->val->toString();
         //need to know current number of item on stack 
         // string M = to_string(this->f->sizeOfStack * 8);
         // string line = '\t' + dst + " <- mem " + oprand1 + " " + M + '\n'; 
@@ -100,20 +118,24 @@ namespace L3{
     void CodeGen::visit(Tile_store *t){
         TreeNode *tree = t->getTree();
         string dst = tree->val->toString(); 
-        string oprand1 = tree->oprand1->val->toString();
+        string oprand1 = t->root->oprand1->matched_node->val->toString();
         //need to know current number of item on stack 
         string line = "\tmem" + dst + " 0 <- " + oprand1 + '\n'; 
         L2_instructions.push_back(line);
     }
     void CodeGen::visit(Tile_br* t){
         TreeNode *tree = t->getTree();
-        string label = tree->oprand1->val->toString(); 
+        string label = t->root->oprand1->matched_node->val->toString();
         string line = "\tgoto " + label + '\n'; 
         L2_instructions.push_back(line);
     }
     //TODO might need fix
     void CodeGen::visit(Tile_br_t* t){
         TreeNode *tree = t->getTree();
+        while (!(tree->oprand1 && tree->oprand2)) {
+            if (tree->oprand1) tree = tree->oprand1;
+            if (tree->oprand2) tree = tree->oprand2;
+        }
         string label = tree->oprand2->val->toString(); 
         Item* condition = tree->oprand1->val;
         Number* n = dynamic_cast<Number*>(condition); 
@@ -145,9 +167,9 @@ namespace L3{
     void CodeGen::visit(Tile_at* t){
         TreeNode *tree = t->getTree();
         string dst = tree->val->toString(); 
-        string src_add = tree->oprand2->val->toString(); 
-        string src_mult = tree->oprand1->oprand1->val->toString(); 
-        string src_const = tree->oprand1->oprand2->val->toString(); 
+        string src_add = t->root->oprand2->matched_node->val->toString(); 
+        string src_mult = t->root->oprand1->oprand1->matched_node->val->toString(); 
+        string src_const = t->root->oprand1->oprand2->matched_node->val->toString(); 
         string line = "\t" + dst + " @ " + src_add + " " + src_mult + " " + src_const + "\n";
         L2_instructions.push_back(line);       
     }

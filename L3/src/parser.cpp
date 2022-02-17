@@ -405,7 +405,7 @@ namespace L3
       //   cout << "firing variable_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       std::string var_name = in.string(); 
-      Variable *i = currentF->newVariable(var_name);
+      Variable *i = currentF->newVariable("%var_" + var_name.substr(1));
       currentF->variables[var_name] = i;
       parsed_items.push_back(i);
     }
