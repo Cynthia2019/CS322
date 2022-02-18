@@ -1,42 +1,43 @@
-define int64 :isPrime(int64 %x){
-   :start
-   int64 %i
-   %i <- 2
-   br :loop
 
-   :loop
-   int64 %square
-   int64 %check
-   int64 %start
-   %square <- %i * %i
-   %check <- %square > %x
-   %start <- 1
-   br %check :ret_true :mod
+define int64 :fib(int64 %in){
+  :fib_start
+  int64 %smaller
+  %smaller <- %in < 2
+  br %smaller :fib_end :loop_setup
 
-   :mod
-   int64 %mult
-   int64 %same
-   %mult <- %start * %i
-   %same <- %mult = %x
-   br %same :ret_false :continue
+  :loop_setup
+  int64 %p
+  int64 %q
+  int64 %r
+  int64 %i
+  int64 %out
+  %p <- 0
+  %q <- 0
+  %r <- 1
+  %i <- 2
+  %out <- %i = %in
+  br %out :fib_loop_next :fib_loop
 
-   :continue
-   int64 %smaller
-   %smaller <- %mult < %x
-   %start <- %start + 1
-   br %smaller :mod :increment
+  :fib_loop
+  int64 %check
+  %p <- %q
+  %q <- %r
+  %r <- %p + %q
+  %i <- %i + 1
+  %check <- %i <= %in
+  br %check :fib_loop :fib_loop_next
 
-   :increment
-   %i <- %i + 1
-   br :loop
+  :fib_loop_next
+  int64 %res
+  %res <- %r << 1
+  %res <- %res + 1
+  call print(%res)
+  return %res
 
-   :ret_true
-   int64 %res1
-   %res1 <- 1
-   return %res1
-
-   :ret_false
-   int64 %res2
-   %res2 <- 0
-   return %res2
+  :fib_end
+  %res <- %in << 1
+  %res <- %res + 1
+  call print(%res)
+  return %res
 }
+
