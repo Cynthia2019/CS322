@@ -400,14 +400,14 @@ namespace IR
                              pegtl::sor<seps, pegtl::eol>,
                              BasicBlocks_rule,
                              pegtl::sor<seps, pegtl::eol>,
-                            TAOCPP_PEGTL_STRING("}")>
+                             TAOCPP_PEGTL_STRING("}")>
   {
   };
 
   struct Functions_rule : pegtl::plus<
-                              seps,
+                              pegtl::sor<seps, pegtl::eol>,
                               Function_rule,
-                              seps>
+                              pegtl::sor<seps, pegtl::eol>>
   {
   };
 
