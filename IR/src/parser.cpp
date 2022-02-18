@@ -339,11 +339,11 @@ namespace IR
   struct  Instruction_label_rule : label {};
   
   struct Instruction_rule : pegtl::sor<
-                                pegtl::seq<pegtl::at<Instruction_label_rule>, Instruction_label_rule>,
-                                pegtl::seq<pegtl::at<Instruction_br_label_rule>, Instruction_br_label_rule>,
-                                pegtl::seq<pegtl::at<Instruction_br_t_rule>, Instruction_br_t_rule>,
-                                pegtl::seq<pegtl::at<Instruction_return_t_rule>, Instruction_return_t_rule>,
-                                pegtl::seq<pegtl::at<Instruction_return_rule>, Instruction_return_rule>,
+                                // pegtl::seq<pegtl::at<Instruction_label_rule>, Instruction_label_rule>,
+                                // pegtl::seq<pegtl::at<Instruction_br_label_rule>, Instruction_br_label_rule>,
+                                // pegtl::seq<pegtl::at<Instruction_br_t_rule>, Instruction_br_t_rule>,
+                                // pegtl::seq<pegtl::at<Instruction_return_t_rule>, Instruction_return_t_rule>,
+                                // pegtl::seq<pegtl::at<Instruction_return_rule>, Instruction_return_rule>,
                                 pegtl::seq<pegtl::at<Instruction_op_rule>, Instruction_op_rule>,
                                 pegtl::seq<pegtl::at<Instruction_load_rule>, Instruction_load_rule>,
                                 pegtl::seq<pegtl::at<Instruction_store_rule>, Instruction_store_rule>,
@@ -360,8 +360,8 @@ namespace IR
   struct Terminator : pegtl::sor<
                         Instruction_br_label_rule, 
                         Instruction_br_t_rule,
-                        Instruction_return_t_rule, 
-                        Instruction_return_rule> {};
+                        Instruction_return_rule,
+                        Instruction_return_t_rule> {};
 
   struct Instructions_rule : pegtl::plus<
                                  pegtl::seq<
@@ -373,7 +373,9 @@ namespace IR
 
   struct BasicBlock_rule : pegtl::seq<
                                 Instruction_label_rule, 
+                                seps, 
                                 Instructions_rule,
+                                seps,
                                 Terminator
                                 > {};
 
@@ -405,9 +407,9 @@ namespace IR
   };
 
   struct Functions_rule : pegtl::plus<
-                              pegtl::sor<seps, pegtl::eol>,
+                              seps,
                               Function_rule,
-                              pegtl::sor<seps, pegtl::eol>>
+                              seps>
   {
   };
 
@@ -562,9 +564,10 @@ template <>
         cout << "firing parameters_rule: " << in.string() << endl;
         auto currentF = p.functions.back();
         while(!parsed_items.empty()){
+          cout <<parsed_items.back()->toString() << endl;
           Variable* v = dynamic_cast<Variable*>(parsed_items.back()); 
           if(v == nullptr) cerr << "bug\n"; 
-          cout << "param variable: " << v << endl;
+          cout << "param variable: " << v->toString() << endl;
           currentF->arguments.push_back(v); 
           parsed_items.pop_back();
         }
@@ -628,8 +631,8 @@ template <>
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
-      // if (is_debug)
-      //   cout << "firing op_rule: " << in.string() << endl;
+      if (is_debug)
+        cout << "firing return_string: " << in.string() << endl;
       Operation *i = new Operation(in.string());
       parsed_items.push_back(i);
     }
@@ -640,8 +643,6 @@ template <>
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
-      // if (is_debug)
-      //   cout << "firing op_rule: " << in.string() << endl;
       Operation *i = new Operation(in.string());
       parsed_items.push_back(i);
     }
@@ -685,7 +686,7 @@ template <>
       Label *item = new Label(in.string());
       BasicBlock *bb = new BasicBlock(); 
       bb->label = item; 
-      currentF->basicBlocks.push_back(bb);
+      currentF->basicBlocks.push_back(bb); 
       if(is_debug) cout << item->toString() << endl;
     }
   };
@@ -822,9 +823,11 @@ template <>
       auto currentF = p.functions.back();
       BasicBlock* bb = currentF->basicBlocks.back();
       auto i = new Instruction_assignment();
+      cout << parsed_items.back()->toString() <<"\n";
       i->src = parsed_items.back();
       parsed_items.pop_back();
       i->dst = dynamic_cast<Variable*>(parsed_items.back());
+      cout << parsed_items.back()->toString() <<"\n";
       parsed_items.pop_back();
       if(is_debug) cout << i->toString() << endl;
       bb->instructions.push_back(i);
