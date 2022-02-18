@@ -1,0 +1,51 @@
+void main() {
+    int64 in
+    int64 ret 
+    in <- input(void)
+    in <- in - 1
+    in <- in >> 1
+    ret <- perfect(in)
+    print (ret)
+    return 
+}
+
+int64 perfect(int64 in){
+    int64 left 
+    int64 right 
+    left <- 0 
+    right <- in
+    br :perfect_loop 
+
+    :perfect_loop 
+    int64 mid 
+    int64 square
+    int64 smaller
+    mid <- right + left 
+    mid <- mid >> 1 
+    square <- mid * mid 
+    smaller <- square < in 
+    br smaller :perfect_leftPlus :continue
+
+    :continue 
+    int64 larger 
+    larger <- square > in 
+    br larger :perfect_rightPlus :perfect_true
+
+  :perfect_leftPlus
+  int64 left_res
+  left <- mid + 1
+  left_res <- left <= %right
+  br left_res :perfect_loop :perfect_false
+
+  :perfect_rightPlus
+  int64 right_res
+  right <- mid - 1
+  right_res <- left <= right
+  br right_res :perfect_loop :perfect_false
+
+  :perfect_true
+  return 1
+
+  :perfect_false
+  return 0
+}

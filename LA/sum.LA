@@ -1,0 +1,61 @@
+void main (){
+  int64 m
+  int64 n
+  int64 k
+  int64 ans
+  int64[][][] nums
+  m <- input()
+  n <- input()
+  k <- input()
+  nums <- new Array(m, n, k)
+  ans <- takeInput(nums, m, n, k)
+  ans <- ans << 1
+  ans <- ans + 1
+  print(ans)
+  return 
+}
+
+int64 takeInput(int64[][][] nums, int64 m, int64 n, int64 k){
+  int64 i
+  int64 j
+  int64 l
+  int64 check_m
+  int64 check_n
+  int64 check_k
+  int64 ans
+
+  i <- 0
+  j <- 0
+  l <- 0
+  
+  :loop_m
+  check_m <- i < m
+  br check_m :loop_n :end
+
+  :loop_n
+  check_n <- j < n
+  br check_n :loop_k :inc_i
+  
+  :loop_k
+  check_k <- l < k
+  br check_k :take :inc_j
+
+  :take
+  int64 num
+  num <- input()
+  nums[i][j][l] <- num
+  ans <- ans + num
+  l <- l + 1
+  br :loop_k
+
+  :inc_j
+  j <- j + 1
+  br :loop_n
+
+  :inc_i
+  i <- i + 1
+  br :loop_m
+
+  :end
+  return ans
+}
