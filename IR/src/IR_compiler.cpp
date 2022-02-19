@@ -14,6 +14,7 @@
 
 #include <IR.h>
 #include <parser.h>
+#include <CFG.h>
 // #include <codegenerator.h>
 
 using namespace std;
@@ -74,7 +75,9 @@ int main(
     * Parse the L3 program.
     */
   p = IR::parse_file(argv[optind]);
-
+  for(IR::Function* f : p.functions){
+    linearize(p, f);
+  }
 
 
   /*

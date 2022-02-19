@@ -109,13 +109,19 @@ class Operation : public Item
     virtual std::string toString() = 0; //for debug
   };
 
+  class Terminator {
+    public:
+    Operation* op;
+    virtual std::string toString() = 0;
+  };
+
+
   /*
    * Instructions.
    */
-  class Instruction_ret : public Instruction
+  class Instruction_ret : public Instruction, public Terminator
   {
     public:
-      Operation* op;
       virtual std::string toString() = 0;
       virtual void accept(Visitor *v) = 0;
   };
@@ -201,9 +207,8 @@ class Operation : public Item
     void accept(Visitor *v) override; 
   };
 
-  class Instruction_br : public Instruction {
+  class Instruction_br : public Instruction, public Terminator {
     public:
-    Operation* op; 
     virtual std::string toString() = 0;
     virtual void accept(Visitor *v) = 0;
   };
@@ -310,14 +315,11 @@ class Instruction_br_t : public Instruction_br
     void accept(Visitor *v) override; 
   };
 
-  // class Terminator {
-    
-  // }
   class BasicBlock {
     public:
     Label* label; 
     vector<Instruction*> instructions; 
-    Instruction* te; 
+    Terminator* te; 
   };
   /*
    * Function.
