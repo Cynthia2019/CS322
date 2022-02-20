@@ -1,6 +1,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <algorithm>
 #include <unordered_map>
 
 #include "codegenerator.h"
@@ -44,9 +45,66 @@ namespace IR {
     void CodeGenerator::visit(Instruction_ret_t *i) {
     }
     void CodeGenerator::visit(Instruction_assignment *i) { }
-    void CodeGenerator::visit(Instruction_load *i) { }
+    void CodeGenerator::visit(Instruction_load *i) {
+        ArrayVar *array = dynamic_cast<ArrayVar *>(i->src);
+        if (!array) {
+            cerr << "reading from non-array variable " << i->src->toString() << endl;
+            abort();
+        }
+
+        vector<Item *> indices = i->indices;
+        reverse(indices.begin(), indices.end());
+        ::string total_offset = newTempVar();
+        outputFile << "\t" << total_offset << " <- 0" << endl;
+        for (int k = 0; k < i->indices.size(); k++) {
+            ::string dim_size_ptr = newTempVar();
+            ::string dim_size = newTempVar();
+            int64_t off = 16 + (k + 1) * 8;
+            outputFile << "\t" << total_offset << " <- " << total_offset << " + " << indices[k]->toString() << endl;
+            if (k == i->indices.size() - 1) break;
+            outputFile << "\t" << dim_size_ptr << " <- " << array->toString() << " + " << off << endl;
+            outputFile << "\t" << dim_size << " <- load " << dim_size_ptr << endl;
+            outputFile << decode(dim_size);
+            outputFile << "\t" << total_offset << " <- " << total_offset << " * " << dim_size << endl;
+        }
+        int64_t offset_base = 16 + array->dimension * 8;
+        outputFile << "\t" << total_offset << " <- " << total_offset << " * 8" << endl;
+        outputFile << "\t" << total_offset << " <- " << total_offset << " + " << offset_base << endl;
+        outputFile << "\t" << total_offset << " <- " << total_offset << " + " << array->toString() << endl;
+
+        outputFile << "\t" << i->dst->toString() << " <- load " << total_offset << endl;
+    }
+
     void CodeGenerator::visit(Instruction_op *i) { }
-    void CodeGenerator::visit(Instruction_store *i) { }
+    void CodeGenerator::visit(Instruction_store *i) {
+        ArrayVar *array = dynamic_cast<ArrayVar *>(i->dst);
+        if (!array) {
+            cerr << "accessing non-array variable " << i->src->toString() << endl;
+            abort();
+        }
+
+        vector<Item *> indices = i->indices;
+        reverse(indices.begin(), indices.end());
+        ::string total_offset = newTempVar();
+        outputFile << "\t" << total_offset << " <- 0" << endl;
+        for (int k = 0; k < i->indices.size(); k++) {
+            ::string dim_size_ptr = newTempVar();
+            ::string dim_size = newTempVar();
+            int64_t off = 16 + (k + 1) * 8;
+            outputFile << "\t" << total_offset << " <- " << total_offset << " + " << indices[k]->toString() << endl;
+            if (k == i->indices.size() - 1) break;
+            outputFile << "\t" << dim_size_ptr << " <- " << array->toString() << " + " << off << endl;
+            outputFile << "\t" << dim_size << " <- load " << dim_size_ptr << endl;
+            outputFile << decode(dim_size);
+            outputFile << "\t" << total_offset << " <- " << total_offset << " * " << dim_size << endl;
+        }
+        int64_t offset_base = 16 + array->dimension * 8;
+        outputFile << "\t" << total_offset << " <- " << total_offset << " * 8" << endl;
+        outputFile << "\t" << total_offset << " <- " << total_offset << " + " << offset_base << endl;
+        outputFile << "\t" << total_offset << " <- " << total_offset << " + " << array->toString() << endl;
+
+        outputFile << "\t" << "store " << total_offset << " <- " << i->src->toString() << endl;
+    }
     void CodeGenerator::visit(Instruction_declare *i) { }
     void CodeGenerator::visit(Instruction_br_label *i) { }
     void CodeGenerator::visit(Instruction_br_t *i) { }
