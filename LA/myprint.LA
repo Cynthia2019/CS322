@@ -1,0 +1,61 @@
+void myprint() {
+	print(111)
+	return
+}
+
+void print2() {
+	print(222)
+	return
+}
+
+void main() {
+	tuple mytuple
+	tuple mymap
+	int64 query
+	code fun1
+	code fun2
+	query <- input()
+
+	mytuple <- new Tuple(2)
+	mymap <- new Tuple(2)
+	mymap[0] <- 1
+	fun1 <- myprint
+	mymap[1] <- fun1
+
+	fun2 <- mymap[1]
+	//mytuple[0] <- mymap
+
+	tuple mymap2
+	mymap2 <- new Tuple(2)
+	mymap2[0] <- 3
+
+	fun2 <- print2
+	mymap2[1] <- fun2
+
+	mytuple[0] <- mymap
+	mytuple[1] <- mymap2
+
+
+	int64 idx
+	int64 condition
+	int64 tmp
+	code thisf
+	tuple thist
+	idx <- 0
+
+	:loop_begin
+
+	thist <- mytuple[idx]
+	thisf <- thist[1]
+	
+	tmp <- thist[0]
+	print(tmp)
+	thisf()
+
+	idx <- idx + 1
+	condition <- idx = query
+	br condition :loop_after :loop_begin
+	:loop_after
+
+	return
+}

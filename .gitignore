@@ -5,6 +5,7 @@ L1/bin/L1i
 L2/bin/L2
 L3/bin/L3
 L2/bin/L2i
+IR/bin/IR
 prog.S
 prog.L1
 prog.L2
