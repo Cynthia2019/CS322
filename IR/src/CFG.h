@@ -23,16 +23,18 @@ namespace IR {
         Node* entryNode; 
         set<Node*> exitNodes; 
         set<Node*> getAllNodes(); 
+        map<Node*, set<Node*>> getAllEdges();
         void addNode(Node* node); 
         void addEdge(Node* n1, Node* n2); 
+        void printGraph();
         set<Node*> getSuccessor(Node* n);
         private: 
         set<Node*> nodes; 
         map<Node*, set<Node*>> edges; 
     };
     struct Trace {
-        set<BasicBlock*> traces; 
+        vector<Node*> traces; 
     };
-    set<Trace*> linearize(Program& p, Function* f); 
+    vector<Trace*> linearize(Program& p, Function* f); 
     // void generateCFG(Program& p, Function* f);
 }

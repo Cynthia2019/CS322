@@ -7,10 +7,9 @@ define void :main() {
   %input <- %input >> 1
   %ret <- call :perfect(%input)
   call print(%ret)
-  return
+  return 3
 }
 define void :perfect(int64 %in) {
   :label 
-  %in <- 1
   return 
 }

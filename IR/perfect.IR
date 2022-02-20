@@ -42,7 +42,7 @@ define int64 :perfect(int64 %in){
   int64 %right_res
   %right <- %mid - 1
   %right_res <- %left <= %right
-  br %right_res :perfect_loop :perfect_loop
+  br %right_res :perfect_loop :perfect_false
 
   :perfect_true
   return 3

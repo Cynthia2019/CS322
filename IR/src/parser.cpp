@@ -166,8 +166,7 @@ namespace IR
   {
   };
 
-  struct Instruction_return_rule : pegtl::seq<
-                                       str_return> {};
+  struct Instruction_return_rule : str_return {};
   struct Instruction_return_t_rule : pegtl::seq<
                                        str_return,
                                        seps,
@@ -357,13 +356,13 @@ namespace IR
   {
   };
 
-  struct Terminator : pegtl::sor<
+  struct Terminator_rule : pegtl::sor<
                         Instruction_br_label_rule, 
                         Instruction_br_t_rule,
-                        Instruction_return_rule,
-                        Instruction_return_t_rule> {};
+                        Instruction_return_t_rule,
+                        Instruction_return_rule> {};
 
-  struct Instructions_rule : pegtl::plus<
+  struct Instructions_rule : pegtl::star<
                                  pegtl::seq<
                                      seps,
                                      Instruction_rule,
@@ -376,7 +375,7 @@ namespace IR
                                 seps, 
                                 Instructions_rule,
                                 seps,
-                                Terminator
+                                Terminator_rule
                                 > {};
 
   struct BasicBlocks_rule : pegtl::plus<
@@ -452,7 +451,7 @@ namespace IR
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
-      if (is_debug) cout << "new function: " << in.string() << endl;
+      if (is_debug) cout << "function type: " << in.string() << endl;
       auto newF = new Function();
       newF->type = in.string();
       p.functions.push_back(newF);
@@ -470,8 +469,9 @@ namespace IR
       auto currentF = p.functions.back();
       BasicBlock* bb = currentF->basicBlocks.back(); 
       auto i = new Instruction_ret_not();
-      i->op = dynamic_cast<Operation*>(parsed_items.back()); 
-      parsed_items.pop_back();
+      //i->op = dynamic_cast<Operation*>(parsed_items.back()); 
+      i->op = new Operation("return");
+      //parsed_items.pop_back();
       bb->te = i; 
       if(is_debug) cout << i->toString() << endl;
     }
@@ -489,8 +489,9 @@ namespace IR
       auto i = new Instruction_ret_t();
       i->arg = parsed_items.back(); 
       parsed_items.pop_back();
-      i->op = dynamic_cast<Operation*>(parsed_items.back()); 
-      parsed_items.pop_back();
+     // i->op = dynamic_cast<Operation*>(parsed_items.back()); 
+      i->op = new Operation("return");
+      //parsed_items.pop_back();
       bb->te = i;
       if(is_debug) cout << i->toString() << endl;
     }
@@ -625,18 +626,18 @@ template <>
       parsed_items.push_back(i);
     }
   };
-  template <>
-  struct action<str_return>
-  {
-    template <typename Input>
-    static void apply(const Input &in, Program &p)
-    {
-      if (is_debug)
-        cout << "firing return_string: " << in.string() << endl;
-      Operation *i = new Operation(in.string());
-      parsed_items.push_back(i);
-    }
-  };
+  // template <>
+  // struct action<str_return>
+  // {
+  //   template <typename Input>
+  //   static void apply(const Input &in, Program &p)
+  //   {
+  //     if (is_debug)
+  //       cout << "firing return_string: " << in.string() << endl;
+  //     Operation *i = new Operation(in.string());
+  //     parsed_items.push_back(i);
+  //   }
+  // };
   template <>
   struct action<str_br>
   {
