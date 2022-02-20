@@ -38,8 +38,11 @@ namespace IR {
         return res;
     }
 
-    void CodeGenerator::visit(Instruction_ret_not *i) { }
-    void CodeGenerator::visit(Instruction_ret_t *i) { }
+    void CodeGenerator::visit(Instruction_ret_not *i) {
+        outputFile << "\treturn" << endl;
+    }
+    void CodeGenerator::visit(Instruction_ret_t *i) {
+    }
     void CodeGenerator::visit(Instruction_assignment *i) { }
     void CodeGenerator::visit(Instruction_load *i) { }
     void CodeGenerator::visit(Instruction_op *i) { }
@@ -47,10 +50,26 @@ namespace IR {
     void CodeGenerator::visit(Instruction_declare *i) { }
     void CodeGenerator::visit(Instruction_br_label *i) { }
     void CodeGenerator::visit(Instruction_br_t *i) { }
-    void CodeGenerator::visit(Instruction_call_noassign *i) { }
+    void CodeGenerator::visit(Instruction_call_noassign *i) {
+        outputFile << "\t" << i->toString() << endl;
+    }
     void CodeGenerator::visit(Instruction_call_assignment *i) { }
     void CodeGenerator::visit(Instruction_label *i) { }
-    void CodeGenerator::visit(Instruction_length *i) { }
+    void CodeGenerator::visit(Instruction_length *i) {
+        ArrayVar *a = dynamic_cast<ArrayVar *>(i->src);
+        if (!a) {
+            cerr << "reading lengh of a variable " << i->src->toString() << " which is not an array" << endl;
+            abort();
+        }
+        ::string offset = newTempVar();
+        ::string nb_dim = newTempVar();
+        outputFile <<"\t" << offset << " <- 16" << endl; 
+        outputFile << "\t" << nb_dim << " <- 8 * " << i->dimID->toString() << endl; 
+        outputFile << "\t" << offset << " <- " << offset << " + " << nb_dim << endl; 
+        ::string tmp_ptr = newTempVar();
+        outputFile << "\t" << tmp_ptr << " <- " << i->src->toString() << " + " << offset << endl;
+        outputFile <<"\t" <<  i->dst->toString() << " <- load " << tmp_ptr << endl;
+     }
 
     void CodeGenerator::visit(Instruction_array *i) {
         int64_t dimension = i->args.size();
@@ -79,7 +98,7 @@ namespace IR {
 
         outputFile << "\t" << encode(total_len_var);
 
-        ::string array_ptr_t = newTempVar();
+        ::string array_ptr_t = i->dst->toString();
         outputFile << "\t" << array_ptr_t << " <- " << "call allocate(" << total_len_var << ", 1)" << endl;
 
         ::string dimension_ptr = newTempVar();
@@ -94,6 +113,7 @@ namespace IR {
             outputFile << "\t" << tmp_ptr << " <- " << array_ptr_t << " + " << offset << endl;
             outputFile << "\t" << "store " << tmp_ptr << " <- " << i->args[k]->toString() << endl;
         }
+        // outputFile << i->dst->toString() << " <- " << array_ptr_t
     }
 
     void CodeGenerator::visit(Instruction_tuple *i) { }
@@ -107,7 +127,7 @@ namespace IR {
         outputFile.open("prog.L3");
         for (auto f : p.functions) {
             CodeGenerator cg(f, outputFile);
-            outputFile << "define :" << f->name << "(";
+            outputFile << "define " << f->name << "(";
             for (int i = 0; i < f->arguments.size(); i++) {
                 outputFile << f->arguments[i]->toString();
                 if (i != f->arguments.size() - 1) {
@@ -117,9 +137,11 @@ namespace IR {
             outputFile << ") {" << endl;
             //TODO: chage this to use trace
             for (auto bb : f->basicBlocks) {
+                outputFile << "\t" << bb->label->get() << endl;
                 for (auto i : bb->instructions) {
                     i->accept(&cg);
                 }
+                bb->te->accept(&cg);
             }
 
             outputFile << "}" << endl;

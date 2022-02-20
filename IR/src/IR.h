@@ -115,7 +115,7 @@ class ArrayVar : public Variable {
     virtual std::string toString() = 0; //for debug
   };
 
-  class Terminator {
+  class Terminator : public Instruction{
     public:
     Operation* op;
     virtual std::string toString() = 0;
@@ -125,7 +125,7 @@ class ArrayVar : public Variable {
   /*
    * Instructions.
    */
-  class Instruction_ret : public Instruction, public Terminator
+  class Instruction_ret :  public Terminator
   {
     public:
       virtual std::string toString() = 0;
@@ -213,7 +213,7 @@ class ArrayVar : public Variable {
     void accept(Visitor *v) override; 
   };
 
-  class Instruction_br : public Instruction, public Terminator {
+  class Instruction_br : public Terminator {
     public:
     virtual std::string toString() = 0;
     virtual void accept(Visitor *v) = 0;
@@ -250,8 +250,14 @@ class Instruction_br_t : public Instruction_br
   {
   public:
     std::string toString() override { 
-        string s = "call " + callee->toString() + " "; 
-        for(Item* i : args) s += i->toString() + " ";
+        string s = "call " + callee->toString() + "("; 
+        for (int i = 0; i < args.size(); i++) {
+          s += args[i]->toString();
+          if (i != args.size() - 1) {
+            s += ", ";
+          }
+        }
+        s += ")";
         return s; 
     }
     void accept(Visitor *v) override; 
