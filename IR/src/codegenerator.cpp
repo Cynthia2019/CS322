@@ -42,10 +42,26 @@ namespace IR {
     void CodeGenerator::visit(Instruction_ret_not *i) {
         outputFile << "\treturn" << endl;
     }
+
     void CodeGenerator::visit(Instruction_ret_t *i) {
     }
-    void CodeGenerator::visit(Instruction_assignment *i) { }
+
+    void CodeGenerator::visit(Instruction_assignment *i) {
+        outputFile << "\t" << i->toString() << endl;
+    }
+
     void CodeGenerator::visit(Instruction_load *i) {
+        TupleVar *tuple = dynamic_cast<TupleVar *>(i->src);
+        if (tuple) {
+            if (i->indices.size() != 1) abort();
+            ::string off = newTempVar();
+            outputFile << off << " <- " << i->indices[0]->toString() << " * 8" << endl;
+            outputFile << "\t" << off << " <- " << off << " + 8" << endl;
+            outputFile << "\t" << off << " <- " << off << " + " << tuple->toString() << endl;
+            outputFile << "\t" << i->dst->toString() << " <- load " << off << endl;
+            return;
+        }
+
         ArrayVar *array = dynamic_cast<ArrayVar *>(i->src);
         if (!array) {
             cerr << "reading from non-array variable " << i->src->toString() << endl;
@@ -77,9 +93,19 @@ namespace IR {
 
     void CodeGenerator::visit(Instruction_op *i) { }
     void CodeGenerator::visit(Instruction_store *i) {
+        TupleVar *tuple = dynamic_cast<TupleVar *>(i->dst);
+        if (tuple) {
+            if (i->indices.size() != 1) abort();
+            ::string off = newTempVar();
+            outputFile << off << " <- " << i->indices[0]->toString() << " * 8" << endl;
+            outputFile << "\t" << off << " <- " << off << " + 8" << endl;
+            outputFile << "\t" << off << " <- " << off << " + " << tuple->toString() << endl;
+            outputFile << "\t" << "store " << off << " <- " << i->src->toString() << endl;
+            return;
+        }
         ArrayVar *array = dynamic_cast<ArrayVar *>(i->dst);
         if (!array) {
-            cerr << "accessing non-array variable " << i->src->toString() << endl;
+            cerr << "accessing non-array variable " << i->dst->toString() << endl;
             abort();
         }
 
@@ -111,7 +137,9 @@ namespace IR {
     void CodeGenerator::visit(Instruction_call_noassign *i) {
         outputFile << "\t" << i->toString() << endl;
     }
-    void CodeGenerator::visit(Instruction_call_assignment *i) { }
+    void CodeGenerator::visit(Instruction_call_assignment *i) {
+        outputFile << "\t" << i->toString() << endl;
+    }
     void CodeGenerator::visit(Instruction_label *i) { }
     void CodeGenerator::visit(Instruction_length *i) {
         ArrayVar *a = dynamic_cast<ArrayVar *>(i->src);
@@ -174,7 +202,9 @@ namespace IR {
         // outputFile << i->dst->toString() << " <- " << array_ptr_t
     }
 
-    void CodeGenerator::visit(Instruction_tuple *i) { }
+    void CodeGenerator::visit(Instruction_tuple *i) {
+        outputFile << "\t" << i->dst->toString() << " <- call allocate(" << i->arg->toString() << ", 1)" << endl;
+    }
 
 
     void generate_code(Program p) {
