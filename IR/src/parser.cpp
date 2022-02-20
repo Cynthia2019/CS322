@@ -10,8 +10,8 @@
  *    if (shouldIPrint) std::cerr << "MY OUTPUT" << std::endl;
  * )
  */
-#include <sched.h>
-#include <string>
+// #include <sched.h>
+// #include <string>
 #include <vector>
 #include <utility>
 #include <algorithm>
@@ -45,6 +45,7 @@ namespace IR
   std::vector<Item *> parsed_items = {};
   std::vector<Item *> list_of_args = {}; 
   std::vector<Instruction *> instructions = {};
+  VarTypes curr_var_type;
 
   /*
    *map from string to registerid
@@ -357,10 +358,10 @@ namespace IR
   };
 
   struct Terminator_rule : pegtl::sor<
-                        Instruction_br_label_rule, 
-                        Instruction_br_t_rule,
-                        Instruction_return_t_rule,
-                        Instruction_return_rule> {};
+                        pegtl::seq<pegtl::at<Instruction_br_label_rule>, Instruction_br_label_rule>, 
+                        pegtl::seq<pegtl::at<Instruction_br_t_rule>, Instruction_br_t_rule>,
+                        pegtl::seq<pegtl::at<Instruction_return_t_rule>, Instruction_return_t_rule>,
+                        pegtl::seq<pegtl::at<Instruction_return_rule>, Instruction_return_rule>> {};
 
   struct Instructions_rule : pegtl::star<
                                  pegtl::seq<
@@ -503,6 +504,7 @@ namespace IR
     static void apply(const Input &in, Program &p)
     {
       Label *i = new Label(in.string());
+      cout << "pushing label " << endl;
       parsed_items.push_back(i);   
     }
   };
@@ -518,21 +520,33 @@ namespace IR
       auto currentF = p.functions.back();
       std::string var_name = in.string(); 
       Variable *i = currentF->variables[var_name];
+      cout << "pushing variable" << endl;
       parsed_items.push_back(i);
     }
   }; 
-  // template <>
-  // struct action<type_rule>
-  // {
-  //   template <typename Input>
-  //   static void apply(const Input &in, Program &p)
-  //   {
-  //     if (is_debug)
-  //       cout << "firing type_rule: " << in.string() << endl;
-  //     String *i = new String(in.string());
-  //     parsed_items.push_back(i);
-  //   }
-  // };      
+
+  template <>
+  struct action<type_rule>
+  {
+    template <typename Input>
+    static void apply(const Input &in, Program &p)
+    {
+      if (is_debug)
+        cout << "firing type_rule: " << in.string() << endl;
+      std::string type = in.string();
+      if (type.find("]") != std::string::npos) {
+        curr_var_type = var_int64_multi;
+      } else if (type.find("int64") != std::string::npos) {
+        curr_var_type = var_int64;
+      } else if (type == "code") {
+        curr_var_type = var_code;
+      } else if (type == "tuple") {
+        curr_var_type = var_tuple;
+      }
+      // String *i = new String(in.string());
+      // parsed_items.push_back(i);
+    }
+  };      
 
   template <>
   struct action<type_variable_rule>
@@ -550,11 +564,28 @@ namespace IR
       if(is_debug) {
         cout << "type: " << type << " var: " << var_name << endl;
       }
-      Variable *i = currentF->newVariable(var_name, type);
-      parsed_items.push_back(i);
+      Variable *v;
+      if (curr_var_type == var_int64_multi) {
+        int dimension = count(type.begin(), type.end(), ']');
+        v = currentF->newVariable(var_name, var_int64_multi, dimension);
+      } else {
+        v = currentF->newVariable(var_name, curr_var_type, 0);
+      }
+      cout << "pushing type variable" << endl;
+      parsed_items.push_back(v);
     }
   };    
 
+  // template <>
+  // struct action<variable>
+  // {
+  //   template <typename Input>
+  //   static void apply(const Input &in, Program &p)
+  //   {
+  //     cout << "firing variable rule" << endl;
+  //   }
+
+  // };   
 template <>
   struct action<parameters_rule>
   {
@@ -623,6 +654,7 @@ template <>
       if (is_debug)
         cout << "firing op_rule: " << in.string() << endl;
       Operation *i = new Operation(in.string());
+      cout << "pushing op" << endl;
       parsed_items.push_back(i);
     }
   };
@@ -644,7 +676,9 @@ template <>
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
+      if (is_debug) cout << "firing str_br rule" << endl;
       Operation *i = new Operation(in.string());
+      cout << "pushing br" << endl;
       parsed_items.push_back(i);
     }
   };
@@ -658,6 +692,7 @@ template <>
       // if (is_debug)
       //   cout << "firing number_rule: " << in.string() << endl;
       Number *i = new Number(std::stoll(in.string()));
+      cout << "pushing number" << endl;
       parsed_items.push_back(i);
     }
   };
@@ -670,6 +705,7 @@ template <>
     static void apply(const Input &in, Program &p)
     {
       String *i = new String(in.string());
+      cout << "pushing call" << endl;
       parsed_items.push_back(i);
     }
   };
@@ -714,6 +750,7 @@ template <>
       parsed_items.pop_back();
       if(is_debug) cout << i->toString() << endl;
       bb->instructions.push_back(i);
+      cout << "oprule" << parsed_items.size() << endl;
     }
   };
   /*
@@ -786,6 +823,7 @@ template <>
       parsed_items.pop_back();
       bb->te = i;
       if(is_debug) cout << i->toString() << endl;
+      cout << "brrrr" << parsed_items.size() << endl;
     }
   };
   // action for br t label
@@ -797,6 +835,7 @@ template <>
     {
       if (is_debug)
         cout << "firing Instruction_br_t_rule: " << in.string() << endl;
+      cout << "brttt" << parsed_items.size() << endl;
       auto currentF = p.functions.back();
       BasicBlock* bb = currentF->basicBlocks.back();
       auto i = new Instruction_br_t();
@@ -810,6 +849,7 @@ template <>
       parsed_items.pop_back();
       bb->te = i;
       if(is_debug) cout << i->toString() << endl;
+      cout << "brttt" << parsed_items.size() << endl;
     }
   };
 
@@ -832,6 +872,7 @@ template <>
       parsed_items.pop_back();
       if(is_debug) cout << i->toString() << endl;
       bb->instructions.push_back(i);
+      cout << "assignment " << parsed_items.size() << endl;
     }
   };
 
@@ -852,10 +893,20 @@ template <>
       if(is_debug) {
         cout << "type: " << type << " var: " << var_name << endl;
       }
-      Variable *v = currentF->newVariable(var_name, type);
+      Variable *v;
+
+      if (curr_var_type == var_int64_multi) {
+        int dimension = count(type.begin(), type.end(), ']');
+        v = currentF->newVariable(var_name, var_int64_multi, dimension);
+        cout << "declarering" << var_name << endl;
+      } else {
+        v = currentF->newVariable(var_name, curr_var_type, 0);
+        cout << "declarering" << var_name << endl;
+      }
+
       Instruction_declare* i = new Instruction_declare(); 
       i->dst = v; 
-      i->type = new String(v->getVariableType()); 
+      i->type = v->getVariableType(); 
       bb->instructions.push_back(i);
     }
   };
@@ -870,6 +921,7 @@ template <>
       
       std::string indices = in.string(); 
       int n = count(indices.begin(), indices.end(), ']');
+      cout << "pushing indice" << endl;
       parsed_items.push_back(new Number(n));
     }
   };

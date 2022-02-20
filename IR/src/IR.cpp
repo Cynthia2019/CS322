@@ -11,13 +11,26 @@ namespace IR
   //Function 
   Function::Function(void) {}
 
-  Variable* Function::newVariable(std::string variable, std::string type){
-    // std::string variableName = "%var_" + variable.substr(1);
-    // if(Function::variables.find(variableName) != Function::variables.end()){
-    //   return Function::variables[variableName];
-    // }
-    Function::variables[variable] = new Variable(variable, type);
-    return Function::variables[variable];
+  Variable* Function::newVariable(std::string variable, VarTypes type, int dim){
+    std::string variableName = variable;
+    if(Function::variables.find(variableName) != Function::variables.end()){
+      cerr << "multiple definition of " << variable << endl;
+      abort();
+      //return Function::variables[variableName];
+    }
+
+    switch (type)
+    {
+    case var_int64_multi:
+      /* code */
+      Function::variables[variableName] = new ArrayVar(variableName, dim);
+      break;
+    
+    default:
+      Function::variables[variableName] = new Variable(variableName, type);
+      break;
+    }
+    return Function::variables[variableName];
   }
 
   // Label Item
@@ -56,7 +69,7 @@ namespace IR
   }
 
   // Variable Item
-  Variable::Variable(string v, string t)
+  Variable::Variable(string v, VarTypes t)
   {
     this->variableName = v;
     this->type = t; 
@@ -65,7 +78,7 @@ namespace IR
   {
     return this->variableName;
   }
-  string Variable::getVariableType()
+  VarTypes Variable::getVariableType()
   {
     return this->type;
   }
@@ -73,6 +86,13 @@ namespace IR
   {
     return *this == other;
   }
+
+  ArrayVar::ArrayVar(std::string name, int dim) :Variable(name, var_int64_multi){
+    this->dimension = dim;
+    // this->variableName = name;
+    // this->type = var_int64_multi;
+  }
+
   string Variable::toString()
   {
     return this->variableName;

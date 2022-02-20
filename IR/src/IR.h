@@ -21,13 +21,12 @@ namespace IR
     item_type
   };
 
-  // enum Types {
-  //   int64, 
-  //   int64_multi, 
-  //   tuple, 
-  //   code,
-  //   void
-  // }
+  enum VarTypes {
+    var_int64, 
+    var_int64_multi, 
+    var_tuple, 
+    var_code
+  };
 
   class Item
   {
@@ -63,15 +62,15 @@ namespace IR
   class Variable : public Item
   {
   public:
-    Variable(string varName, string type); 
+    Variable(string varName, VarTypes type); 
     string get (void); 
-    string getVariableType(); 
+    VarTypes getVariableType(); 
     bool operator == (const Variable &other); 
     string toString(void) override;
     ItemType getType(void) override { return item_variable; }
-  private: 
+  protected: 
     string variableName;
-    string type; 
+    VarTypes type; 
   };
   
   class String : public Item 
@@ -96,6 +95,13 @@ class Operation : public Item
   private: 
     string op;
   };
+
+class ArrayVar : public Variable {
+  public:
+  ArrayVar(std::string name, int dim);
+  int64_t dimension;
+};
+
   /*
    * Instruction interface.
    */
@@ -145,9 +151,9 @@ class Operation : public Item
   class Instruction_declare : public Instruction 
   {
     public: 
-    String* type;
+    VarTypes type;
     Variable* dst; 
-    std::string toString() override { return type->toString() + " " + dst->toString(); }
+    std::string toString() override { return "type  " + dst->toString(); }
     void accept(Visitor *v) override;
   };
 
@@ -333,7 +339,7 @@ class Instruction_br_t : public Instruction_br
     vector<Variable*> arguments; 
     std::vector<BasicBlock*> basicBlocks; 
     std::map<std::string, Variable*> variables; 
-    Variable* newVariable(std::string type, std::string variableName);
+    Variable* newVariable(std::string type, VarTypes variableName, int dim);
     Function(); 
   };
 
