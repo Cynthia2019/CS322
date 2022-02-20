@@ -15,7 +15,7 @@
 #include <IR.h>
 #include <parser.h>
 #include <CFG.h>
-// #include <codegenerator.h>
+#include "codegenerator.h"
 
 using namespace std;
 
@@ -79,6 +79,7 @@ int main(
     linearize(p, f);
   }
 
+  IR::generate_code(p);
 
   /*
    * Generate the target code.

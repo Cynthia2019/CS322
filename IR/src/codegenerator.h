@@ -25,6 +25,8 @@ namespace IR{
     private: 
       std::ofstream &outputFile;
       Function* f;
+      int64_t temp_counter = 0;
+      std::string newTempVar();
   };
 
 }
