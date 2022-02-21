@@ -364,6 +364,7 @@ class Instruction_br_t : public Instruction_br
     std::vector<BasicBlock*> basicBlocks; 
     std::map<std::string, Variable*> variables; 
     Variable* newVariable(std::string type, VarTypes variableName, int dim);
+    Variable* getVariable(std::string name);
     Function(); 
   };
 
