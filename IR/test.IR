@@ -1,15 +1,7 @@
 define void :main() {
   :mainFunction
-  int64 %input
-  int64 %ret
-  %input <- call input()
-  %input <- %input - 1
-  %input <- %input >> 1
-  %ret <- call :perfect(%input)
-  call print(%ret)
-  return 3
-}
-define void :perfect(int64 %in) {
-  :label 
-  return 
+  tuple %t 
+  %t <- new Tuple(7)
+  %t[0] <- 5
+  return
 }

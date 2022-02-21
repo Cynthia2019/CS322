@@ -102,6 +102,12 @@ class ArrayVar : public Variable {
   int64_t dimension;
 };
 
+// class TupleVar : public Variable {
+//   public:
+//   TupleVar(std::string name);
+// };
+
+
   /*
    * Instruction interface.
    */

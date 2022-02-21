@@ -87,7 +87,7 @@ namespace IR
     return *this == other;
   }
 
-  ArrayVar::ArrayVar(std::string name, int dim) :Variable(name, var_int64_multi){
+  ArrayVar::ArrayVar(std::string name, int dim) : Variable(name, var_int64_multi){
     this->dimension = dim;
     // this->variableName = name;
     // this->type = var_int64_multi;
