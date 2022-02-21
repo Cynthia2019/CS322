@@ -44,6 +44,7 @@ namespace IR {
     }
 
     void CodeGenerator::visit(Instruction_ret_t *i) {
+        outputFile << "\treturn"  << i->arg->toString() << endl;
     }
 
     void CodeGenerator::visit(Instruction_assignment *i) {
@@ -91,7 +92,9 @@ namespace IR {
         outputFile << "\t" << i->dst->toString() << " <- load " << total_offset << endl;
     }
 
-    void CodeGenerator::visit(Instruction_op *i) { }
+    void CodeGenerator::visit(Instruction_op *i) {
+        outputFile <<"\t" << i->toString() << endl;
+    }
     void CodeGenerator::visit(Instruction_store *i) {
         TupleVar *tuple = dynamic_cast<TupleVar *>(i->dst);
         if (tuple) {
@@ -132,8 +135,13 @@ namespace IR {
         outputFile << "\t" << "store " << total_offset << " <- " << i->src->toString() << endl;
     }
     void CodeGenerator::visit(Instruction_declare *i) { }
-    void CodeGenerator::visit(Instruction_br_label *i) { }
-    void CodeGenerator::visit(Instruction_br_t *i) { }
+    void CodeGenerator::visit(Instruction_br_label *i) {
+        outputFile << "\t" << "br " << i->label->get() << endl;
+    }
+    void CodeGenerator::visit(Instruction_br_t *i) {
+        outputFile << "\t" << "br " << i->condition->toString() << i->label1->get() << endl;
+        outputFile << "\t" << "br " << i->label2->get() << endl;
+    }
     void CodeGenerator::visit(Instruction_call_noassign *i) {
         outputFile << "\t" << i->toString() << endl;
     }
@@ -159,18 +167,6 @@ namespace IR {
 
     void CodeGenerator::visit(Instruction_array *i) {
         int64_t dimension = i->args.size();
-        vector<int64_t> lens;
-        int64_t total_len = 0;
-        int64_t allocate_len = 0;
-        for (auto a : i->args) {
-            Number *n = dynamic_cast<Number *>(a);
-            if (!n) cerr << "something's wrong" << endl;
-            lens.push_back(n->get());
-            total_len += n->get();
-        }
-
-        allocate_len = total_len + 1 + dimension;
-        ::string line;
 
         ::string total_len_var = newTempVar();
         outputFile << "\t" << total_len_var << " <- 1\n";
@@ -216,9 +212,9 @@ namespace IR {
         for (auto f : p.functions) {
             CodeGenerator cg(f, outputFile);
             outputFile << "define " << f->name << "(";
-            for (int i = 0; i < f->arguments.size(); i++) {
+            for (int i = f->arguments.size() - 1; i >= 0; i--) {
                 outputFile << f->arguments[i]->toString();
-                if (i != f->arguments.size() - 1) {
+                if (i != 0) {
                     outputFile << ", ";
                 }
             }

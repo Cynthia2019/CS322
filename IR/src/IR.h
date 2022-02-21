@@ -4,6 +4,7 @@
 #include <string>
 #include <set>
 #include <map>
+#include <iostream>
 
 using namespace std;
 
@@ -196,7 +197,12 @@ class TupleVar: public Variable {
     Item *op;
     Item *oprand1;
     Item *oprand2; 
-    std::string toString() override { return dst->toString() +" <- "+ oprand1->toString() + " " + op->toString() + " " + oprand2->toString(); }
+    std::string toString() override { 
+      if (!dst) std::cout << "no dst" << std::endl;
+      if (!op) cout << "no op" << endl;
+      if (!oprand1) cout << "no op1" << endl;
+      if (!oprand2) cout << "no op2" << endl;
+      return dst->toString() +" <- "+ oprand1->toString() + " " + op->toString() + " " + oprand2->toString(); }
     void accept(Visitor *v) override; 
   };
 
@@ -273,8 +279,14 @@ class Instruction_br_t : public Instruction_br
   public:
     Variable *dst;
     std::string toString() override { 
-        string s = dst->toString() + " <- call " + callee->toString() + " "; 
-        for(Item* i : args) s += i->toString() + " ";
+        string s = dst->toString() + " <- call " + callee->toString() + "("; 
+        for (int i = 0; i < args.size(); i++) {
+          s += args[i]->toString();
+          if (i != args.size() - 1) {
+            s += ", ";
+          }
+        }
+        s += ")";
         return s; 
     }
     void accept(Visitor *v) override; 
