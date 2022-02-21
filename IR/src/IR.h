@@ -4,6 +4,7 @@
 #include <string>
 #include <set>
 #include <map>
+#include <iostream>
 
 using namespace std;
 
@@ -102,11 +103,10 @@ class ArrayVar : public Variable {
   int64_t dimension;
 };
 
-// class TupleVar : public Variable {
-//   public:
-//   TupleVar(std::string name);
-// };
-
+class TupleVar: public Variable {
+  public:
+  TupleVar(std::string name);
+};
 
   /*
    * Instruction interface.
@@ -121,7 +121,7 @@ class ArrayVar : public Variable {
     virtual std::string toString() = 0; //for debug
   };
 
-  class Terminator {
+  class Terminator : public Instruction{
     public:
     Operation* op;
     virtual std::string toString() = 0;
@@ -131,7 +131,7 @@ class ArrayVar : public Variable {
   /*
    * Instructions.
    */
-  class Instruction_ret : public Instruction, public Terminator
+  class Instruction_ret :  public Terminator
   {
     public:
       virtual std::string toString() = 0;
@@ -197,7 +197,12 @@ class ArrayVar : public Variable {
     Item *op;
     Item *oprand1;
     Item *oprand2; 
-    std::string toString() override { return dst->toString() +" <- "+ oprand1->toString() + " " + op->toString() + " " + oprand2->toString(); }
+    std::string toString() override { 
+      if (!dst) std::cout << "no dst" << std::endl;
+      if (!op) cout << "no op" << endl;
+      if (!oprand1) cout << "no op1" << endl;
+      if (!oprand2) cout << "no op2" << endl;
+      return dst->toString() +" <- "+ oprand1->toString() + " " + op->toString() + " " + oprand2->toString(); }
     void accept(Visitor *v) override; 
   };
 
@@ -219,7 +224,7 @@ class ArrayVar : public Variable {
     void accept(Visitor *v) override; 
   };
 
-  class Instruction_br : public Instruction, public Terminator {
+  class Instruction_br : public Terminator {
     public:
     virtual std::string toString() = 0;
     virtual void accept(Visitor *v) = 0;
@@ -256,8 +261,14 @@ class Instruction_br_t : public Instruction_br
   {
   public:
     std::string toString() override { 
-        string s = "call " + callee->toString() + " "; 
-        for(Item* i : args) s += i->toString() + " ";
+        string s = "call " + callee->toString() + "("; 
+        for (int i = 0; i < args.size(); i++) {
+          s += args[i]->toString();
+          if (i != args.size() - 1) {
+            s += ", ";
+          }
+        }
+        s += ")";
         return s; 
     }
     void accept(Visitor *v) override; 
@@ -268,8 +279,14 @@ class Instruction_br_t : public Instruction_br
   public:
     Variable *dst;
     std::string toString() override { 
-        string s = dst->toString() + " <- call " + callee->toString() + " "; 
-        for(Item* i : args) s += i->toString() + " ";
+        string s = dst->toString() + " <- call " + callee->toString() + "("; 
+        for (int i = 0; i < args.size(); i++) {
+          s += args[i]->toString();
+          if (i != args.size() - 1) {
+            s += ", ";
+          }
+        }
+        s += ")";
         return s; 
     }
     void accept(Visitor *v) override; 
@@ -340,6 +357,7 @@ class Instruction_br_t : public Instruction_br
   {
   public:
     std::string name;
+    std::string entry_label;
     string type; 
     bool isMain;
     vector<Variable*> arguments; 

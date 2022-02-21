@@ -4,6 +4,7 @@
 
 namespace IR{
     void generate_code(Program p);
+    // std::string longest_label(Program &p);
   class CodeGenerator : public Visitor {
     public: 
       CodeGenerator(Function* f, std::ofstream &); 
@@ -25,6 +26,8 @@ namespace IR{
     private: 
       std::ofstream &outputFile;
       Function* f;
+      int64_t temp_counter = 0;
+      std::string newTempVar();
   };
 
 }

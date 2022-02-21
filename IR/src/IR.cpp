@@ -26,6 +26,10 @@ namespace IR
       Function::variables[variableName] = new ArrayVar(variableName, dim);
       break;
     
+    case var_tuple:
+      Function::variables[variableName] = new TupleVar(variableName);
+      break;
+    
     default:
       Function::variables[variableName] = new Variable(variableName, type);
       break;
@@ -91,6 +95,10 @@ namespace IR
     this->dimension = dim;
     // this->variableName = name;
     // this->type = var_int64_multi;
+  }
+
+  TupleVar::TupleVar(std::string name) :Variable(name, var_tuple) {
+
   }
 
   string Variable::toString()

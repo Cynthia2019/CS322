@@ -558,9 +558,9 @@ namespace IR
         cout << "firing type_variable_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       std::string type_var = in.string(); 
-      int n = type_var.find(" "); 
+      int n = type_var.find("%"); 
       std::string type = type_var.substr(0, n); 
-      std::string var_name = type_var.substr(n+1); 
+      std::string var_name = type_var.substr(n); 
       if(is_debug) {
         cout << "type: " << type << " var: " << var_name << endl;
       }
@@ -744,13 +744,14 @@ template <>
       i->op = parsed_items.back();
       parsed_items.pop_back();
       i->oprand1 = parsed_items.back();
+      cout << i->oprand2->toString() << endl;
       parsed_items.pop_back();
       i->dst = dynamic_cast<Variable*>(parsed_items.back());
       if(dynamic_cast<Variable*>(parsed_items.back()) == nullptr) cout << "NULL" <<endl;
       parsed_items.pop_back();
       if(is_debug) cout << i->toString() << endl;
-      bb->instructions.push_back(i);
       cout << "oprule" << parsed_items.size() << endl;
+      bb->instructions.push_back(i);
     }
   };
   /*
@@ -887,9 +888,9 @@ template <>
       auto currentF = p.functions.back();
       BasicBlock* bb = currentF->basicBlocks.back();
       std::string type_var = in.string(); 
-      int n = type_var.find(" "); 
+      int n = type_var.find("%"); 
       std::string type = type_var.substr(0, n); 
-      std::string var_name = type_var.substr(n+1); 
+      std::string var_name = type_var.substr(n); 
       if(is_debug) {
         cout << "type: " << type << " var: " << var_name << endl;
       }
