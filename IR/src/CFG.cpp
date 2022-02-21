@@ -71,6 +71,7 @@ namespace IR {
             graph->addNode(node); 
             if(!entry){
                 graph->entryNode = node;
+                f->entry_label = node->getFirst()->toString();
                 entry = true; 
             }
             if(node->getLast()->op->toString() == "return"){

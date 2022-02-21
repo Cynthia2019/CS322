@@ -357,6 +357,7 @@ class Instruction_br_t : public Instruction_br
   {
   public:
     std::string name;
+    std::string entry_label;
     string type; 
     bool isMain;
     vector<Variable*> arguments; 

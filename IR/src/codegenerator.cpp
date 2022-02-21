@@ -5,6 +5,7 @@
 #include <unordered_map>
 
 #include "codegenerator.h"
+#include "CFG.h"
 
 using namespace std;
 
@@ -202,15 +203,32 @@ namespace IR {
         outputFile << "\t" << i->dst->toString() << " <- call allocate(" << i->arg->toString() << ", 1)" << endl;
     }
 
+    std::string longest_label(Program &p) {
+        size_t maxlen = 0;
+        ::string longgest;
+        for (auto f : p.functions) {
+            for (auto bb : f->basicBlocks) {
+                size_t len = bb->label->toString().length();
+                if (len > maxlen) {
+                    longgest = bb->label->toString();
+                    maxlen = len;
+                }
+            }
+        }
+        return longgest;
+    }
 
     void generate_code(Program p) {
         /* 
         * Open the output file.
         */ 
+
+       ::string LL = longest_label(p);
         std::ofstream outputFile;
         outputFile.open("prog.L3");
         for (auto f : p.functions) {
             CodeGenerator cg(f, outputFile);
+            auto traces = linearize(p, f);
             outputFile << "define " << f->name << "(";
             for (int i = f->arguments.size() - 1; i >= 0; i--) {
                 outputFile << f->arguments[i]->toString();
@@ -219,17 +237,36 @@ namespace IR {
                 }
             }
             outputFile << ") {" << endl;
-            //TODO: chage this to use trace
-            for (auto bb : f->basicBlocks) {
-                outputFile << "\t" << bb->label->get() << endl;
-                for (auto i : bb->instructions) {
-                    i->accept(&cg);
+            outputFile << "\t" << LL << "_to_entry" << endl;
+            outputFile << "\t" << "br " << f->entry_label << endl;
+            for (auto tr : traces) {
+                int64_t idx = 0;
+                for (auto bb: tr->traces) {
+                    // outputFile << tr->traces.size() << endl;
+                    outputFile << "\t" << bb->getFirst()->toString() << endl;
+                    for (auto i : bb->getBasicBlock()->instructions) {
+                        i->accept(&cg);
+                    }
+                    auto term = bb->getLast();
+                    Instruction_br_label *ret;
+                    if (idx++ != tr->traces.size() - 1 && (ret = dynamic_cast<Instruction_br_label *>(term))) {
+                        continue;
+                    }
+                    term->accept(&cg);
                 }
-                bb->te->accept(&cg);
             }
+
+            //TODO: chage this to use trace
+            // for (auto bb : f->basicBlocks) {
+            //     for (auto i : bb->instructions) {
+            //         i->accept(&cg);
+            //     }
+            //     bb->te->accept(&cg);
+            // }
 
             outputFile << "}" << endl;
         }
     }
+
 
 }
