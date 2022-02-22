@@ -519,7 +519,7 @@ namespace IR
         cout << "firing variable_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       std::string var_name = in.string(); 
-      Variable *i = currentF->variables[var_name];
+      Variable *i = currentF->getVariable(var_name);
       cout << "pushing variable" << endl;
       parsed_items.push_back(i);
     }
@@ -623,7 +623,7 @@ template <>
           temp.erase(std::remove_if(temp.begin(), temp.end(), [](unsigned char x){return std::isspace(x);}), temp.end()); 
           if(is_debug) cout << "args: " << temp << endl;
           if(temp[0] == '%'){
-            Variable *i = currentF->variables[temp];
+            Variable *i = currentF->getVariable(temp);
             list_of_args.push_back(i);
           }
           else {
@@ -635,7 +635,7 @@ template <>
       if(is_debug) cout << "args after parsed: " << args << endl;
       args.erase(std::remove_if(args.begin(), args.end(), [](unsigned char x){return std::isspace(x);}), args.end()); 
       if(args[0] == '%'){
-          Variable* i = currentF->variables[args]; 
+          Variable *i = currentF->getVariable(args);
           list_of_args.push_back(i);
       }
       else {

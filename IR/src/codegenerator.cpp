@@ -57,7 +57,7 @@ namespace IR {
         if (tuple) {
             if (i->indices.size() != 1) abort();
             ::string off = newTempVar();
-            outputFile << off << " <- " << i->indices[0]->toString() << " * 8" << endl;
+            outputFile << "\t" << off << " <- " << i->indices[0]->toString() << " * 8" << endl;
             outputFile << "\t" << off << " <- " << off << " + 8" << endl;
             outputFile << "\t" << off << " <- " << off << " + " << tuple->toString() << endl;
             outputFile << "\t" << i->dst->toString() << " <- load " << off << endl;

@@ -11,8 +11,13 @@ namespace IR
   //Function 
   Function::Function(void) {}
 
+  Variable* Function::getVariable(std::string name) {
+    std::string variableName = "%var_" + name.substr(1);
+    return Function::variables[variableName];
+  }
+
   Variable* Function::newVariable(std::string variable, VarTypes type, int dim){
-    std::string variableName = variable;
+    std::string variableName = "%var_" + variable.substr(1);
     if(Function::variables.find(variableName) != Function::variables.end()){
       cerr << "multiple definition of " << variable << endl;
       abort();
