@@ -126,9 +126,9 @@ class FunctionItem : public Item {
   public:
     vector<Item *> uses;
     vector<Item *> define;
-
+    int64_t lineno = 0;
     virtual void accept(Visitor* visitor) = 0; 
-    virtual std::string toString() = 0; //for debug
+    virtual std::string toString() = 0; //for debugging
   };
 
   /*
@@ -387,6 +387,7 @@ class Instruction_input : public Instruction {
     std::map<std::string, Function*> name_to_functions; 
     std::vector<Function *> functions;
     Function* getFunction(string name); 
+    std::string getLongestLabel();
     Program();
   };
 
