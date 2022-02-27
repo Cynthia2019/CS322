@@ -8,16 +8,20 @@ namespace LA
 {
   //Program 
   Program::Program() {}
+  Function* Program::getFunction(std::string name){
+    return Program::name_to_functions[name];
+  }
   //Function 
   Function::Function(void) {}
 
   Variable* Function::getVariable(std::string name) {
-    std::string variableName = "var_" + name;
-    return Function::variables[variableName];
+    //std::string variableName = "var_" + name;
+    return Function::variables[name];
   }
 
   Variable* Function::newVariable(std::string variable, VarTypes type, int dim){
-    std::string variableName = "var_" + variable;
+    // std::string variableName = "var_" + variable;
+    std::string variableName =variable;
     if(Function::variables.find(variableName) != Function::variables.end()){
       cerr << "multiple definition of " << variable << endl;
       abort();
@@ -131,6 +135,16 @@ namespace LA
   }
   string String::toString() {
       return this->sName;
+  }
+
+  FunctionItem::FunctionItem(string name) {
+    this->fname = name; 
+  }
+  string FunctionItem::get() {
+    return this->fname; 
+  }
+  string FunctionItem::toString() {
+    return this->fname; 
   }
 
 //assignment 

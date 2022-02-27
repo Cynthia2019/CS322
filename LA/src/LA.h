@@ -19,7 +19,8 @@ namespace LA
     item_variable,
     item_string,
     item_operation,
-    item_type
+    item_type,
+    item_function
   };
 
   enum VarTypes {
@@ -105,6 +106,16 @@ class ArrayVar : public Variable {
 class TupleVar: public Variable {
   public:
   TupleVar(std::string name);
+};
+
+class FunctionItem : public Item {
+  public: 
+  FunctionItem(string name); 
+    string get(); 
+    string toString() override; 
+    ItemType getType(void) override { return item_function; }
+  private: 
+    string fname; 
 };
 
   /*
@@ -373,7 +384,9 @@ class Instruction_input : public Instruction {
   {
   public:
     bool hasMain; 
+    std::map<std::string, Function*> name_to_functions; 
     std::vector<Function *> functions;
+    Function* getFunction(string name); 
     Program();
   };
 

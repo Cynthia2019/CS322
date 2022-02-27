@@ -105,7 +105,6 @@ namespace LA
                       pegtl::plus<
                           pegtl::digit>> {};
   struct variable : name {};
-  struct function_name : name {};
 
 
   struct number_rule : number {};
@@ -120,12 +119,12 @@ namespace LA
                           TAOCPP_PEGTL_STRING("[]")>
                           >
                       > {};
-  struct function_type : type_rule {};
   struct variable_rule : variable {};
   struct type_variable_rule : pegtl::seq<
                               type_rule, 
                               seps,
                               variable> {};
+  struct function_type_name : type_variable_rule {};
   struct parameters_rule : pegtl::sor<
                             pegtl::seq<
                               type_variable_rule,
@@ -239,9 +238,9 @@ namespace LA
   */
 struct Instruction_call_rule : pegtl::seq<
                                     pegtl::sor<
-                                      variable_rule, 
                                       str_input, 
-                                      str_print>,
+                                      str_print,
+                                      variable_rule>,
                                     seps,
                                     TAOCPP_PEGTL_STRING("("),
                                     pegtl::sor<seps, pegtl::eol>,
@@ -256,9 +255,9 @@ struct Instruction_call_rule : pegtl::seq<
                                     str_arrow, 
                                     seps, 
                                      pegtl::sor<
-                                      variable_rule, 
                                       str_input, 
-                                      str_print>,
+                                      str_print,
+                                      variable_rule>,
                                     seps,
                                     TAOCPP_PEGTL_STRING("("),
                                     pegtl::sor<seps, pegtl::eol>,
@@ -339,12 +338,12 @@ struct Instruction_call_rule : pegtl::seq<
                                 pegtl::seq<pegtl::at<Instruction_op_rule>, Instruction_op_rule>,
                                 pegtl::seq<pegtl::at<Instruction_load_rule>, Instruction_load_rule>,
                                 pegtl::seq<pegtl::at<Instruction_store_rule>, Instruction_store_rule>,
+                                pegtl::seq<pegtl::at<Instruction_array_rule>, Instruction_array_rule>,
+                                pegtl::seq<pegtl::at<Instruction_tuple_rule>, Instruction_tuple_rule>,
                                 pegtl::seq<pegtl::at<Instruction_call_rule>, Instruction_call_rule>,
                                 pegtl::seq<pegtl::at<Instruction_call_assignment_rule>, Instruction_call_assignment_rule>,
                                 pegtl::seq<pegtl::at<Instruction_assignment_rule>, Instruction_assignment_rule>,
                                 pegtl::seq<pegtl::at<Instruction_length_rule>, Instruction_length_rule>,
-                                pegtl::seq<pegtl::at<Instruction_array_rule>, Instruction_array_rule>,
-                                pegtl::seq<pegtl::at<Instruction_tuple_rule>, Instruction_tuple_rule>,
                                 pegtl::seq<pegtl::at<Instruction_declare_rule>, Instruction_declare_rule>>
   {
   };
@@ -358,9 +357,7 @@ struct Instruction_call_rule : pegtl::seq<
   };
 
   struct Function_rule : pegtl::seq<
-                             function_type, 
-                             seps, 
-                             function_name,
+                             function_type_name,
                              seps,
                              TAOCPP_PEGTL_STRING("("),
                              seps,
@@ -404,29 +401,36 @@ struct Instruction_call_rule : pegtl::seq<
       if (is_debug) cout << "firing Function_rule" << endl;
     }
   };
+  // template <>
+  // struct action<function_name>
+  // {
+  //   template <typename Input>
+  //   static void apply(const Input &in, Program &p)
+  //   {
+  //     if (is_debug) cout << "function name: " << in.string() << endl;
+  //     auto currentF = p.functions.back(); 
+  //     currentF->name = in.string();
+  //     currentF->isMain = in.string() == "main";
+  //     p.functions.push_back()
+  //   }
+  // };
   template <>
-  struct action<function_name>
+  struct action<function_type_name>
   {
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
       if (is_debug) cout << "new function: " << in.string() << endl;
-      auto currentF = p.functions.back(); 
-      currentF->name = in.string();
-      currentF->isMain = in.string() == "main";
-    }
-  };
-  template <>
-  struct action<function_type>
-  {
-    template <typename Input>
-    static void apply(const Input &in, Program &p)
-    {
-      if (is_debug) cout << "function type: " << in.string() << endl;
       auto newF = new Function();
-      newF->type = in.string();
+      std::string input = in.string(); 
+      int n = input.find(" "); 
+      std::string type = input.substr(0, n); 
+      std::string var_name = input.substr(n+1); 
+      newF->type = type;
+      newF->name = var_name; 
       p.functions.push_back(newF);
-    }
+      p.name_to_functions[var_name] = newF; 
+    } 
   };
 
   template <>
@@ -483,8 +487,21 @@ struct Instruction_call_rule : pegtl::seq<
       auto currentF = p.functions.back();
       std::string var_name = in.string(); 
       Variable *i = currentF->getVariable(var_name);
-      cout << "pushing variable" << endl;
-      parsed_items.push_back(i);
+      Function* f = p.getFunction(var_name); 
+      if(i != nullptr) {
+        cout << "pushing variable" << endl;
+        parsed_items.push_back(i);
+      }
+      else if (f != nullptr){
+        cout << "pushing function item\n"; 
+        FunctionItem* fi = new FunctionItem(f->name); 
+        parsed_items.push_back(fi); 
+      }
+      else {
+        cout << "function currently not define\n"; 
+        FunctionItem* fi = new FunctionItem(var_name); 
+        parsed_items.push_back(fi);
+      }
     }
   }; 
 
@@ -519,9 +536,9 @@ struct Instruction_call_rule : pegtl::seq<
         cout << "firing type_variable_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       std::string type_var = in.string(); 
-      int n = type_var.find("%"); 
+      int n = type_var.find(" "); 
       std::string type = type_var.substr(0, n); 
-      std::string var_name = type_var.substr(n); 
+      std::string var_name = type_var.substr(n+1); 
       if(is_debug) {
         cout << "type: " << type << " var: " << var_name << endl;
       }
@@ -547,10 +564,10 @@ template <>
         cout << "firing parameters_rule: " << in.string() << endl;
         auto currentF = p.functions.back();
         while(!parsed_items.empty()){
-          cout <<parsed_items.back()->toString() << endl;
+          // cout <<parsed_items.back()->toString() << endl;
           Variable* v = dynamic_cast<Variable*>(parsed_items.back()); 
           if(v == nullptr) cerr << "bug\n"; 
-          cout << "param variable: " << v->toString() << endl;
+          // cout << "param variable: " << v->toString() << endl;
           currentF->arguments.push_back(v); 
           parsed_items.pop_back();
         }
@@ -562,6 +579,7 @@ template <>
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
+      if(in.string().find("void") != in.string().npos) return ; 
       if (is_debug)
         cout << "firing args_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
@@ -605,7 +623,6 @@ template <>
       if (is_debug)
         cout << "firing op_rule: " << in.string() << endl;
       Operation *i = new Operation(in.string());
-      cout << "pushing op" << endl;
       parsed_items.push_back(i);
     }
   };
@@ -642,6 +659,15 @@ template <>
       parsed_items.push_back(i);
     }
   };
+  template <>
+  struct action<str_new>
+  {
+    template <typename Input>
+    static void apply(const Input &in, Program &p)
+    {
+      if (is_debug) cout << "firing str_new rule" << endl;
+    }
+  };
   // action when value is a number
   template <>
   struct action<number_rule>
@@ -652,7 +678,6 @@ template <>
       // if (is_debug)
       //   cout << "firing number_rule: " << in.string() << endl;
       Number *i = new Number(std::stoll(in.string()));
-      cout << "pushing number" << endl;
       parsed_items.push_back(i);
     }
   };
@@ -689,7 +714,6 @@ template <>
       i->op = parsed_items.back();
       parsed_items.pop_back();
       i->oprand1 = parsed_items.back();
-      cout << i->oprand2->toString() << endl;
       parsed_items.pop_back();
       i->dst = dynamic_cast<Variable*>(parsed_items.back());
       if(dynamic_cast<Variable*>(parsed_items.back()) == nullptr) cout << "NULL" <<endl;
@@ -716,6 +740,7 @@ template <>
       reverse(list_of_args.begin(), list_of_args.end());
       while(!list_of_args.empty()) {
           i->args.push_back(list_of_args.back());
+          cout << "arg: " << list_of_args.back()->toString() << endl;
           list_of_args.pop_back();
           parsed_items.pop_back();
       }
@@ -800,6 +825,7 @@ template <>
       auto i = new Instruction_assignment();
       cout << parsed_items.back()->toString() <<"\n";
       i->src = parsed_items.back();
+      cout << i->src->toString() << endl;
       parsed_items.pop_back();
       i->dst = dynamic_cast<Variable*>(parsed_items.back());
       cout << parsed_items.back()->toString() <<"\n";
@@ -830,10 +856,8 @@ template <>
       if (curr_var_type == var_int64_multi) {
         int dimension = count(type.begin(), type.end(), ']');
         v = currentF->newVariable(var_name, var_int64_multi, dimension);
-        cout << "declarering" << var_name << endl;
       } else {
         v = currentF->newVariable(var_name, curr_var_type, 0);
-        cout << "declarering" << var_name << endl;
       }
 
       Instruction_declare* i = new Instruction_declare(); 
@@ -853,7 +877,6 @@ template <>
       
       std::string indices = in.string(); 
       int n = count(indices.begin(), indices.end(), ']');
-      cout << "pushing indice" << endl;
       parsed_items.push_back(new Number(n));
     }
   };

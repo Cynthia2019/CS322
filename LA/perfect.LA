@@ -34,7 +34,7 @@ int64 perfect(int64 in){
   :perfect_leftPlus
   int64 left_res
   left <- mid + 1
-  left_res <- left <= %right
+  left_res <- left <= right
   br left_res :perfect_loop :perfect_false
 
   :perfect_rightPlus
