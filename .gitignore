@@ -6,10 +6,14 @@ L2/bin/L2
 L3/bin/L3
 L2/bin/L2i
 IR/bin/IR
+LA/bin/LA
+LB/bin/LB
 prog.S
 prog.L1
 prog.L2
 prog.L3
+prog.IR
+prog.a
 L1/src/test.L1
 *.tmp
 prog.o

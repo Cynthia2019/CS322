@@ -1,0 +1,49 @@
+void main() {
+    int64 v1, lineno
+	v1 <- 3
+	lineno <- input()
+	int64 condi, counter, encoded
+	int64[] prev_array, line_array
+
+    while (counter < lineno) :loop_continue :loop_after
+	:loop_continue
+	counter <- counter + 1
+	int64 item_nb
+	item_nb <- 0
+	line_array <- new Array(counter)
+
+	while (item_nb < counter) :inner_loop_continue :inner_loop_after
+	:inner_loop_continue
+    if (item_nb = 0) :border :or_condi
+
+
+	:or_condi
+	int64 counter_minus_one
+	counter_minus_one <- counter - 1
+    if (item_nb = counter_minus_one) :border :other_line
+
+	:border
+	line_array[item_nb] <- 1
+	goto :should_quit
+
+	:other_line
+    int64 prev1, prev2
+	prev1 <- prev_array[item_nb]
+	encoded <- item_nb - 1
+	prev2 <- prev_array[encoded]
+	encoded <- prev1 + prev2
+	line_array[item_nb] <- encoded
+	goto :should_quit
+
+	:should_quit
+	item_nb <- item_nb + 1
+	continue
+
+	:inner_loop_after
+	print(line_array)
+	prev_array <- line_array
+	continue
+
+	:loop_after
+	return
+}

@@ -8,6 +8,25 @@ namespace LA
 {
   //Program 
   Program::Program() {}
+
+  std::string Program::getLongestLabel() {
+    size_t maxlen = 0;
+    ::string longgest;
+    for (auto f : this->functions) {
+        for (auto i: f->instructions) {
+          Instruction_label *label;
+          if ((label = dynamic_cast<Instruction_label *>(i))) {
+            int len = label->toString().length();
+            if (len > maxlen) {
+                longgest = label->toString();
+                maxlen = len;
+            }
+          }
+        }
+    }
+    return longgest;
+  }
+
   Function* Program::getFunction(std::string name){
     return Program::name_to_functions[name];
   }
