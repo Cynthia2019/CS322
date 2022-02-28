@@ -429,7 +429,19 @@ struct Instruction_call_rule : pegtl::seq<
       if (is_debug) cout << "new function: " << in.string() << endl;
       auto newF = new Function();
       std::string input = in.string(); 
-      int n = input.find(" "); 
+      int n;
+      if(input.find(" ") != std::string::npos) {
+        n = input.find(" "); 
+      } 
+      else if(input.find("tuple") != std::string::npos) {
+        n = 5;
+      }
+      else if(input.find("code") != std::string::npos) {
+        n = 4; 
+      }
+      else if(input.find("int64") != std::string::npos) {
+        n = 5; 
+      }
       std::string type = input.substr(0, n); 
       int i = n;
       while (input[i] == ' ') i++;
@@ -491,7 +503,7 @@ struct Instruction_call_rule : pegtl::seq<
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
-      if(in.string() == "print" || in.string() == "input" || in.string() == "void") return ;
+      if(in.string() == "void") return ;
       if (is_debug)
         cout << "firing variable_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
@@ -887,12 +899,9 @@ template <>
       auto currentF = p.functions.back();
       auto i = new Instruction_assignment();
       i->lineno = in.position().line;
-      cout << parsed_items.back()->toString() <<"\n";
       i->src = parsed_items.back();
-      cout << i->src->toString() << endl;
       parsed_items.pop_back();
       i->dst = dynamic_cast<Variable*>(parsed_items.back());
-      cout << parsed_items.back()->toString() <<"\n";
       parsed_items.pop_back();
       if(is_debug) cout << i->toString() << endl;
       currentF->instructions.push_back(i);
