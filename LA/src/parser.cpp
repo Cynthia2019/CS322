@@ -431,7 +431,9 @@ struct Instruction_call_rule : pegtl::seq<
       std::string input = in.string(); 
       int n = input.find(" "); 
       std::string type = input.substr(0, n); 
-      std::string var_name = input.substr(n+1); 
+      int i = n;
+      while (input[i] == ' ') i++;
+      std::string var_name = input.substr(i); 
       newF->type = type;
       newF->name = var_name; 
       p.functions.push_back(newF);
