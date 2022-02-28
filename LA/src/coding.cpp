@@ -87,18 +87,18 @@ namespace LA
         }
     }
     void Encoder::visit(Instruction_call_noassign *i) {
-        for(Item* item : i->args){
-            Number* a = dynamic_cast<Number*>(item); 
+        for(int idx = 0; idx < i->args.size(); idx++){
+            Number* a = dynamic_cast<Number*>(i->args[idx]); 
             if(a != nullptr) {
-                item = new Number(encodeConstant(a->get())); 
+                i->args[idx] = new Number(encodeConstant(a->get())); 
             }
         }
     }
     void Encoder::visit(Instruction_call_assignment *i) {
-        for(Item* item : i->args){
-            Number* a = dynamic_cast<Number*>(item); 
+        for(int idx = 0; idx < i->args.size(); idx++){
+            Number* a = dynamic_cast<Number*>(i->args[idx]); 
             if(a != nullptr) {
-                item = new Number(encodeConstant(a->get())); 
+                i->args[idx] = new Number(encodeConstant(a->get())); 
             }
         }
     }

@@ -48,9 +48,12 @@ namespace LA {
         string dst = "%" + i->dst->toString(); 
         string src; 
         if(i->src->getType() == item_variable) {
-            src = "%" + i->src->toString(); 
+            src = "%";
         }
-        else src = i->src->toString(); 
+        else if(i->src->getType() == item_function) {
+            src = ":";
+        }
+        src += i->src->toString(); 
         outputFile << "\t" << dst << " <- " << src << endl;
     }
 
@@ -225,6 +228,7 @@ namespace LA {
     void CodeGenerator::visit(Instruction_call_noassign *i) {
         string s = "\tcall ";
         if(i->callee->getType() == item_variable) s += "%"; 
+        if(i->callee->getType() == item_label) s += ":";
         s += i->callee->toString() + "("; 
         if(i->args.size() > 0) {
             for(int idx = 0; idx < i->args.size() - 1; idx++){
@@ -240,6 +244,7 @@ namespace LA {
     void CodeGenerator::visit(Instruction_call_assignment *i) {
         string s = "\t%" + i->dst->toString() + " <- call ";
         if(i->callee->getType() == item_variable) s += "%"; 
+        if(i->callee->getType() == item_label) s += ":";
         s += i->callee->toString() + "("; 
         if(i->args.size() > 0) {
             for(int idx = 0; idx < i->args.size() - 1; idx++){
