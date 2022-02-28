@@ -95,9 +95,16 @@ int main(
   } else {
     LA::MemoryCheck mc(p);
     mc.doProgram();
+    cout << "=========== do program ===========" << endl;
+    for (auto f : p.functions) {
+      for (auto i : f->instructions) {
+        cout << i->toString() << endl;
+      }
+    }
     for (auto f : p.functions) {
       LA::generateBasicBlock(f, mc.LL);
     }
+    cout << "=========== generate bb ===========" << endl;
     for (auto f : p.functions) {
       for (auto i : f->instructions) {
         cout << i->toString() << endl;

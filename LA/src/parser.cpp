@@ -342,8 +342,8 @@ struct Instruction_call_rule : pegtl::seq<
                                 pegtl::seq<pegtl::at<Instruction_tuple_rule>, Instruction_tuple_rule>,
                                 pegtl::seq<pegtl::at<Instruction_call_rule>, Instruction_call_rule>,
                                 pegtl::seq<pegtl::at<Instruction_call_assignment_rule>, Instruction_call_assignment_rule>,
-                                pegtl::seq<pegtl::at<Instruction_assignment_rule>, Instruction_assignment_rule>,
                                 pegtl::seq<pegtl::at<Instruction_length_rule>, Instruction_length_rule>,
+                                pegtl::seq<pegtl::at<Instruction_assignment_rule>, Instruction_assignment_rule>,
                                 pegtl::seq<pegtl::at<Instruction_declare_rule>, Instruction_declare_rule>>
   {
   };
@@ -903,7 +903,6 @@ template <>
       i->src = dynamic_cast<Variable*>(parsed_items.back());
       parsed_items.pop_back();
       i->dst = dynamic_cast<Variable*>(parsed_items.back());
-      i->indices = indices;
       parsed_items.pop_back();
       if(is_debug) cout << i->toString() << endl;
       currentF->instructions.push_back(i);
