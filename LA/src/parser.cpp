@@ -440,7 +440,7 @@ struct Instruction_call_rule : pegtl::seq<
         n = 5 + count(input.begin(), input.end(), ']') * 2; 
       }
       else {
-        n = 5;
+        n = input.find(" ");
       }
       std::string type = input.substr(0, n); 
       int i = n;
