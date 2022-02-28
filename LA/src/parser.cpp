@@ -902,6 +902,7 @@ template <>
       i->src = dynamic_cast<Variable*>(parsed_items.back());
       parsed_items.pop_back();
       i->dst = dynamic_cast<Variable*>(parsed_items.back());
+      i->indices = indices;
       parsed_items.pop_back();
       if(is_debug) cout << i->toString() << endl;
       currentF->instructions.push_back(i);
