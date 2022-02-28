@@ -14,6 +14,7 @@
 
 #include <LA.h>
 #include <parser.h>
+#include "coding.h"
 #include "codegenerator.h"
 #include "memory_check.h"
 
@@ -101,6 +102,9 @@ int main(
       for (auto i : f->instructions) {
         cout << i->toString() << endl;
       }
+    }
+    for(auto f : p.functions) {
+      LA::encodeAll(p, f); 
     }
     LA::generate_code(p);
   }

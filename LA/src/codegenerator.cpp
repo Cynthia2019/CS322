@@ -13,19 +13,6 @@ extern bool is_debug;
 
 
 namespace LA {
-    // std::string decode(Variable *v, CodeGenerator& g) {
-    //     string s; 
-    //     return g.newVar(v); 
-    // }
-    // std::string decode(Number *v, CodeGenerator& g) {
-    //     int64_t n = v->get(); 
-    //     n >>= 1; 
-    //     return to_string(n); 
-    // }
-
-    // std::string decode(string v) {
-    //     return v + " <- " + v + " >> 1\n";
-    // }
 
     std::string encode(Variable *v) {
         ::string res = "\t%" + v->toString() + " <- %" + v->toString() + " << 1\n";
