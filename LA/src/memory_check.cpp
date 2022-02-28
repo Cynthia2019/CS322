@@ -28,6 +28,22 @@ namespace LA {
 
         for (auto i : insts) {
             if (is_debug) cout << "reading instruction: " << i->toString() << endl;
+            Instruction_declare *dec = dynamic_cast<Instruction_declare *>(i);
+            if (dec) {
+                Instruction_assignment *assign = new Instruction_assignment();
+                switch(dec->type) {
+                    case var_int64:
+                    case var_int64_multi:
+                    case var_tuple:
+                        assign->dst = dec->dst;
+                        assign->src = new Number(0);
+                        insertInstruction(f, assign, 1);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
             Instruction_load *load = dynamic_cast<Instruction_load *>(i);
             if (load) {
                 check_initialize(f, load);
@@ -50,6 +66,11 @@ namespace LA {
 
     void MemoryCheck::insertInstruction(Function *f, Instruction *i) {
         f->instructions.insert(f->instructions.begin() + index, i);
+        index++;
+    }
+
+    void MemoryCheck::insertInstruction(Function *f, Instruction *i, int64_t offset) {
+        f->instructions.insert(f->instructions.begin() + index + offset, i);
         index++;
     }
 

@@ -25,6 +25,7 @@ namespace LA
         void check_access(Function *f, Instruction_store *inst);
         void check_single_help(Function *f, ArrayVar *array, vector<Item *> indices);
         void check_multi_help(Function *f, ArrayVar *array, vector<Item *> indices);
+        void insertInstruction(Function *f, Instruction *i, int64_t offset);
 
     };
 
