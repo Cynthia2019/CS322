@@ -437,7 +437,7 @@ struct Instruction_call_rule : pegtl::seq<
         n = 4; 
       }
       else if(input.find("int64") != std::string::npos) {
-        n = input.find("int64") + count(input.begin(), input.end(), ']') * 2; 
+        n = 5 + count(input.begin(), input.end(), ']') * 2; 
       }
       else if(input.find("void") != std::string::npos) {
         n = 4; 
@@ -446,11 +446,9 @@ struct Instruction_call_rule : pegtl::seq<
         n = input.find(" ");
       }
       std::string type = input.substr(0, n); 
-      if(input.find("int64") != std::string::npos && count(input.begin(), input.end(), ']') == 0) type = "int64";
-      cout << type << endl;
-      input = input.substr(n+1); 
-      input.erase(std::remove_if(input.begin(), input.end(), [](unsigned char x){return std::isspace(x);}), input.end());
-      std::string var_name = input;
+      int i = n;
+      while (input[i] == ' ') i++;
+      std::string var_name = input.substr(i); 
       newF->type = type;
       newF->name = var_name; 
       p.functions.push_back(newF);
