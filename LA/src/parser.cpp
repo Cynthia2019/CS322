@@ -893,10 +893,12 @@ template <>
       i->lineno = in.position().line;
       Number* size = dynamic_cast<Number*>(parsed_items.back()); 
       parsed_items.pop_back(); 
+      vector<Item*> indices; 
       for(int index = 0; index < size->get(); index++){
-        i->indices.push_back(parsed_items.back()); 
+        indices.push_back(parsed_items.back()); 
         parsed_items.pop_back();
       }
+      reverse(indices.begin(), indices.end()); 
       i->src = dynamic_cast<Variable*>(parsed_items.back());
       parsed_items.pop_back();
       i->dst = dynamic_cast<Variable*>(parsed_items.back());
