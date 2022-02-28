@@ -280,7 +280,7 @@ namespace LA {
     }
     void CodeGenerator::visit(Instruction_print *i) {
         string s; 
-        s += "\tcall print";
+        s += "\tcall print(";
         if(i->src->getType() == item_variable) s += "%";
         s += i->src->toString() + ")\n"; 
         outputFile << s;        
