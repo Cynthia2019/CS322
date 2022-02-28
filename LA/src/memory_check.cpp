@@ -95,13 +95,13 @@ namespace LA {
         assign->dst = f->getVariable(temp_lineno);
         insertInstruction(f, assign);
 
-        auto dec_temp = new Instruction_declare();
-        dec_temp->type = var_int64;
-        dec_temp->dst = f->newVariable(tempVariable(), VarTypes::var_int64, 0);
-        insertInstruction(f, dec_temp);
+        // auto dec_temp = new Instruction_declare();
+        // dec_temp->type = var_int64;
+        // dec_temp->dst = f->newVariable(tempVariable(), VarTypes::var_int64, 0);
+        // insertInstruction(f, dec_temp);
 
         auto condition = new Instruction_op();
-        condition->dst = dec_temp->dst;
+        condition->dst = f->getVariable(temp_condition);
         condition->op = new Operation("=");
         condition->oprand1 = arrayvar;
         condition->oprand2 = new Number(0);
@@ -109,7 +109,7 @@ namespace LA {
         //auto condition = new Instruction_br_label();
 
         auto br = new Instruction_br_t();
-        br->condition = dec_temp->dst;
+        br->condition = condition->dst;
         br->label1 = new Label(LL + "_legal" + to_string(counter++));
         br->label2 = new Label(LL + "_error_uninitialize");
         insertInstruction(f, br);
@@ -198,8 +198,6 @@ namespace LA {
 
     void MemoryCheck::check_access(Function *f, Instruction_load *inst) {
         if (dynamic_cast<TupleVar *>(inst->src)) {
-            cout << "tuple" << endl;
-            check_single_help(f, inst->src, inst->indices);
             return;
         }
         if (inst->indices.size() == 1) {
@@ -211,8 +209,6 @@ namespace LA {
 
     void MemoryCheck::check_access(Function *f, Instruction_store *inst) {
         if (dynamic_cast<TupleVar *>(inst->dst)) {
-            cout << "tuple" << endl;
-            check_single_help(f, inst->dst, inst->indices);
             return;
         }
         if (inst->indices.size() == 1) {

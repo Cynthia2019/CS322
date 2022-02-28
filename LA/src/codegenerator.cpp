@@ -105,7 +105,7 @@ namespace LA {
             }
         }
         string s; 
-        s += "\t" + i->dst->toString(); 
+        s += "\t%" + i->dst->toString(); 
         for(Item* item : i->indices) {
             if(item->getType() == item_variable) {
                 s += "[" + decoded[0] + "]"; 
