@@ -14,7 +14,7 @@
 
 #include <LA.h>
 #include <parser.h>
-// #include "codegenerator.h"
+#include "codegenerator.h"
 
 using namespace std;
 
@@ -75,7 +75,7 @@ int main(
     */
   p = LA::parse_file(argv[optind]);
 
-//   LA::generate_code(p);
+   LA::generate_code(p);
 
   return 0;
 }

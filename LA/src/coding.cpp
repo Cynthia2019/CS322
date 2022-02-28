@@ -42,5 +42,6 @@ namespace LA
         if(a != nullptr) {
             return {a->dst}; 
         }        
+        return {};
     }
 }

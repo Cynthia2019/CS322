@@ -24,9 +24,11 @@ namespace LA{
       void visit(Instruction_tuple *i) override;
       void visit(Instruction_print *i) override; 
       void visit(Instruction_input *i) override; 
+      std::string newVar(Variable* v); 
     private: 
       std::ofstream &outputFile;
       Function* f;
+      int64_t counter = 0; 
   };
 
 }
