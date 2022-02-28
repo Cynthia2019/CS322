@@ -21,8 +21,8 @@ namespace LA
         void insertInstruction(Function *f, Instruction *i);
         void addTensorError(Function *f);
         void check_initialize_help(Function *f, Item *arrayvar, int64_t);
-        void check_single(Function *f, Instruction_load *inst);
-        void check_single(Function *f, Instruction_store *inst);
+        void check_access(Function *f, Instruction_load *inst);
+        void check_access(Function *f, Instruction_store *inst);
         void check_single_help(Function *f, ArrayVar *array, vector<Item *> indices);
         void check_multi_help(Function *f, ArrayVar *array, vector<Item *> indices);
 

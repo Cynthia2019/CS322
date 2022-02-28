@@ -28,10 +28,12 @@ namespace LA {
             Instruction_load *load = dynamic_cast<Instruction_load *>(i);
             if (load) {
                 check_initialize(f, load);
+                check_access(f, load);
             }
             Instruction_store *store = dynamic_cast<Instruction_store *>(i);
             if (store) {
                 check_initialize(f, store);
+                check_access(f, store);
             }
             index++;
         }
@@ -155,7 +157,7 @@ namespace LA {
         }
     }
 
-    void MemoryCheck::check_single(Function *f, Instruction_load *inst) {
+    void MemoryCheck::check_access(Function *f, Instruction_load *inst) {
         if (inst->indices.size() == 1) {
             check_single_help(f, dynamic_cast<ArrayVar *>(inst->src), inst->indices);
         } else if (inst->indices.size() > 1) {
@@ -163,7 +165,7 @@ namespace LA {
         }
     }
 
-    void MemoryCheck::check_single(Function *f, Instruction_store *inst) {
+    void MemoryCheck::check_access(Function *f, Instruction_store *inst) {
         if (inst->indices.size() == 1) {
             check_single_help(f, dynamic_cast<ArrayVar *>(inst->dst), inst->indices);
         } else if (inst->indices.size() > 1) {

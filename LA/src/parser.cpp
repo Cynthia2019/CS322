@@ -443,6 +443,7 @@ struct Instruction_call_rule : pegtl::seq<
         cout << "firing Instruction_ret: " << in.string() << endl;
       auto currentF = p.functions.back();
       auto i = new Instruction_ret_not();
+      i->lineno = in.position().line;
       currentF->instructions.push_back(i);
       if(is_debug) cout << i->toString() << endl;
     }
@@ -457,6 +458,7 @@ struct Instruction_call_rule : pegtl::seq<
         cout << "firing Instruction_ret_t: " << in.string() << endl;
       auto currentF = p.functions.back();
       auto i = new Instruction_ret_t();
+      i->lineno = in.position().line;
       i->arg = parsed_items.back(); 
       parsed_items.pop_back();
       currentF->instructions.push_back(i);
@@ -692,6 +694,7 @@ template <>
         cout << "firing Instruction_label_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       auto i = new Instruction_label();
+      i->lineno = in.position().line;
       Label *item = new Label(in.string());
       i->label = item;
       if(is_debug) cout << i->toString() << endl;
@@ -709,6 +712,7 @@ template <>
         cout << "firing Instruction_op_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       auto i = new Instruction_op();
+      i->lineno = in.position().line;
       i->oprand2 = parsed_items.back();
       parsed_items.pop_back();
       i->op = parsed_items.back();
@@ -737,6 +741,7 @@ template <>
         cout << "firing Instruction_call_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       auto i = new Instruction_call_noassign();
+      i->lineno = in.position().line;
       reverse(list_of_args.begin(), list_of_args.end());
       while(!list_of_args.empty()) {
           i->args.push_back(list_of_args.back());
@@ -761,6 +766,7 @@ template <>
         cout << "firing Instruction_call_assignment_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       auto i = new Instruction_call_assignment();
+      i->lineno = in.position().line;
       for(Item* item : list_of_args) {
          i->args.push_back(item);
          parsed_items.pop_back();
@@ -785,6 +791,7 @@ template <>
         cout << "firing Instruction_br_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       auto i = new Instruction_br_label();
+      i->lineno = in.position().line;
       i->label = dynamic_cast<Label*>(parsed_items.back());;
       parsed_items.pop_back();
       currentF->instructions.push_back(i);
@@ -802,6 +809,7 @@ template <>
         cout << "firing Instruction_br_t_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       auto i = new Instruction_br_t();
+      i->lineno = in.position().line;
       i->label2 = dynamic_cast<Label*>(parsed_items.back());;
       parsed_items.pop_back();
       i->label1 = dynamic_cast<Label*>(parsed_items.back());;
@@ -823,6 +831,7 @@ template <>
         cout << "firing Instruction_assignment_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       auto i = new Instruction_assignment();
+      i->lineno = in.position().line;
       cout << parsed_items.back()->toString() <<"\n";
       i->src = parsed_items.back();
       cout << i->src->toString() << endl;
@@ -861,6 +870,7 @@ template <>
       }
 
       Instruction_declare* i = new Instruction_declare(); 
+      i->lineno = in.position().line;
       i->dst = v; 
       i->type = v->getVariableType(); 
       currentF->instructions.push_back(i);
@@ -892,6 +902,7 @@ template <>
 
       auto currentF = p.functions.back();
       auto i = new Instruction_load();
+      i->lineno = in.position().line;
       Number* size = dynamic_cast<Number*>(parsed_items.back()); 
       parsed_items.pop_back(); 
       for(int index = 0; index < size->get(); index++){
@@ -918,6 +929,7 @@ template <>
 
       auto currentF = p.functions.back();
       auto i = new Instruction_store();
+      i->lineno = in.position().line;
       i->src = parsed_items.back();
       parsed_items.pop_back();
       Number* size = dynamic_cast<Number*>(parsed_items.back()); 
@@ -945,6 +957,7 @@ template <>
 
       auto currentF = p.functions.back();
       auto i = new Instruction_length();
+      i->lineno = in.position().line;
       i->dimID = dynamic_cast<Number*>(parsed_items.back());
       parsed_items.pop_back();
       i->src = dynamic_cast<Variable*>(parsed_items.back());
@@ -966,6 +979,7 @@ template <>
 
       auto currentF = p.functions.back();
       auto i = new Instruction_array();
+      i->lineno = in.position().line;
       reverse(list_of_args.begin(), list_of_args.end());
       while(!list_of_args.empty()) {
           i->args.push_back(list_of_args.back());
@@ -990,6 +1004,7 @@ template <>
 
       auto currentF = p.functions.back();
       auto i = new Instruction_tuple();
+      i->lineno = in.position().line;
       i->arg = parsed_items.back();
       parsed_items.pop_back();
       i->dst = dynamic_cast<Variable*>(parsed_items.back());
