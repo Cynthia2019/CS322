@@ -251,18 +251,6 @@ class Instruction_br_t : public Instruction_br
     void accept(Visitor *v) override; 
   };
 
-class Instruction_print : public Instruction {
-    public: 
-    Item* arg; 
-    std::string toString() override { return "void print (" + arg->toString() + ")\n";}
-    void accept(Visitor *v) override; 
-};
-class Instruction_input : public Instruction {
-    public: 
-    std::string toString() override { return "int64 input ()\n";}
-    void accept(Visitor *v) override; 
-};
-
   class Instruction_call : public Instruction {
     public:
     Item *callee;
@@ -408,8 +396,6 @@ class Instruction_input : public Instruction {
       virtual void visit(Instruction_length *i) = 0;
       virtual void visit(Instruction_array *i) = 0;
       virtual void visit(Instruction_tuple *i) = 0;
-      virtual void visit(Instruction_input *i) = 0;
-      virtual void visit(Instruction_print *i) = 0;
   };
 
 }

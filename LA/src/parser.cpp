@@ -401,7 +401,7 @@ struct Instruction_call_rule : pegtl::seq<
       if (is_debug) cout << "firing Function_rule" << endl;
     }
   };
-  
+
   template <>
   struct action<function_type_name>
   {
@@ -471,7 +471,7 @@ struct Instruction_call_rule : pegtl::seq<
     template <typename Input>
     static void apply(const Input &in, Program &p)
     {
-      if(in.string() == "print" || in.string() == "input") return ;
+      if(in.string() == "print" || in.string() == "input" || in.string() == "void") return ;
       if (is_debug)
         cout << "firing variable_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
