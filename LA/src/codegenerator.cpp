@@ -277,19 +277,6 @@ namespace LA {
         s += i->arg->toString() + ")\n"; 
         outputFile << s;        
     }
-    void CodeGenerator::visit(Instruction_print *i) {
-        string s; 
-        s += "call print ";
-        if(i->arg->getType() == item_variable) s += "%"; 
-        s += i->arg->toString() + "\n"; 
-        outputFile << s; 
-    } 
-    void CodeGenerator::visit(Instruction_input *i) {
-        string s; 
-        s = "call input()\n";
-        outputFile << s;         
-    }
-
     void generate_code(Program p) {
         /* 
         * Open the output file.
