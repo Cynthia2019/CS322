@@ -15,6 +15,7 @@
 #include <LA.h>
 #include <parser.h>
 #include "codegenerator.h"
+#include "memory_check.h"
 
 using namespace std;
 
@@ -33,6 +34,9 @@ int main(
   auto enable_code_generator = false;
   int32_t optLevel = 3;
 
+  bool memory_check_only = false;
+
+
   /*
    * Check the compiler arguments.
    */
@@ -43,7 +47,7 @@ int main(
     return 1;
   }
   int32_t opt;
-  while ((opt = getopt(argc, argv, "vg:O:slit")) != -1)
+  while ((opt = getopt(argc, argv, "vg:O:slmt")) != -1)
   {
     switch (opt)
     {
@@ -54,6 +58,10 @@ int main(
 
     case 'g':
       enable_code_generator = (strtoul(optarg, NULL, 0) == 0) ? false : true;
+      break;
+    
+    case 'm':
+      memory_check_only = true;  
       break;
 
     case 'v':
@@ -75,7 +83,27 @@ int main(
     */
   p = LA::parse_file(argv[optind]);
 
-   LA::generate_code(p);
+  if (memory_check_only) {
+    LA::MemoryCheck mc(p);
+    mc.doProgram();
+    for (auto f : p.functions) {
+      for (auto i : f->instructions) {
+        cout << i->toString() << endl;
+      }
+    }
+  } else {
+    LA::MemoryCheck mc(p);
+    mc.doProgram();
+    for (auto f : p.functions) {
+      LA::generateBasicBlock(f, mc.LL);
+    }
+    for (auto f : p.functions) {
+      for (auto i : f->instructions) {
+        cout << i->toString() << endl;
+      }
+    }
+    LA::generate_code(p);
+  }
 
   return 0;
 }

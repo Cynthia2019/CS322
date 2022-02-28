@@ -8,6 +8,7 @@ namespace LA
         MemoryCheck(Program &);
         void doProgram();
         void doFunction(Function *f);
+        std::string LL;
 
         private:
         int64_t counter = 0;
@@ -16,7 +17,6 @@ namespace LA
         void declare_variables(Function *f);
         inline std::string tempVariable();
         Program &p;
-        std::string LL;
         int64_t index;
         void insertInstruction(Function *f, Instruction *i);
         void addTensorError(Function *f);
@@ -27,5 +27,7 @@ namespace LA
         void check_multi_help(Function *f, ArrayVar *array, vector<Item *> indices);
 
     };
+
+    void generateBasicBlock(Function *f, std::string ll);
     
 } // namespace LA

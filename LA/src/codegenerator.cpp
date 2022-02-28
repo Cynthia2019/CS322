@@ -255,10 +255,10 @@ namespace LA {
         }
         else s += ")\n";
         outputFile << s; 
-    } ;
+    }
     void CodeGenerator::visit(Instruction_label *i) {
         outputFile << "\t" << i->toString() << endl;
-    } ;
+    }
     void CodeGenerator::visit(Instruction_array *i) {
         string s; 
         s += "\t%" + i->dst->toString() + " <- new Array("; 
@@ -269,7 +269,7 @@ namespace LA {
         if(i->args.back()->getType() == item_variable) s += "%"; 
         s += i->args.back()->toString() + ")\n"; 
         outputFile << s; 
-    } ;
+    }
     void CodeGenerator::visit(Instruction_tuple *i) {
         string s; 
         s += "\t%" + i->dst->toString() + " <- new Tuple(";

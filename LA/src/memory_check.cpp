@@ -1,6 +1,7 @@
 
 #include "memory_check.h"
 
+extern bool is_debug;
 namespace LA {
     
     const std::string temp_lineno = "temp_lineno";
@@ -21,10 +22,11 @@ namespace LA {
 
     void MemoryCheck::doFunction(Function *f) {
         index = 0;
-        declare_variables(f);
         auto insts = f->instructions;
+        declare_variables(f);
 
         for (auto i : insts) {
+            if (is_debug) cout << "reading instruction: " << i->toString() << endl;
             Instruction_load *load = dynamic_cast<Instruction_load *>(i);
             if (load) {
                 check_initialize(f, load);
@@ -136,7 +138,7 @@ namespace LA {
             auto assign_dim = new Instruction_assignment();
             assign_dim->src = new Number(i);
             assign_dim->dst = f->getVariable(temp_arr_dimension);
-            insertInstruction(f, assign);
+            insertInstruction(f, assign_dim);
 
             auto condition = new Instruction_op();
             condition->dst = f->getVariable(temp_condition);
@@ -239,5 +241,53 @@ namespace LA {
         f->instructions.push_back(error_single);
         f->instructions.push_back(label_multi);
         f->instructions.push_back(error_multi);
+    }
+
+    void generateBasicBlock(Function *f, std::string ll) {
+        auto insts = f->instructions;
+        bool startBB = true;
+        vector<Instruction *> res;
+        int64_t counter = 0;
+
+        for (auto i : insts) {
+            Instruction_label *label = dynamic_cast<Instruction_label *>(i);
+            if (startBB) {
+                if (!label) {
+                    auto newl = new Instruction_label();
+                    newl->label = new Label(ll + "label_bb_temp_" + to_string(counter++));
+                    res.push_back(newl);
+                }
+                startBB = false;
+            } else if (label) {
+                auto br = new Instruction_br_label();
+                br->label = label->label;
+                res.push_back(br);
+            }
+            res.push_back(i);
+            
+            auto rtrn = dynamic_cast<Instruction_ret *>(i);
+            auto br = dynamic_cast<Instruction_br *>(i);
+            bool istensor = false;
+            auto tensor = dynamic_cast<Instruction_call *>(i);
+            if (tensor && tensor->callee->toString() == "tensor-error") {
+                istensor = true;
+            }
+            if (rtrn || br || istensor) {
+                startBB = true;
+            }
+        }
+        if (!startBB) {
+            Instruction *ret;
+            if (f->type == "void") {
+                ret = new Instruction_ret_not();
+            } else {
+                auto t = new Instruction_ret_t();
+                t->arg = new Number(0);
+                ret = t;
+            }
+            res.push_back(ret);
+        }
+
+        f->instructions = res;
     }
 }
