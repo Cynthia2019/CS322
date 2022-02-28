@@ -290,8 +290,6 @@ namespace LA {
                 }
             }
             outputFile << ") {" << endl;
-            // outputFile << "\t" << LL << "_to_entry" << endl;
-            // outputFile << "\t" << "br " << f->entry_label << endl;
             for(Instruction* i : f->instructions) {
                 cout << i->toString() << endl;
                 i->accept(&cg); 
