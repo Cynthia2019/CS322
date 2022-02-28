@@ -1,7 +1,33 @@
 define void :main() {
-  :mainFunction
-  tuple %t 
-  %t <- new Tuple(7)
-  %t[0] <- 5
-  return
+	:entrylabel_bb_temp_0
+	int64 %temp_lineno
+	int64 %temp_arr_dimension
+	int64 %temp_arr_lengh
+	int64 %temp_arr_index
+	int64 %temp_condition
+	br :entry
+	:entry
+	tuple %p
+	%p <- 0
+	%temp_lineno <- 11
+	int64 %p_new_0
+	%p_new_0 <- %p >> 1
+	%temp_condition <- %p_new_0 = 0
+	%temp_condition <- %temp_condition << 1
+	%temp_condition <- %temp_condition + 1
+	int64 %temp_condition_new_1
+	%temp_condition_new_1 <- %temp_condition >> 1
+	br %temp_condition_new_1 :entry_legal0 :entry_error_uninitialize
+	:entry_legal0
+	%p[12] <- 21
+	return
+	:entry_error_uninitialize
+	call tensor-error(%temp_lineno)
+	br :entry_error_single_dimension
+	:entry_error_single_dimension
+	call tensor-error(%temp_lineno, %temp_arr_lengh, %temp_arr_index)
+	br :entry_error_multi_dimension
+	:entry_error_multi_dimension
+	call tensor-error(%temp_lineno, %temp_arr_dimension, %temp_arr_lengh, %temp_arr_index)
+	return
 }

@@ -72,12 +72,17 @@ namespace LA
         if(a != nullptr) {
             i->oprand1 = new Number(encodeConstant(a->get())); 
         }
-        Number* b = dynamic_cast<Number*>(i->oprand1); 
+        Number* b = dynamic_cast<Number*>(i->oprand2); 
         if(b != nullptr) {
             i->oprand2 = new Number(encodeConstant(b->get())); 
         }
     }
-    void Encoder::visit(Instruction_store *i) {}
+    void Encoder::visit(Instruction_store *i) {
+        Number* a = dynamic_cast<Number*>(i->src); 
+        if(a != nullptr) {
+            i->src = new Number(encodeConstant(a->get())); 
+        }
+    }
     void Encoder::visit(Instruction_declare *i) {}
     void Encoder::visit(Instruction_br_label *i) {}
     void Encoder::visit(Instruction_br_t *i) {

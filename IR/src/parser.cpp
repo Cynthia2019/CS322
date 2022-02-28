@@ -654,7 +654,6 @@ template <>
       if (is_debug)
         cout << "firing op_rule: " << in.string() << endl;
       Operation *i = new Operation(in.string());
-      cout << "pushing op" << endl;
       parsed_items.push_back(i);
     }
   };
@@ -678,7 +677,6 @@ template <>
     {
       if (is_debug) cout << "firing str_br rule" << endl;
       Operation *i = new Operation(in.string());
-      cout << "pushing br" << endl;
       parsed_items.push_back(i);
     }
   };
@@ -692,7 +690,6 @@ template <>
       // if (is_debug)
       //   cout << "firing number_rule: " << in.string() << endl;
       Number *i = new Number(std::stoll(in.string()));
-      cout << "pushing number" << endl;
       parsed_items.push_back(i);
     }
   };
@@ -705,7 +702,6 @@ template <>
     static void apply(const Input &in, Program &p)
     {
       String *i = new String(in.string());
-      cout << "pushing call" << endl;
       parsed_items.push_back(i);
     }
   };
@@ -744,13 +740,11 @@ template <>
       i->op = parsed_items.back();
       parsed_items.pop_back();
       i->oprand1 = parsed_items.back();
-      cout << i->oprand2->toString() << endl;
       parsed_items.pop_back();
       i->dst = dynamic_cast<Variable*>(parsed_items.back());
       if(dynamic_cast<Variable*>(parsed_items.back()) == nullptr) cout << "NULL" <<endl;
       parsed_items.pop_back();
       if(is_debug) cout << i->toString() << endl;
-      cout << "oprule" << parsed_items.size() << endl;
       bb->instructions.push_back(i);
     }
   };
@@ -824,7 +818,6 @@ template <>
       parsed_items.pop_back();
       bb->te = i;
       if(is_debug) cout << i->toString() << endl;
-      cout << "brrrr" << parsed_items.size() << endl;
     }
   };
   // action for br t label
@@ -836,7 +829,6 @@ template <>
     {
       if (is_debug)
         cout << "firing Instruction_br_t_rule: " << in.string() << endl;
-      cout << "brttt" << parsed_items.size() << endl;
       auto currentF = p.functions.back();
       BasicBlock* bb = currentF->basicBlocks.back();
       auto i = new Instruction_br_t();
@@ -850,7 +842,6 @@ template <>
       parsed_items.pop_back();
       bb->te = i;
       if(is_debug) cout << i->toString() << endl;
-      cout << "brttt" << parsed_items.size() << endl;
     }
   };
 
@@ -865,15 +856,12 @@ template <>
       auto currentF = p.functions.back();
       BasicBlock* bb = currentF->basicBlocks.back();
       auto i = new Instruction_assignment();
-      cout << parsed_items.back()->toString() <<"\n";
       i->src = parsed_items.back();
       parsed_items.pop_back();
       i->dst = dynamic_cast<Variable*>(parsed_items.back());
-      cout << parsed_items.back()->toString() <<"\n";
       parsed_items.pop_back();
       if(is_debug) cout << i->toString() << endl;
       bb->instructions.push_back(i);
-      cout << "assignment " << parsed_items.size() << endl;
     }
   };
 
@@ -899,10 +887,8 @@ template <>
       if (curr_var_type == var_int64_multi) {
         int dimension = count(type.begin(), type.end(), ']');
         v = currentF->newVariable(var_name, var_int64_multi, dimension);
-        cout << "declarering" << var_name << endl;
       } else {
         v = currentF->newVariable(var_name, curr_var_type, 0);
-        cout << "declarering" << var_name << endl;
       }
 
       Instruction_declare* i = new Instruction_declare(); 
@@ -922,7 +908,6 @@ template <>
       
       std::string indices = in.string(); 
       int n = count(indices.begin(), indices.end(), ']');
-      cout << "pushing indice" << endl;
       parsed_items.push_back(new Number(n));
     }
   };

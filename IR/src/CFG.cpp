@@ -80,7 +80,6 @@ namespace IR {
         }
         //
         set<Node*> allNodes = graph->getAllNodes();
-        cout << "nodes size: " << allNodes.size() << endl;
         //find successor of x
         for(Node* x : allNodes){
             for(Node* y : allNodes){
@@ -144,10 +143,6 @@ namespace IR {
         set<Node*> list = graph->getAllNodes(); 
         map<Node*, set<Node*>> edges = graph->getAllEdges();
         map<pair<Node*, Node*>, bool> profitable = checkRecheable(edges, list);
-        // set<BasicBlock*> list; 
-        // for(Node* n : nodes) {
-        //     list.insert(n->getBasicBlock()); 
-        // }
 
         do {
             Trace* tr = new Trace();
@@ -158,7 +153,6 @@ namespace IR {
                 tr->traces.push_back(bb); 
                 set<Node*> successors = edges[bb]; 
                 for(Node* c : successors) {
-                    cout << "profitable: " << profitable[{bb, c}] << endl;
                     if(!c->isMarked && profitable[{bb, c}]){
                         bb = c; 
                     }
@@ -168,13 +162,13 @@ namespace IR {
         }
         while(!list.empty());
 
-        //print trace
-        for(Trace* t : traces) {
-            cout << "new trace: " << endl;
-            for(Node* n: t->traces) {
-                cout << n->getFirst()->toString() << endl;
-            }
-        }
+        // //print trace
+        // for(Trace* t : traces) {
+        //     cout << "new trace: " << endl;
+        //     for(Node* n: t->traces) {
+        //         cout << n->getFirst()->toString() << endl;
+        //     }
+        // }
         return traces; 
     }
 }
