@@ -28,8 +28,8 @@ namespace LA {
     // }
 
     std::string encode(Variable *v) {
-        ::string res = "\t" + v->toString() + " <- " + v->toString() + " << 1\n";
-        res += "\t" + v->toString() + " <- " + v->toString() + " + 1\n";
+        ::string res = "\t%" + v->toString() + " <- %" + v->toString() + " << 1\n";
+        res += "\t%" + v->toString() + " <- %" + v->toString() + " + 1\n";
         return res;
     }
 
@@ -41,7 +41,7 @@ namespace LA {
     CodeGenerator::CodeGenerator(Function *f, std::ofstream &ofs) :f(f), outputFile(ofs) {}
 
     std::string CodeGenerator::newVar(Variable* v) {
-        string s = v->toString() + "_new_" + to_string(counter); 
+        string s = "%" + v->toString() + "_new_" + to_string(counter); 
         counter++; 
         return s; 
     }
@@ -51,11 +51,20 @@ namespace LA {
     }
 
     void CodeGenerator::visit(Instruction_ret_t *i) {
-        outputFile << "\treturn "  << i->arg->toString() << endl;
+        if(i->arg->getType() == item_variable) {
+            outputFile << "\treturn %"  << i->arg->toString() << endl;            
+        }
+        else outputFile << "\treturn "  << i->arg->toString() << endl;
     }
 
     void CodeGenerator::visit(Instruction_assignment *i) {
-        outputFile << "\t" << i->toString() << endl;
+        string dst = "%" + i->dst->toString(); 
+        string src; 
+        if(i->src->getType() == item_variable) {
+            src = "%" + i->src->toString(); 
+        }
+        else src = i->src->toString(); 
+        outputFile << "\t" << dst << " <- " << src << endl;
     }
 
     void CodeGenerator::visit(Instruction_load* i) {
@@ -67,7 +76,7 @@ namespace LA {
                 string t = newVar(v); 
                 decoded.push_back(t); 
                 outputFile << "\tint64 " << t << "\n";  
-                outputFile << "\t" << t << " <- " << v->toString() << " >> 1\n";
+                outputFile << "\t" << t << " <- %" << v->toString() << " >> 1\n";
             }
             else {
                 Number* n = dynamic_cast<Number*>(item); 
@@ -76,7 +85,7 @@ namespace LA {
             }
         }
         string s; 
-        s += "\t" + i->dst->toString() + " <- " + i->src->toString(); 
+        s += "\t%" + i->dst->toString() + " <- %" + i->src->toString(); 
         for(Item* item : i->indices) {
             if(item->getType() == item_variable) {
                 s += "[" + decoded[0] + "]"; 
@@ -99,7 +108,7 @@ namespace LA {
             if(v != nullptr) {
                 string t = newVar(v);  
                 outputFile << "\tint64 " << t << "\n";  
-                outputFile << "\t" << t << " <- " << v->toString() << " >> 1\n";
+                outputFile << "\t" << t << " <- %" << v->toString() << " >> 1\n";
                 decoded.push_back(t);
             }
             else {
@@ -118,6 +127,9 @@ namespace LA {
             else {
                 s += "[" + item->toString() + "]"; 
             }
+        }
+        if(i->src->getType() == item_variable) {
+            s += "%";
         }
         s += i->src->toString() + '\n'; 
         outputFile << s;
@@ -154,7 +166,7 @@ namespace LA {
                 Number* n = dynamic_cast<Number*>(todecode); 
                 decoded = to_string(n->get() >> 1) ;
             }
-        string s = "\t" + i->dst->toString() + " <- length " + i->src->toString() + " " + decoded + '\n'; 
+        string s = "\t%" + i->dst->toString() + " <- length %" + i->src->toString() + " " + decoded + '\n'; 
         outputFile << s;
     }
     void CodeGenerator::visit(Instruction_op* i) {
@@ -167,7 +179,7 @@ namespace LA {
         if(v1 != nullptr) {
             decoded1 = newVar(v1); 
             outputFile << "\tint64 " << decoded1 << "\n";  
-            outputFile << "\t" << decoded1 << " <- " << v1->toString() << " >> 1\n";
+            outputFile << "\t" << decoded1 << " <- %" << v1->toString() << " >> 1\n";
         }
         else {
             Number* n = dynamic_cast<Number*>(todecode1); 
@@ -177,26 +189,106 @@ namespace LA {
         if(v2 != nullptr) {
             decoded2 = newVar(v2); 
             outputFile << "\tint64 " << decoded2 << "\n";  
-            outputFile << "\t" << decoded2 << " <- " << v2->toString() << " >> 1\n";
+            outputFile << "\t" << decoded2 << " <- %" << v2->toString() << " >> 1\n";
         }
         else {
             Number* n = dynamic_cast<Number*>(todecode2); 
             decoded2 = to_string(n->get() >> 1) ;
         }
-        string s = "\t" + i->dst->toString() + " <- " + decoded1 + " " + i->op->toString() + " " + decoded2 + '\n';
+        string s = "\t%" + i->dst->toString() + " <- " + decoded1 + " " + i->op->toString() + " " + decoded2 + '\n';
         s += encode(i->dst);  
         outputFile << s;
     }
 
-    void CodeGenerator::visit(Instruction_declare *i) {} ;
-    void CodeGenerator::visit(Instruction_br_label *i) {} ;
-    void CodeGenerator::visit(Instruction_call_noassign *i) {} ;
-    void CodeGenerator::visit(Instruction_call_assignment *i) {} ;
-    void CodeGenerator::visit(Instruction_label *i) {} ;
-    void CodeGenerator::visit(Instruction_array *i) {} ;
-    void CodeGenerator::visit(Instruction_tuple *i) {} ;
-    void CodeGenerator::visit(Instruction_print *i) {} ; 
-    void CodeGenerator::visit(Instruction_input *i) {} ; 
+    void CodeGenerator::visit(Instruction_declare *i) {
+        string s;
+        s += "\t";
+        if(i->type == var_int64) {
+            s += "int64"; 
+        }
+        else if(i->type == var_tuple) {
+            s += "tuple"; 
+        }
+        else if(i->type == var_code) {
+            s += "code"; 
+        }
+        else {
+            ArrayVar* a = dynamic_cast<ArrayVar*>(i->dst); 
+            if(a == nullptr) cout << "bug Instruction declare"; 
+            s += "int64"; 
+            for(int c = 0; c < a->dimension; c++){
+                s += "[]"; 
+            }
+        }
+        s += " %" + i->dst->toString() + "\n"; 
+        outputFile << s; 
+    }
+    void CodeGenerator::visit(Instruction_br_label *i) {
+        outputFile << "\t" << i->toString() << endl;
+    }
+    void CodeGenerator::visit(Instruction_call_noassign *i) {
+        string s = "\tcall ";
+        if(i->callee->getType() == item_variable) s += "%"; 
+        s += i->callee->toString() + "("; 
+        if(i->args.size() > 0) {
+            for(int idx = 0; idx < i->args.size() - 1; idx++){
+                if(i->args[idx]->getType() == item_variable) s += "%"; 
+                s += i->args[idx]->toString() + ", "; 
+            } 
+            if(i->args.back()->getType() == item_variable) s += "%"; 
+            s += i->args.back()->toString() + ")\n"; 
+        }
+        else s += ")\n";
+        outputFile << s; 
+    }
+    void CodeGenerator::visit(Instruction_call_assignment *i) {
+        string s = "\t%" + i->dst->toString() + " <- call ";
+        if(i->callee->getType() == item_variable) s += "%"; 
+        s += i->callee->toString() + "("; 
+        if(i->args.size() > 0) {
+            for(int idx = 0; idx < i->args.size() - 1; idx++){
+                if(i->args[idx]->getType() == item_variable) s += "%"; 
+                s += i->args[idx]->toString() + ", "; 
+            } 
+            if(i->args.back()->getType() == item_variable) s += "%"; 
+            s += i->args.back()->toString() + ")\n"; 
+        }
+        else s += ")\n";
+        outputFile << s; 
+    } ;
+    void CodeGenerator::visit(Instruction_label *i) {
+        outputFile << "\t" << i->toString() << endl;
+    } ;
+    void CodeGenerator::visit(Instruction_array *i) {
+        string s; 
+        s += "\t%" + i->dst->toString() + " <- new Array("; 
+        for(int idx = 0; idx < i->args.size() - 1; idx++){
+            if(i->args[idx]->getType() == item_variable) s += "%"; 
+            s += i->args[idx]->toString() + ", "; 
+        } 
+        if(i->args.back()->getType() == item_variable) s += "%"; 
+        s += i->args.back()->toString() + ")\n"; 
+        outputFile << s; 
+    } ;
+    void CodeGenerator::visit(Instruction_tuple *i) {
+        string s; 
+        s += "\t%" + i->dst->toString() + " <- new Tuple(";
+        if(i->arg->getType() == item_variable) s += "%";
+        s += i->arg->toString() + ")\n"; 
+        outputFile << s;        
+    }
+    void CodeGenerator::visit(Instruction_print *i) {
+        string s; 
+        s += "call print ";
+        if(i->arg->getType() == item_variable) s += "%"; 
+        s += i->arg->toString() + "\n"; 
+        outputFile << s; 
+    } 
+    void CodeGenerator::visit(Instruction_input *i) {
+        string s; 
+        s = "call input()\n";
+        outputFile << s;         
+    }
 
     void generate_code(Program p) {
         /* 
@@ -218,6 +310,7 @@ namespace LA {
             // outputFile << "\t" << LL << "_to_entry" << endl;
             // outputFile << "\t" << "br " << f->entry_label << endl;
             for(Instruction* i : f->instructions) {
+                // cout << i->toString() << endl;
                 i->accept(&cg); 
             }
             outputFile << "}" << endl;

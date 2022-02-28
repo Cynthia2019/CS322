@@ -401,19 +401,7 @@ struct Instruction_call_rule : pegtl::seq<
       if (is_debug) cout << "firing Function_rule" << endl;
     }
   };
-  // template <>
-  // struct action<function_name>
-  // {
-  //   template <typename Input>
-  //   static void apply(const Input &in, Program &p)
-  //   {
-  //     if (is_debug) cout << "function name: " << in.string() << endl;
-  //     auto currentF = p.functions.back(); 
-  //     currentF->name = in.string();
-  //     currentF->isMain = in.string() == "main";
-  //     p.functions.push_back()
-  //   }
-  // };
+  
   template <>
   struct action<function_type_name>
   {
