@@ -599,7 +599,7 @@ template <>
           std::string temp = args.substr(0, n); 
           temp.erase(std::remove_if(temp.begin(), temp.end(), [](unsigned char x){return std::isspace(x);}), temp.end()); 
           if(is_debug) cout << "args: " << temp << endl;
-          if(isdigit(temp[0])){
+          if(isdigit(temp[0]) || temp[0] == '-'){
               Number* i = new Number(std::stoll(temp)); 
               list_of_args.push_back(i);
           }
@@ -828,9 +828,10 @@ template <>
       list_of_args = {};
       i->callee = parsed_items.back();
       parsed_items.pop_back();
-      i->dst = dynamic_cast<Variable*>(parsed_items.back());;
+      i->dst = dynamic_cast<Variable*>(parsed_items.back());
        parsed_items.pop_back();
       currentF->instructions.push_back(i);
+      if(is_debug) cout << i->toString() << endl;
     }
   };
 

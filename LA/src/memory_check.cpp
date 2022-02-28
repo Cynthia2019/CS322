@@ -25,7 +25,7 @@ namespace LA {
         auto insts = f->instructions;
         declare_variables(f);
         bool checked = false;
-
+        if(is_debug) cout << "============start memory check===========" <<endl;
         for (auto i : insts) {
             if (is_debug) cout << "reading instruction: " << i->toString() << endl;
             Instruction_declare *dec = dynamic_cast<Instruction_declare *>(i);
@@ -34,7 +34,7 @@ namespace LA {
                 switch(dec->type) {
                     case var_int64:
                         assign->dst = dec->dst;
-                        assign->src = new Number(0);
+                        assign->src = new Number(0); 
                         insertInstruction(f, assign, 1);
                         break;
                     case var_int64_multi:
@@ -49,7 +49,6 @@ namespace LA {
                         break;
                 }
             }
-
             Instruction_load *load = dynamic_cast<Instruction_load *>(i);
             if (load) {
                 cout << "loading" << endl;
@@ -69,7 +68,6 @@ namespace LA {
             }
             index++;
         }
-
         if (checked) {
             addTensorError(f);
         }
