@@ -899,6 +899,7 @@ template <>
         parsed_items.pop_back();
       }
       reverse(indices.begin(), indices.end()); 
+      i->indices = indices;
       i->src = dynamic_cast<Variable*>(parsed_items.back());
       parsed_items.pop_back();
       i->dst = dynamic_cast<Variable*>(parsed_items.back());

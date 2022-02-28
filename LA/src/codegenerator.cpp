@@ -228,7 +228,7 @@ namespace LA {
     void CodeGenerator::visit(Instruction_call_noassign *i) {
         string s = "\tcall ";
         if(i->callee->getType() == item_variable) s += "%"; 
-        if(i->callee->getType() == item_label) s += ":";
+        if(i->callee->getType() == item_function) s += ":";
         s += i->callee->toString() + "("; 
         if(i->args.size() > 0) {
             for(int idx = 0; idx < i->args.size() - 1; idx++){
@@ -244,7 +244,7 @@ namespace LA {
     void CodeGenerator::visit(Instruction_call_assignment *i) {
         string s = "\t%" + i->dst->toString() + " <- call ";
         if(i->callee->getType() == item_variable) s += "%"; 
-        if(i->callee->getType() == item_label) s += ":";
+        if(i->callee->getType() == item_function) s += ":";
         s += i->callee->toString() + "("; 
         if(i->args.size() > 0) {
             for(int idx = 0; idx < i->args.size() - 1; idx++){
@@ -289,7 +289,25 @@ namespace LA {
             CodeGenerator cg(f, outputFile);
             outputFile << "define " << f->type << " :" << f->name << "(";
             for (int i = f->arguments.size() - 1; i >= 0; i--) {
-                outputFile << f->arguments[i]->toString();
+                string s;
+                if(f->arguments[i]->getVariableType() == var_int64) {
+                    s += "int64"; 
+                }
+                else if(f->arguments[i]->getVariableType() == var_tuple) {
+                    s += "tuple"; 
+                }
+                else if(f->arguments[i]->getVariableType() == var_code) {
+                    s += "code"; 
+                }
+                else {
+                    s += "int64"; 
+                    ArrayVar* av = dynamic_cast<ArrayVar*>(f->arguments[i]); 
+                    for(int idx = 0; idx < av->dimension; idx++){
+                        s += "[]";
+                    }
+                }
+                s += " %" + f->arguments[i]->toString();
+                outputFile << s;
                 if (i != 0) {
                     outputFile << ", ";
                 }
