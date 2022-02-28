@@ -110,9 +110,11 @@ int main(
         cout << i->toString() << endl;
       }
     }
+    cout << "========= encode all ==========" << endl;
     for(auto f : p.functions) {
       LA::encodeAll(p, f); 
     }
+     cout << "========= code gen ==========" << endl;
     LA::generate_code(p);
   }
 

@@ -345,11 +345,6 @@ struct Instruction_call_rule : pegtl::seq<
   struct  Instruction_label_rule : label {};
   
   struct Instruction_rule : pegtl::sor<
-                                pegtl::seq<pegtl::at<Instruction_label_rule>, Instruction_label_rule>,
-                                pegtl::seq<pegtl::at<Instruction_br_label_rule>, Instruction_br_label_rule>,
-                                pegtl::seq<pegtl::at<Instruction_br_t_rule>, Instruction_br_t_rule>,
-                                pegtl::seq<pegtl::at<Instruction_return_t_rule>, Instruction_return_t_rule>,
-                                pegtl::seq<pegtl::at<Instruction_return_rule>, Instruction_return_rule>,
                                 pegtl::seq<pegtl::at<Instruction_op_rule>, Instruction_op_rule>,
                                 pegtl::seq<pegtl::at<Instruction_load_rule>, Instruction_load_rule>,
                                 pegtl::seq<pegtl::at<Instruction_store_rule>, Instruction_store_rule>,
@@ -362,7 +357,12 @@ struct Instruction_call_rule : pegtl::seq<
                                 pegtl::seq<pegtl::at<Instruction_call_assignment_rule>, Instruction_call_assignment_rule>,
                                 pegtl::seq<pegtl::at<Instruction_length_rule>, Instruction_length_rule>,
                                 pegtl::seq<pegtl::at<Instruction_assignment_rule>, Instruction_assignment_rule>,
-                                pegtl::seq<pegtl::at<Instruction_declare_rule>, Instruction_declare_rule>>
+                                pegtl::seq<pegtl::at<Instruction_declare_rule>, Instruction_declare_rule>,
+                                pegtl::seq<pegtl::at<Instruction_label_rule>, Instruction_label_rule>,
+                                pegtl::seq<pegtl::at<Instruction_br_label_rule>, Instruction_br_label_rule>,
+                                pegtl::seq<pegtl::at<Instruction_br_t_rule>, Instruction_br_t_rule>,
+                                pegtl::seq<pegtl::at<Instruction_return_t_rule>, Instruction_return_t_rule>,
+                                pegtl::seq<pegtl::at<Instruction_return_rule>, Instruction_return_rule>>
   {
   };
 
@@ -643,8 +643,6 @@ template <>
     static void apply(const Input &in, Program &p)
     {
       if (is_debug) cout << "firing str_br rule" << endl;
-      Operation *i = new Operation(in.string());
-      parsed_items.push_back(i);
     }
   };
   template <>

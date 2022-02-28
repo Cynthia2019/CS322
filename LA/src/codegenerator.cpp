@@ -303,8 +303,9 @@ namespace LA {
         outputFile.open("prog.IR");
         for (auto f : p.functions) {
             CodeGenerator cg(f, outputFile);
+            cout << "new Function: " << endl; 
             outputFile << "define " << f->type << " :" << f->name << "(";
-            for (int i = f->arguments.size() - 1; i >= 0; i--) {
+            for (int i = 0; i < f->arguments.size(); i++) {
                 string s;
                 if(f->arguments[i]->getVariableType() == var_int64) {
                     s += "int64"; 
@@ -323,10 +324,10 @@ namespace LA {
                     }
                 }
                 s += " %" + f->arguments[i]->toString();
-                outputFile << s;
-                if (i != 0) {
-                    outputFile << ", ";
+                if (i != f->arguments.size() - 1) {
+                    s += ", ";
                 }
+                outputFile << s;
             }
             outputFile << ") {" << endl;
             for(Instruction* i : f->instructions) {
