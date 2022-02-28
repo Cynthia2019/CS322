@@ -115,6 +115,7 @@ namespace LA {
                 s += "[" + item->toString() + "]"; 
             }
         }
+        s += " <- ";
         if(i->src->getType() == item_variable) {
             s += "%";
         }
@@ -130,7 +131,7 @@ namespace LA {
             if(v != nullptr) {
                 decoded = newVar(v); 
                 outputFile << "\tint64 " << decoded << "\n";  
-                outputFile << "\t" << decoded << " <- " << v->toString() << " >> 1\n";
+                outputFile << "\t" << decoded << " <- %" << v->toString() << " >> 1\n";
             }
             else {
                 Number* n = dynamic_cast<Number*>(todecode); 

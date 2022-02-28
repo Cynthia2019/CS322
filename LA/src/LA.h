@@ -172,6 +172,7 @@ class FunctionItem : public Item {
     Variable* dst;
     Item* src;
     std::string toString() override { return this->dst->toString() + " <- " + this->src->toString(); }
+    bool do_not_encode = false;
     void accept(Visitor *v) override; 
   };
 

@@ -33,10 +33,16 @@ namespace LA {
                 Instruction_assignment *assign = new Instruction_assignment();
                 switch(dec->type) {
                     case var_int64:
-                    case var_int64_multi:
-                    case var_tuple:
                         assign->dst = dec->dst;
                         assign->src = new Number(0);
+                        insertInstruction(f, assign, 1);
+                        break;
+                    case var_int64_multi:
+                    case var_tuple:
+                    case var_code:
+                        assign->dst = dec->dst;
+                        assign->src = new Number(0);
+                        assign->do_not_encode = true;
                         insertInstruction(f, assign, 1);
                         break;
                     default:
@@ -46,14 +52,19 @@ namespace LA {
 
             Instruction_load *load = dynamic_cast<Instruction_load *>(i);
             if (load) {
+                cout << "loading" << endl;
                 check_initialize(f, load);
                 check_access(f, load);
+                cout << "load after" << endl;
                 checked = true;
             }
             Instruction_store *store = dynamic_cast<Instruction_store *>(i);
             if (store) {
+                cout << "storing" << endl;
                 check_initialize(f, store);
+                cout << "storing" << endl;
                 check_access(f, store);
+                cout << "storing" << endl;
                 checked = true;
             }
             index++;
@@ -116,8 +127,8 @@ namespace LA {
         check_initialize_help(f, inst->dst, inst->lineno);
     }
 
-    void MemoryCheck::check_single_help(Function *f, ArrayVar *array, vector<Item *> indices) {
-        for (int i = 0; i < array->dimension; i++) {
+    void MemoryCheck::check_single_help(Function *f, Variable *array, vector<Item *> indices) {
+        for (int i = 0; i < indices.size(); i++) {
             Instruction_length *ilength = new Instruction_length();
             ilength->dimID = new Number(i);
             ilength->src = array;
@@ -148,8 +159,8 @@ namespace LA {
         }
     }
 
-    void MemoryCheck::check_multi_help(Function *f, ArrayVar *array, vector<Item *> indices) {
-        for (int i = 0; i < array->dimension; i++) {
+    void MemoryCheck::check_multi_help(Function *f, Variable *array, vector<Item *> indices) {
+        for (int i = 0; i < indices.size(); i++) {
             Instruction_length *ilength = new Instruction_length();
             ilength->dimID = new Number(i);
             ilength->src = array;
@@ -186,18 +197,28 @@ namespace LA {
     }
 
     void MemoryCheck::check_access(Function *f, Instruction_load *inst) {
+        if (dynamic_cast<TupleVar *>(inst->src)) {
+            cout << "tuple" << endl;
+            check_single_help(f, inst->src, inst->indices);
+            return;
+        }
         if (inst->indices.size() == 1) {
-            check_single_help(f, dynamic_cast<ArrayVar *>(inst->src), inst->indices);
+            check_single_help(f, inst->src, inst->indices);
         } else if (inst->indices.size() > 1) {
-            check_multi_help(f, dynamic_cast<ArrayVar *>(inst->src), inst->indices);
+            check_multi_help(f, inst->src, inst->indices);
         }
     }
 
     void MemoryCheck::check_access(Function *f, Instruction_store *inst) {
+        if (dynamic_cast<TupleVar *>(inst->dst)) {
+            cout << "tuple" << endl;
+            check_single_help(f, inst->dst, inst->indices);
+            return;
+        }
         if (inst->indices.size() == 1) {
-            check_single_help(f, dynamic_cast<ArrayVar *>(inst->dst), inst->indices);
+            check_single_help(f, inst->dst, inst->indices);
         } else if (inst->indices.size() > 1) {
-            check_multi_help(f, dynamic_cast<ArrayVar *>(inst->dst), inst->indices);
+            check_multi_help(f, inst->dst, inst->indices);
         }
     }
 

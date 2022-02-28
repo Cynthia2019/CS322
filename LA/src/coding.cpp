@@ -49,6 +49,7 @@ namespace LA
         n += 1; 
         return n; 
     }
+
     Encoder::Encoder(Function* f) {
         this->f = f;
     }
@@ -61,7 +62,7 @@ namespace LA
     }
     void Encoder::visit(Instruction_assignment *i) {
         Number* a = dynamic_cast<Number*>(i->src); 
-        if(a != nullptr) {
+        if(a != nullptr && (!i->do_not_encode)) {
             i->src = new Number(encodeConstant(a->get())); 
         }
     }
