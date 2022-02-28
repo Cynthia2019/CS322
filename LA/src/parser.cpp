@@ -250,7 +250,7 @@ struct Instruction_call_rule : pegtl::seq<
                                     str_print, 
                                     seps, 
                                     TAOCPP_PEGTL_STRING("("),
-                                    variable_rule, 
+                                    pegtl::sor<variable_rule, number_rule>, 
                                     TAOCPP_PEGTL_STRING(")")> {}; 
   struct Instruction_input_rule : pegtl::seq<
                                     str_input, 
