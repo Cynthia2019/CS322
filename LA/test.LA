@@ -1,28 +1,9 @@
-void main () {
-  int64 in
-  int64 ret
-  in <- input()
-  in <- in - 1
-  in <- in >> 1
-  ret <- perfect(in)
-  return
- }
+void main ( ){
 
-int64 perfect(int64 in) {
-    int64 left
-    int64 right
-    left <- 0 
-    right <- in
-    br :perfect_loop 
-    
-    :perfect_loop 
-    int64 mid 
-    int64 square
-    int64 smaller
-    mid <- right + left 
-    mid <- mid >> 1 
-    square <- mid * mid 
-    smaller <- square < in 
-    return 
+  printE(a, 0, 0)
+  printE(a, 0, 1)
+  printE(a, 1, 0)
+  printE(a, 1, 1)
+  return 
+
 }
-

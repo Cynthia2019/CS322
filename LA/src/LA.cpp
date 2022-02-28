@@ -200,6 +200,15 @@ void Instruction_br_t::accept(Visitor* v) {
 void Instruction_call_noassign::accept(Visitor* v) {
   v->visit(this);
 }
+void Instruction_print::accept(Visitor* v) {
+  v->visit(this); 
+};
+void Instruction_input::accept(Visitor* v) {
+  v->visit(this); 
+};
+void Instruction_input_assignment::accept(Visitor* v) {
+  v->visit(this); 
+};
 void Instruction_call_assignment::accept(Visitor* v) {
   v->visit(this);
 }

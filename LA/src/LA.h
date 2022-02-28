@@ -260,6 +260,23 @@ class Instruction_br_t : public Instruction_br
     virtual void accept(Visitor *v) = 0;
   };
 
+  class Instruction_print : public Instruction {
+    public: 
+    Item * src; 
+    std::string toString() override { return "print " + src->toString() + "\n";};
+    void accept(Visitor *v) override; 
+  };
+  class Instruction_input : public Instruction {
+    public: 
+    std::string toString() override { return "input ()\n";};
+    void accept(Visitor *v) override; 
+  };
+  class Instruction_input_assignment : public Instruction {
+    public: 
+    Item* dst;
+    std::string toString() override { return dst->toString() + " input ()\n";};
+    void accept(Visitor *v) override; 
+  };
   // call callee (args) instruction
   class Instruction_call_noassign : public Instruction_call
   {
@@ -391,6 +408,9 @@ class Instruction_br_t : public Instruction_br
       virtual void visit(Instruction_declare *i) = 0;
       virtual void visit(Instruction_br_label *i) = 0;
       virtual void visit(Instruction_br_t *i) = 0;
+      virtual void visit(Instruction_print *i) = 0;
+      virtual void visit(Instruction_input *i) = 0;
+      virtual void visit(Instruction_input_assignment *i) = 0;
       virtual void visit(Instruction_call_noassign *i) = 0;
       virtual void visit(Instruction_call_assignment *i) = 0;
       virtual void visit(Instruction_label *i) = 0;

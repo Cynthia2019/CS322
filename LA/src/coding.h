@@ -24,6 +24,9 @@ namespace LA {
       void visit(Instruction_length *i) override;
       void visit(Instruction_array *i) override;
       void visit(Instruction_tuple *i) override;
+      void visit(Instruction_print *i) override;
+      void visit(Instruction_input *i) override;
+      void visit(Instruction_input_assignment *i) override;
     private: 
       Function* f;
   };

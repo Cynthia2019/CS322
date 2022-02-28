@@ -123,6 +123,14 @@ namespace LA
             i->arg = new Number(encodeConstant(a->get())); 
         }
     }
+    void Encoder::visit(Instruction_print *i) {
+       Number* a = dynamic_cast<Number*>(i->src); 
+        if(a != nullptr) {
+            i->src = new Number(encodeConstant(a->get())); 
+        }
+    }
+      void Encoder::visit(Instruction_input *i) {}
+      void Encoder::visit(Instruction_input_assignment *i) {}
     void encodeAll(Program &p, Function* f) {
         Encoder encoder(f);
         for(Instruction* i : f->instructions) {

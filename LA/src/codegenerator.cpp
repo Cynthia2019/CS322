@@ -278,6 +278,22 @@ namespace LA {
         s += i->arg->toString() + ")\n"; 
         outputFile << s;        
     }
+    void CodeGenerator::visit(Instruction_print *i) {
+        string s; 
+        s += "\tcall print";
+        if(i->src->getType() == item_variable) s += "%";
+        s += i->src->toString() + ")\n"; 
+        outputFile << s;        
+    }
+    void CodeGenerator::visit(Instruction_input *i) {
+        outputFile << "\tcall input()\n";        
+    }
+    void CodeGenerator::visit(Instruction_input_assignment *i) {
+        string s; 
+        if(i->dst->getType() == item_variable) s += "%";
+        s += i->dst->toString() + " <- call input()"; 
+        outputFile << s;        
+    }
     void generate_code(Program p) {
         /* 
         * Open the output file.

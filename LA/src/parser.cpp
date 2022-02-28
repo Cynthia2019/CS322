@@ -237,10 +237,7 @@ namespace LA
   call
   */
 struct Instruction_call_rule : pegtl::seq<
-                                    pegtl::sor<
-                                      str_input, 
-                                      str_print,
-                                      variable_rule>,
+                                    variable_rule,
                                     seps,
                                     TAOCPP_PEGTL_STRING("("),
                                     pegtl::sor<seps, pegtl::eol>,
@@ -249,15 +246,24 @@ struct Instruction_call_rule : pegtl::seq<
                                     TAOCPP_PEGTL_STRING(")")>
   {
   };
+  struct Instruction_print_rule : pegtl::seq<
+                                    str_print, 
+                                    seps, 
+                                    TAOCPP_PEGTL_STRING("("),
+                                    variable_rule, 
+                                    TAOCPP_PEGTL_STRING(")")> {}; 
+  struct Instruction_input_rule : pegtl::seq<
+                                    str_input, 
+                                    seps, 
+                                    TAOCPP_PEGTL_STRING("("),
+                                    pegtl::sor<str_void, seps>, 
+                                    TAOCPP_PEGTL_STRING(")")> {} ;
   struct Instruction_call_assignment_rule : pegtl::seq<
                                     variable_rule, 
                                     seps, 
                                     str_arrow, 
                                     seps, 
-                                     pegtl::sor<
-                                      str_input, 
-                                      str_print,
-                                      variable_rule>,
+                                    variable_rule,
                                     seps,
                                     TAOCPP_PEGTL_STRING("("),
                                     pegtl::sor<seps, pegtl::eol>,
@@ -266,7 +272,16 @@ struct Instruction_call_rule : pegtl::seq<
                                     TAOCPP_PEGTL_STRING(")")>
   {
   };
-
+  struct Instruction_input_assignment_rule : pegtl::seq<
+                                    variable_rule, 
+                                    seps, 
+                                    str_arrow, 
+                                    seps, 
+                                    str_input, 
+                                    seps, 
+                                    TAOCPP_PEGTL_STRING("("),
+                                    pegtl::sor<str_void, seps>, 
+                                    TAOCPP_PEGTL_STRING(")")> {} ;
   struct Instruction_br_label_rule : pegtl::seq<
                                      str_br,
                                      seps,
@@ -340,6 +355,9 @@ struct Instruction_call_rule : pegtl::seq<
                                 pegtl::seq<pegtl::at<Instruction_store_rule>, Instruction_store_rule>,
                                 pegtl::seq<pegtl::at<Instruction_array_rule>, Instruction_array_rule>,
                                 pegtl::seq<pegtl::at<Instruction_tuple_rule>, Instruction_tuple_rule>,
+                                pegtl::seq<pegtl::at<Instruction_print_rule>, Instruction_print_rule>,
+                                pegtl::seq<pegtl::at<Instruction_input_rule>, Instruction_input_rule>,
+                                pegtl::seq<pegtl::at<Instruction_input_assignment_rule>, Instruction_input_assignment_rule>,
                                 pegtl::seq<pegtl::at<Instruction_call_rule>, Instruction_call_rule>,
                                 pegtl::seq<pegtl::at<Instruction_call_assignment_rule>, Instruction_call_assignment_rule>,
                                 pegtl::seq<pegtl::at<Instruction_assignment_rule>, Instruction_assignment_rule>,
@@ -554,7 +572,7 @@ template <>
         cout << "firing parameters_rule: " << in.string() << endl;
         auto currentF = p.functions.back();
         while(!parsed_items.empty()){
-          // cout <<parsed_items.back()->toString() << endl;
+          cout << "back: " <<parsed_items.back()->toString() << endl;
           Variable* v = dynamic_cast<Variable*>(parsed_items.back()); 
           if(v == nullptr) cerr << "bug\n"; 
           // cout << "param variable: " << v->toString() << endl;
@@ -634,8 +652,6 @@ template <>
     static void apply(const Input &in, Program &p)
     {
       if (is_debug) cout << "firing str_print rule" << endl;
-      Operation *i = new Operation(in.string());
-      parsed_items.push_back(i);
     }
   };
   template <>
@@ -645,8 +661,6 @@ template <>
     static void apply(const Input &in, Program &p)
     {
       if (is_debug) cout << "firing str_input rule" << endl;
-      Operation *i = new Operation(in.string());
-      parsed_items.push_back(i);
     }
   };
   template <>
@@ -743,6 +757,58 @@ template <>
       currentF->instructions.push_back(i);
     }
   };
+
+ template <>
+  struct action<Instruction_print_rule>
+  {
+    template <typename Input>
+    static void apply(const Input &in, Program &p)
+    {
+      if (is_debug)
+        cout << "firing Instruction_print_rule: " << in.string() << endl;
+      auto currentF = p.functions.back();
+      auto i = new Instruction_print();
+      i->lineno = in.position().line;
+      i->src = parsed_items.back();
+      parsed_items.pop_back();
+      if(is_debug) cout << i->toString() << endl;
+      currentF->instructions.push_back(i);
+    }
+  };
+
+ template <>
+  struct action<Instruction_input_rule>
+  {
+    template <typename Input>
+    static void apply(const Input &in, Program &p)
+    {
+      if (is_debug)
+        cout << "firing Instruction_input: " << in.string() << endl;
+      auto currentF = p.functions.back();
+      auto i = new Instruction_input();
+      i->lineno = in.position().line;
+      if(is_debug) cout << i->toString() << endl;
+      currentF->instructions.push_back(i);
+    }
+  };
+ template <>
+  struct action<Instruction_input_assignment_rule>
+  {
+    template <typename Input>
+    static void apply(const Input &in, Program &p)
+    {
+      if (is_debug)
+        cout << "firing Instruction_input_assignment: " << in.string() << endl;
+      auto currentF = p.functions.back();
+      auto i = new Instruction_input_assignment();
+      i->lineno = in.position().line;
+      i->dst = parsed_items.back(); 
+      parsed_items.pop_back();
+      if(is_debug) cout << i->toString() << endl;
+      currentF->instructions.push_back(i);
+    }
+  };
+
 
   template <>
   struct action<Instruction_call_assignment_rule>
