@@ -430,17 +430,17 @@ struct Instruction_call_rule : pegtl::seq<
       auto newF = new Function();
       std::string input = in.string(); 
       int n;
-      if(input.find(" ") != std::string::npos) {
-        n = input.find(" "); 
-      } 
-      else if(input.find("tuple") != std::string::npos) {
+      if(input.find("tuple") != std::string::npos) {
         n = 5;
       }
       else if(input.find("code") != std::string::npos) {
         n = 4; 
       }
       else if(input.find("int64") != std::string::npos) {
-        n = 5; 
+        n = 5 + count(input.begin(), input.end(), ']') * 2; 
+      }
+      else {
+        n = 5;
       }
       std::string type = input.substr(0, n); 
       int i = n;
