@@ -110,12 +110,12 @@ namespace LA {
 
         auto br = new Instruction_br_t();
         br->condition = condition->dst;
-        br->label1 = new Label(LL + "_legal" + to_string(counter++));
-        br->label2 = new Label(LL + "_error_uninitialize");
+        br->label2 = new Label(LL + "_legal" + to_string(counter++));
+        br->label1 = new Label(LL + "_error_uninitialize");
         insertInstruction(f, br);
         
         auto label = new Instruction_label();
-        label->label = br->label1;
+        label->label = br->label2;
         insertInstruction(f, label);
     }
 
