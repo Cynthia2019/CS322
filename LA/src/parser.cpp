@@ -360,8 +360,8 @@ struct Instruction_call_rule : pegtl::seq<
                                 pegtl::seq<pegtl::at<Instruction_input_assignment_rule>, Instruction_input_assignment_rule>,
                                 pegtl::seq<pegtl::at<Instruction_call_rule>, Instruction_call_rule>,
                                 pegtl::seq<pegtl::at<Instruction_call_assignment_rule>, Instruction_call_assignment_rule>,
-                                pegtl::seq<pegtl::at<Instruction_assignment_rule>, Instruction_assignment_rule>,
                                 pegtl::seq<pegtl::at<Instruction_length_rule>, Instruction_length_rule>,
+                                pegtl::seq<pegtl::at<Instruction_assignment_rule>, Instruction_assignment_rule>,
                                 pegtl::seq<pegtl::at<Instruction_declare_rule>, Instruction_declare_rule>>
   {
   };
