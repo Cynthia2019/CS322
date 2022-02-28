@@ -437,15 +437,20 @@ struct Instruction_call_rule : pegtl::seq<
         n = 4; 
       }
       else if(input.find("int64") != std::string::npos) {
-        n = 5 + count(input.begin(), input.end(), ']') * 2; 
+        n = input.find("int64") + count(input.begin(), input.end(), ']') * 2; 
+      }
+      else if(input.find("void") != std::string::npos) {
+        n = 4; 
       }
       else {
         n = input.find(" ");
       }
       std::string type = input.substr(0, n); 
-      int i = n;
-      while (input[i] == ' ') i++;
-      std::string var_name = input.substr(i); 
+      if(input.find("int64") != std::string::npos && count(input.begin(), input.end(), ']') == 0) type = "int64";
+      cout << type << endl;
+      input = input.substr(n+1); 
+      input.erase(std::remove_if(input.begin(), input.end(), [](unsigned char x){return std::isspace(x);}), input.end());
+      std::string var_name = input;
       newF->type = type;
       newF->name = var_name; 
       p.functions.push_back(newF);
@@ -841,7 +846,7 @@ template <>
       i->callee = parsed_items.back();
       parsed_items.pop_back();
       i->dst = dynamic_cast<Variable*>(parsed_items.back());
-       parsed_items.pop_back();
+      parsed_items.pop_back();
       currentF->instructions.push_back(i);
       if(is_debug) cout << i->toString() << endl;
     }
@@ -918,9 +923,26 @@ template <>
         cout << "firing Instruction_declare_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       std::string type_var = in.string(); 
-      int n = type_var.find(' '); 
+      int n;
+      if(type_var.find("tuple") != std::string::npos) {
+        n = 5;
+      }
+      else if(type_var.find("code") != std::string::npos) {
+        n = 4; 
+      }
+      else if(type_var.find("int64") != std::string::npos) {
+        n = 5 + count(type_var.begin(), type_var.end(), ']') * 2; 
+      }
+      else if(type_var.find("void") != std::string::npos) {
+        n = 4; 
+      }
+      else {
+        n = type_var.find(" ");
+      }
       std::string type = type_var.substr(0, n); 
-      std::string var_name = type_var.substr(n+1); 
+      type_var = type_var.substr(n+1); 
+      type_var.erase(std::remove_if(type_var.begin(), type_var.end(), [](unsigned char x){return std::isspace(x);}), type_var.end());
+      std::string var_name = type_var; 
       if(is_debug) {
         cout << "type: " << type << " var: " << var_name << endl;
       }
