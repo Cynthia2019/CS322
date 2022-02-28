@@ -154,20 +154,28 @@ namespace LA {
     }
 
     void CodeGenerator::visit(Instruction_length* i) {
-        Item* todecode = toDecode(i)[0]; 
-        std::string decoded; 
-        Variable* v = dynamic_cast<Variable*>(todecode); 
-            if(v != nullptr) {
-                decoded = newVar(v); 
-                outputFile << "\tint64 " << decoded << "\n";  
-                outputFile << "\t" << decoded << " <- " << v->toString() << " >> 1\n";
-            }
-            else {
-                Number* n = dynamic_cast<Number*>(todecode); 
-                decoded = to_string(n->get() >> 1) ;
-            }
-        string s = "\t%" + i->dst->toString() + " <- length %" + i->src->toString() + " " + decoded + '\n'; 
-        outputFile << s;
+        if(i->dimID->getType() == item_variable) {
+            Item* todecode = toDecode(i)[0]; 
+            if(todecode == nullptr) cout << "bug\n"; 
+            cout << todecode->toString() << endl;
+            std::string decoded; 
+            Variable* v = dynamic_cast<Variable*>(todecode); 
+                if(v != nullptr) {
+                    decoded = newVar(v); 
+                    outputFile << "\tint64 " << decoded << "\n";  
+                    outputFile << "\t" << decoded << " <- " << v->toString() << " >> 1\n";
+                }
+                else {
+                    Number* n = dynamic_cast<Number*>(todecode); 
+                    decoded = to_string(n->get() >> 1) ;
+                }
+            string s = "\t%" + i->dst->toString() + " <- length %" + i->src->toString() + " " + decoded + '\n'; 
+            outputFile << s;
+        }
+        else {
+            string s = "\t%" + i->dst->toString() + " <- length %" + i->src->toString() + " " + i->dimID->toString() + '\n';
+            outputFile << s; 
+        }
     }
     void CodeGenerator::visit(Instruction_op* i) {
         // if(is_debug) cout << "codegen: op " << i->toString() << endl;
@@ -297,7 +305,7 @@ namespace LA {
             // outputFile << "\t" << LL << "_to_entry" << endl;
             // outputFile << "\t" << "br " << f->entry_label << endl;
             for(Instruction* i : f->instructions) {
-                // cout << i->toString() << endl;
+                cout << i->toString() << endl;
                 i->accept(&cg); 
             }
             outputFile << "}" << endl;
