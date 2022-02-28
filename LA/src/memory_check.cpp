@@ -24,6 +24,7 @@ namespace LA {
         index = 0;
         auto insts = f->instructions;
         declare_variables(f);
+        bool checked = false;
 
         for (auto i : insts) {
             if (is_debug) cout << "reading instruction: " << i->toString() << endl;
@@ -31,16 +32,20 @@ namespace LA {
             if (load) {
                 check_initialize(f, load);
                 check_access(f, load);
+                checked = true;
             }
             Instruction_store *store = dynamic_cast<Instruction_store *>(i);
             if (store) {
                 check_initialize(f, store);
                 check_access(f, store);
+                checked = true;
             }
             index++;
         }
 
-        addTensorError(f);
+        if (checked) {
+            addTensorError(f);
+        }
     }
 
     void MemoryCheck::insertInstruction(Function *f, Instruction *i) {
