@@ -267,12 +267,12 @@ namespace LA {
             
             auto rtrn = dynamic_cast<Instruction_ret *>(i);
             auto br = dynamic_cast<Instruction_br *>(i);
-            bool istensor = false;
-            auto tensor = dynamic_cast<Instruction_call *>(i);
-            if (tensor && tensor->callee->toString() == "tensor-error") {
-                istensor = true;
-            }
-            if (rtrn || br || istensor) {
+            // bool istensor = false;
+            // auto tensor = dynamic_cast<Instruction_call *>(i);
+            // if (tensor && tensor->callee->toString() == "tensor-error") {
+            //     istensor = true;
+            // }
+            if (rtrn || br) {
                 startBB = true;
             }
         }

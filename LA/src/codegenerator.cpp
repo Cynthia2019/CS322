@@ -294,7 +294,7 @@ namespace LA {
         outputFile.open("prog.IR");
         for (auto f : p.functions) {
             CodeGenerator cg(f, outputFile);
-            outputFile << "define " << f->name << "(";
+            outputFile << "define " << f->type << " :" << f->name << "(";
             for (int i = f->arguments.size() - 1; i >= 0; i--) {
                 outputFile << f->arguments[i]->toString();
                 if (i != 0) {
