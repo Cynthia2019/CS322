@@ -305,7 +305,7 @@ namespace LA {
             CodeGenerator cg(f, outputFile);
             cout << "new Function: " << endl; 
             outputFile << "define " << f->type << " :" << f->name << "(";
-            for (int i = 0; i < f->arguments.size(); i++) {
+            for (int i = f->arguments.size() - 1; i >= 0 ; i--) {
                 string s;
                 if(f->arguments[i]->getVariableType() == var_int64) {
                     s += "int64"; 
@@ -324,7 +324,7 @@ namespace LA {
                     }
                 }
                 s += " %" + f->arguments[i]->toString();
-                if (i != f->arguments.size() - 1) {
+                if (i != 0) {
                     s += ", ";
                 }
                 outputFile << s;
