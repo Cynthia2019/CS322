@@ -48,6 +48,7 @@ namespace LA
   std::vector<Item *> list_of_args = {}; 
   std::vector<Instruction *> instructions = {};
   VarTypes curr_var_type;
+  std::string curr_var_type_str;
 
   /*
    *map from string to registerid
@@ -120,11 +121,16 @@ namespace LA
                           >
                       > {};
   struct variable_rule : variable {};
+  struct function_name_rule :variable {};
   struct type_variable_rule : pegtl::seq<
                               type_rule, 
                               seps,
                               variable> {};
-  struct function_type_name : type_variable_rule {};
+  struct function_type_name : pegtl::seq<
+                              type_rule, 
+                              seps,
+                              function_name_rule> {};
+  // struct function_type_name :  {};
   struct parameters_rule : pegtl::sor<
                             pegtl::seq<
                               type_variable_rule,
@@ -428,31 +434,50 @@ struct Instruction_call_rule : pegtl::seq<
     {
       if (is_debug) cout << "new function: " << in.string() << endl;
       auto newF = new Function();
-      std::string input = in.string(); 
-      int n;
-      if(input.find("tuple") != std::string::npos) {
-        n = 5;
-      }
-      else if(input.find("code") != std::string::npos) {
-        n = 4; 
-      }
-      else if(input.find("int64") != std::string::npos) {
-        n = 5 + count(input.begin(), input.end(), ']') * 2; 
-      }
-      else if(input.find("void") != std::string::npos) {
-        n = 4; 
-      }
-      else {
-        n = input.find(" ");
-      }
-      std::string type = input.substr(0, n); 
-      int i = n;
-      while (input[i] == ' ') i++;
-      std::string var_name = input.substr(i); 
-      newF->type = type;
-      newF->name = var_name; 
+      // std::string input = in.string(); 
+      // int n;
+      
+      // if(input.find("tuple") != std::string::npos) {
+      //   n = 5;
+      // }
+      // else if(input.find("code") != std::string::npos) {
+      //   n = 4; 
+      // }
+      // else if(input.find("int64") != std::string::npos) {
+      //   n = 5 + count(input.begin(), input.end(), ']') * 2; 
+      // }
+      // else if(input.find("void") != std::string::npos) {
+      //   n = 4; 
+      // }
+      // else {
+      //   n = input.find(" ");
+      // }
+      // std::string type = input.substr(0, n); 
+      // int i = n;
+      // while (input[i] == ' ') i++;
+      // std::string var_name = input.substr(i); 
+      // newF->type = type;
+      // swith(curr_var_type) {
+      //   case var_code:
+      //     newF->type = "code";
+      //     break;
+      //   case var_int64:
+      //     newF->type = "int64";
+      //     break;
+
+      //   case var_tuple:
+      //     newF->type = "tuple";
+      //     break;
+      //   case var_int64_multi:
+      //     newF->type = "int";
+      //     break;
+      // }
+      newF->type = curr_var_type_str;
+
+      newF->name = parsed_items.back()->toString(); 
+      parsed_items.pop_back();
       p.functions.push_back(newF);
-      p.name_to_functions[var_name] = newF; 
+      p.name_to_functions[newF->name] = newF; 
     } 
   };
 
@@ -501,6 +526,18 @@ struct Instruction_call_rule : pegtl::seq<
   };
 
   template <>
+  struct action<function_name_rule>
+  {
+    template <typename Input>
+    static void apply(const Input &in, Program &p) {
+      if (is_debug)
+        cout << "firing function_name_rule: " << in.string() << endl;
+      
+      parsed_items.push_back(new String(in.string()));
+    }
+  }; 
+
+  template <>
   struct action<variable_rule>
   {
     template <typename Input>
@@ -539,6 +576,7 @@ struct Instruction_call_rule : pegtl::seq<
       if (is_debug)
         cout << "firing type_rule: " << in.string() << endl;
       std::string type = in.string();
+      curr_var_type_str = type;
       if (type.find("]") != std::string::npos) {
         curr_var_type = var_int64_multi;
       } else if (type.find("int64") != std::string::npos) {
