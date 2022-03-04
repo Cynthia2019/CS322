@@ -161,8 +161,16 @@ class FunctionItem : public Item {
   {
     public: 
     VarTypes type;
-    Variable* dst; 
-    std::string toString() override { return "type  " + dst->toString(); }
+    std::string type_str;
+    //Variable* dst; 
+    vector<Variable *> declared;
+    std::string toString() override { 
+      std::string s = type_str + " ";
+      for (auto v : declared) {
+        s += v->toString() + " ";
+      }
+      return s;
+    }
     void accept(Visitor *v) override;
   };
 
@@ -228,28 +236,46 @@ class FunctionItem : public Item {
     void accept(Visitor *v) override; 
   };
 
-  class Instruction_br : public Instruction {
+  class Instruction_goto : public Instruction {
     public:
+    Label *label;
+    std::string toString() { return "goto " + label->toString(); };
+    void accept(Visitor *v);
+  };
+
+  class Condition {
+    public:
+    Item *oprand1;
+    Item *op;
+    Item *oprand2;
+    std::string toString() {
+      return oprand1->toString() + " " + op->toString() + " " + oprand2->toString();
+    }
+  };
+
+  class Instruction_branch: public Instruction {
+    public:
+    Label *true_label;
+    Label *false_label;
+    Condition *condition;
     virtual std::string toString() = 0;
     virtual void accept(Visitor *v) = 0;
   };
 
-  class Instruction_br_label : public Instruction_br
-  {
-  public:
-    Label *label;
-    std::string toString() override { return "br " + label->toString(); }
-    void accept(Visitor *v) override; 
+  class Instruction_if: public Instruction_branch {
+    std::string toString() {
+      return "if " +condition->toString() + " " + true_label->toString() + false_label->toString();
+    }
+    void accept(Visitor *v);
   };
 
-class Instruction_br_t : public Instruction_br
-  {
-  public:
-    Item *condition;
-    Label *label1; 
-    Label *label2; 
-    std::string toString() override { return "br " + condition->toString() + " " +label1->toString() + " " +label2->toString(); }
-    void accept(Visitor *v) override; 
+  class Instruction_while : public Instruction_branch {
+    public:
+    std::string toString() {
+      return "while " +condition->toString() + " " + true_label->toString() + false_label->toString();
+    }
+
+    void accept(Visitor *v);
   };
 
   class Instruction_call : public Instruction {
@@ -263,7 +289,7 @@ class Instruction_br_t : public Instruction_br
   class Instruction_print : public Instruction {
     public: 
     Item * src; 
-    std::string toString() override { return "print " + src->toString() + "\n";};
+    std::string toString() override { return "print (" + src->toString() + ")";};
     void accept(Visitor *v) override; 
   };
   class Instruction_input : public Instruction {
@@ -271,10 +297,11 @@ class Instruction_br_t : public Instruction_br
     std::string toString() override { return "input ()\n";};
     void accept(Visitor *v) override; 
   };
+
   class Instruction_input_assignment : public Instruction {
     public: 
     Item* dst;
-    std::string toString() override { return dst->toString() + " input ()\n";};
+    std::string toString() override { return dst->toString() + " <- input ()";};
     void accept(Visitor *v) override; 
   };
   // call callee (args) instruction
@@ -394,7 +421,10 @@ class Instruction_br_t : public Instruction_br
     std::vector<Function *> functions;
     Function* getFunction(string name); 
     std::string getLongestLabel();
+    void printProgram(void);
     Program();
+  private:
+    std::string LL;
   };
 
   class Visitor {
@@ -406,8 +436,9 @@ class Instruction_br_t : public Instruction_br
       virtual void visit(Instruction_op *i) = 0;
       virtual void visit(Instruction_store *i) = 0;
       virtual void visit(Instruction_declare *i) = 0;
-      virtual void visit(Instruction_br_label *i) = 0;
-      virtual void visit(Instruction_br_t *i) = 0;
+      virtual void visit(Instruction_while *i) = 0;
+      virtual void visit(Instruction_if *i) = 0;
+      virtual void visit(Instruction_goto *i) = 0;
       virtual void visit(Instruction_print *i) = 0;
       virtual void visit(Instruction_input *i) = 0;
       virtual void visit(Instruction_input_assignment *i) = 0;

@@ -33,7 +33,7 @@ int main(
   auto enable_code_generator = false;
   int32_t optLevel = 3;
 
-  bool memory_check_only = false;
+  bool parse_only = false;
 
 
   /*
@@ -46,7 +46,7 @@ int main(
     return 1;
   }
   int32_t opt;
-  while ((opt = getopt(argc, argv, "vg:O:slt")) != -1)
+  while ((opt = getopt(argc, argv, "vg:O:spt")) != -1)
   {
     switch (opt)
     {
@@ -57,6 +57,10 @@ int main(
 
     case 'g':
       enable_code_generator = (strtoul(optarg, NULL, 0) == 0) ? false : true;
+      break;
+    
+    case 'p':
+      parse_only = true;
       break;
 
     case 'v':
@@ -76,8 +80,13 @@ int main(
 /*
     * Parse the L3 program.
     */
-  p = LB::parse_file(argv[optind]);
-
+  if (parse_only) {
+    p = LB::parse_file(argv[optind]);
+    cout << "======parsed========" << endl;
+    p.printProgram();
+  } else {
+    p = LB::parse_file(argv[optind]);
+  }
 
   return 0;
 }

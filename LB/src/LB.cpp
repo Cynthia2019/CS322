@@ -8,6 +8,13 @@ namespace LB
 {
   //Program 
   Program::Program() {}
+  void Program::printProgram() {
+    for (auto f : functions) {
+      for (auto i : f->instructions) {
+        cout << i->toString() << endl;
+      }
+    }
+  }
 
   std::string Program::getLongestLabel() {
     size_t maxlen = 0;
@@ -191,10 +198,13 @@ void Instruction_ret_t::accept(Visitor* v) {
 void Instruction_op::accept(Visitor* v) {
   v->visit(this);
 }
-void Instruction_br_label::accept(Visitor* v) {
+void Instruction_while::accept(Visitor* v) {
   v->visit(this);
 }
-void Instruction_br_t::accept(Visitor* v) {
+void Instruction_if::accept(Visitor* v) {
+  v->visit(this);
+}
+void Instruction_goto::accept(Visitor* v) {
   v->visit(this);
 }
 void Instruction_call_noassign::accept(Visitor* v) {
