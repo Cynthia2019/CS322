@@ -32,7 +32,30 @@ namespace LB
 
     void unscope(Function *f) {
         string LV = findLongestName(f);
-        cout << LV << endl;
+        cout << "longest variable: " << LV << endl;
+        Scope *prev = nullptr;
+        int64_t counter = 0;
+        unordered_map<Scope *, int64_t> scopeid;
+        for (auto i : f->instructions) {
+            auto declare = dynamic_cast<Instruction_declare *>(i);
+            if (!declare) continue;
+            int64_t id = 0;
+            if (i->scope != prev) {
+                prev = i->scope;
+                if (scopeid.count(i->scope) == 0) {
+                    id = counter;
+                    scopeid[i->scope] = counter;
+                    counter++;
+                } else {
+                    id = scopeid[i->scope];
+                }
+            }
+
+            for (auto v : declare->declared) {
+                auto old_name = v->get();
+                v->setName(LV + "_" + old_name + "_" + to_string(id));
+            }
+        }
     }
     
 } // namespace LB

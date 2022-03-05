@@ -71,6 +71,7 @@ namespace LB
     bool operator == (const Variable &other); 
     string toString(void) override;
     ItemType getType(void) override { return item_variable; }
+    void setName(string name) {variableName = name;}
   protected: 
     string variableName;
     VarTypes type; 
