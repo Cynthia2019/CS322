@@ -25,6 +25,7 @@
 #include<stdio.h>
 #include<ctype.h>
 #include <map>
+#include <stack>
 
 #include <tao/pegtl.hpp>
 #include <tao/pegtl/analyze.hpp>
@@ -46,6 +47,7 @@ namespace LB
    */
   std::vector<Item *> parsed_items = {};
   std::vector<Item *> list_of_args = {}; 
+  std::stack<Scope *> scope_stack;
   std::vector<Instruction *> instructions = {};
   VarTypes curr_var_type;
   std::string curr_var_type_str;
@@ -91,6 +93,8 @@ namespace LB
   struct str_goto: TAOCPP_PEGTL_STRING("goto") {}; 
   struct str_if: TAOCPP_PEGTL_STRING("if") {}; 
   struct str_arrow : TAOCPP_PEGTL_STRING("<-") {};
+  struct scope_start : TAOCPP_PEGTL_STRING("{") {}; 
+  struct scope_end : TAOCPP_PEGTL_STRING("}") {}; 
 
   struct comment : pegtl::disable<
                        TAOCPP_PEGTL_STRING("//"),
@@ -421,11 +425,11 @@ struct Instruction_call_rule : pegtl::seq<
 
   struct Instructions_rule;
   struct Scope_rule: pegtl::seq<
-                          TAOCPP_PEGTL_STRING("{"),
+                          scope_start,
                           seps,
                           Instructions_rule,
                           seps,
-                          TAOCPP_PEGTL_STRING("}")
+                          scope_end
                           > {};
 
   struct Instruction_rule : pegtl::sor<
@@ -530,6 +534,7 @@ struct Instruction_call_rule : pegtl::seq<
         cout << "firing Instruction_ret: " << in.string() << endl;
       auto currentF = p.functions.back();
       auto i = new Instruction_ret_not();
+      i->scope = scope_stack.top();
       i->lineno = in.position().line;
       currentF->instructions.push_back(i);
       //if(is_debug) cout << i->toString() << endl;
@@ -545,6 +550,7 @@ struct Instruction_call_rule : pegtl::seq<
         cout << "firing Instruction_ret_t: " << in.string() << endl;
       auto currentF = p.functions.back();
       auto i = new Instruction_ret_t();
+      i->scope = scope_stack.top();
       i->lineno = in.position().line;
       i->arg = parsed_items.back(); 
       parsed_items.pop_back();
@@ -587,7 +593,8 @@ struct Instruction_call_rule : pegtl::seq<
         cout << "firing variable_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       std::string var_name = in.string(); 
-      Variable *i = currentF->getVariable(var_name);
+      auto currentScope = scope_stack.top();
+      Variable *i = currentScope->getVariable(var_name);
       Function* f = p.getFunction(var_name); 
       if(i != nullptr) {
         cout << "pushing variable" << endl;
@@ -629,6 +636,39 @@ struct Instruction_call_rule : pegtl::seq<
   };      
 
   template <>
+  struct action<scope_start>
+  {
+    template <typename Input>
+    static void apply(const Input &in, Program &p)
+    {
+      if (is_debug)
+        cout << "firing scope_start: " << in.string() << endl;
+      auto currentF = p.functions.back();
+      Scope *scope;
+      if (scope_stack.empty()) {
+        scope = new Scope(nullptr);
+      } else {
+        scope = new Scope(scope_stack.top());
+      }
+      scope_stack.push(scope);
+    }
+  };    
+
+  template <>
+  struct action<scope_end>
+  {
+    template <typename Input>
+    static void apply(const Input &in, Program &p)
+    {
+      if (is_debug)
+        cout << "firing scope_end " << in.string() << endl;
+      if (!scope_stack.empty()) {
+        scope_stack.pop();
+      }
+    }
+  };    
+
+  template <>
   struct action<variable_declare_rule>
   {
     template <typename Input>
@@ -640,11 +680,12 @@ struct Instruction_call_rule : pegtl::seq<
       std::string var_name = in.string(); 
 
       Variable *v;
+      auto currentScope = scope_stack.top();
       if (curr_var_type == var_int64_multi) {
         int dimension = count(curr_var_type_str.begin(), curr_var_type_str.end(), ']');
-        v = currentF->newVariable(var_name, var_int64_multi, dimension);
+        v = currentScope->newVariable(var_name, var_int64_multi, dimension);
       } else {
-        v = currentF->newVariable(var_name, curr_var_type, 0);
+        v = currentScope->newVariable(var_name, curr_var_type, 0);
       }
       cout << "pushing type variable" << endl;
       parsed_items.push_back(v);
@@ -668,6 +709,7 @@ struct Instruction_call_rule : pegtl::seq<
         cout << "type: " << type << " var: " << var_name << endl;
       }
       Variable *v;
+      if (!scope_stack.empty()) abort();
       if (curr_var_type == var_int64_multi) {
         int dimension = count(type.begin(), type.end(), ']');
         v = currentF->newVariable(var_name, var_int64_multi, dimension);
@@ -721,7 +763,8 @@ template <>
               list_of_args.push_back(i);
           }
           else {
-            Variable *i = currentF->getVariable(temp);
+            auto currScope = scope_stack.top();
+            Variable *i = currScope->getVariable(temp);
             list_of_args.push_back(i);
           }
           args = args.substr(n+1);
@@ -733,7 +776,8 @@ template <>
         list_of_args.push_back(i);
       }
       else {
-        Variable *i = currentF->getVariable(args);
+        auto currScope = scope_stack.top();
+        Variable *i = currScope->getVariable(args);
         list_of_args.push_back(i);
       }
     }
@@ -815,9 +859,11 @@ template <>
         cout << "firing Instruction_label_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       auto i = new Instruction_label();
+      i->scope = scope_stack.top();
       i->lineno = in.position().line;
       Label *item = new Label(in.string());
       i->label = item;
+      i->scope = scope_stack.top();
       if(is_debug) cout << i->toString() << endl;
       currentF->instructions.push_back(i);
     }
@@ -833,6 +879,7 @@ template <>
         cout << "firing Instruction_op_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       auto i = new Instruction_op();
+      i->scope = scope_stack.top();
       i->lineno = in.position().line;
       i->oprand2 = parsed_items.back();
       parsed_items.pop_back();
@@ -862,6 +909,7 @@ template <>
         cout << "firing Instruction_call_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       auto i = new Instruction_call_noassign();
+      i->scope = scope_stack.top();
       i->lineno = in.position().line;
       reverse(list_of_args.begin(), list_of_args.end());
       while(!list_of_args.empty()) {
@@ -887,6 +935,7 @@ template <>
         cout << "firing Instruction_print_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       auto i = new Instruction_print();
+      i->scope = scope_stack.top();
       i->lineno = in.position().line;
       i->src = parsed_items.back();
       parsed_items.pop_back();
@@ -905,6 +954,7 @@ template <>
         cout << "firing Instruction_input: " << in.string() << endl;
       auto currentF = p.functions.back();
       auto i = new Instruction_input();
+      i->scope = scope_stack.top();
       i->lineno = in.position().line;
       if(is_debug) cout << i->toString() << endl;
       currentF->instructions.push_back(i);
@@ -920,6 +970,7 @@ template <>
         cout << "firing Instruction_input_assignment: " << in.string() << endl;
       auto currentF = p.functions.back();
       auto i = new Instruction_input_assignment();
+      i->scope = scope_stack.top();
       i->lineno = in.position().line;
       i->dst = parsed_items.back(); 
       parsed_items.pop_back();
@@ -939,6 +990,7 @@ template <>
         cout << "firing Instruction_call_assignment_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       auto i = new Instruction_call_assignment();
+      i->scope = scope_stack.top();
       i->lineno = in.position().line;
       for(Item* item : list_of_args) {
          i->args.push_back(item);
@@ -964,6 +1016,7 @@ template <>
         cout << "firing Instruction_goto_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       auto i = new Instruction_goto();
+      i->scope = scope_stack.top();
       i->lineno = in.position().line;
       i->label = dynamic_cast<Label*>(parsed_items.back());;
       parsed_items.pop_back();
@@ -1004,6 +1057,7 @@ template <>
         cout << "firing Instruction_assignment_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       auto i = new Instruction_assignment();
+      i->scope = scope_stack.top();
       i->lineno = in.position().line;
       i->src = parsed_items.back();
       parsed_items.pop_back();
@@ -1025,6 +1079,7 @@ template <>
       auto currentF = p.functions.back();
 
       Instruction_if* i = new Instruction_if(); 
+      i->scope = scope_stack.top();
       i->false_label = dynamic_cast<Label *>(parsed_items.back());
       parsed_items.pop_back();
       i->true_label = dynamic_cast<Label *>(parsed_items.back());
@@ -1052,6 +1107,7 @@ template <>
       auto currentF = p.functions.back();
 
       Instruction_while* i = new Instruction_while(); 
+      i->scope = scope_stack.top();
       i->false_label = dynamic_cast<Label *>(parsed_items.back());
       parsed_items.pop_back();
       i->true_label = dynamic_cast<Label *>(parsed_items.back());
@@ -1079,6 +1135,7 @@ template <>
       auto currentF = p.functions.back();
 
       Instruction_declare* i = new Instruction_declare(); 
+      i->scope = scope_stack.top();
       i->lineno = in.position().line;
       //i->dst = v; 
 
@@ -1120,6 +1177,7 @@ template <>
 
       auto currentF = p.functions.back();
       auto i = new Instruction_load();
+      i->scope = scope_stack.top();
       i->lineno = in.position().line;
       Number* size = dynamic_cast<Number*>(parsed_items.back()); 
       parsed_items.pop_back(); 
@@ -1150,6 +1208,7 @@ template <>
 
       auto currentF = p.functions.back();
       auto i = new Instruction_store();
+      i->scope = scope_stack.top();
       i->lineno = in.position().line;
       i->src = parsed_items.back();
       parsed_items.pop_back();
@@ -1181,6 +1240,7 @@ template <>
 
       auto currentF = p.functions.back();
       auto i = new Instruction_length();
+      i->scope = scope_stack.top();
       i->lineno = in.position().line;
       i->dimID = dynamic_cast<Number*>(parsed_items.back());
       parsed_items.pop_back();
@@ -1203,6 +1263,7 @@ template <>
 
       auto currentF = p.functions.back();
       auto i = new Instruction_array();
+      i->scope = scope_stack.top();
       i->lineno = in.position().line;
       reverse(list_of_args.begin(), list_of_args.end());
       while(!list_of_args.empty()) {
@@ -1228,6 +1289,7 @@ template <>
 
       auto currentF = p.functions.back();
       auto i = new Instruction_tuple();
+      i->scope = scope_stack.top();
       i->lineno = in.position().line;
       i->arg = parsed_items.back();
       parsed_items.pop_back();

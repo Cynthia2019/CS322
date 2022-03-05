@@ -14,6 +14,7 @@
 
 #include "LB.h"
 #include "parser.h"
+#include "scope.h"
 #include "codegenerator.h"
 
 using namespace std;
@@ -84,6 +85,9 @@ int main(
     p = LB::parse_file(argv[optind]);
     cout << "======parsed========" << endl;
     p.printProgram();
+    for (auto f : p.functions) {
+      LB::unscope(f);
+    }
   } else {
     p = LB::parse_file(argv[optind]);
   }

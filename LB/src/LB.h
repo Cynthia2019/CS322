@@ -4,6 +4,7 @@
 #include <string>
 #include <set>
 #include <map>
+#include <unordered_map>
 #include <iostream>
 
 using namespace std;
@@ -74,7 +75,17 @@ namespace LB
     string variableName;
     VarTypes type; 
   };
-  
+
+  class Scope {
+    public:
+    Scope(Scope *parent);
+    std::unordered_map<Variable *, Variable *> rename;
+    std::map<std::string, Variable*> variables; 
+    Variable *newVariable(std::string variable, VarTypes type, int dim);
+    Variable *getVariable(std::string s);
+    Scope *parent;
+  };
+
   class String : public Item 
   {
     public: 
@@ -124,6 +135,7 @@ class FunctionItem : public Item {
   class Instruction
   {
   public:
+    Scope *scope;
     vector<Item *> uses;
     vector<Item *> define;
     int64_t lineno = 0;

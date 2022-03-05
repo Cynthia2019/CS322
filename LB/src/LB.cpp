@@ -7,6 +7,46 @@ using namespace std;
 namespace LB
 {
   //Program 
+  Scope::Scope(Scope *parent):parent(parent) {
+  }
+
+  Variable* Scope::newVariable(std::string variable, VarTypes type, int dim){
+    // std::string variableName = "var_" + variable;
+    std::string variableName = variable;
+    if(variables.find(variableName) != variables.end()){
+      cerr << "multiple definition of " << variable << endl;
+      abort();
+      //return Function::variables[variableName];
+    }
+
+    switch (type)
+    {
+    case var_int64_multi:
+      /* code */
+      variables[variableName] = new ArrayVar(variableName, dim);
+      break;
+    
+    case var_tuple:
+      variables[variableName] = new TupleVar(variableName);
+      break;
+    
+    default:
+      variables[variableName] = new Variable(variableName, type);
+      break;
+    }
+    return variables[variableName];
+  }
+
+  Variable* Scope::getVariable(std::string variable){
+    auto res = variables[variable];
+    if (res)
+      return res;
+    if (!res && !parent) {
+      return nullptr;
+    }
+    return parent->getVariable(variable);
+  }
+  
   Program::Program() {}
   void Program::printProgram() {
     for (auto f : functions) {
