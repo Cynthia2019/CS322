@@ -1,0 +1,31 @@
+void main(int64 hellooooo, int64 hi) {
+    int64 in, ret
+    int64 hello
+    in <- input()
+    in <- in - 1
+    in <- in >> 1
+    ret <- perfect(in)
+    print (ret)
+    :while_start
+    in <- in + 1
+
+    while(1 = 1) :while_start :while_end
+    {
+        int64 in
+        {
+            int64 in_dup
+            print (in)
+            print (in_dup) 
+        }
+
+    }
+
+    {
+        int64 in
+        in <- hi + 1
+    }
+    goto :while_start
+    if (2 < in) :while_start :while_end
+    :while_end
+    return
+}
