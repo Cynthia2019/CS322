@@ -84,12 +84,14 @@ int main(
   if (parse_only) {
     p = LB::parse_file(argv[optind]);
     cout << "======parsed========" << endl;
-    for (auto f : p.functions) {
-      LB::unscope(f);
-    }
     p.printProgram();
   } else {
     p = LB::parse_file(argv[optind]);
+    for (auto f : p.functions) {
+      LB::unscope(f);
+    }
+    cout << "======parsed========" << endl;
+    p.printProgram();
   }
 
   return 0;
