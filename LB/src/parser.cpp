@@ -598,6 +598,7 @@ struct Instruction_call_rule : pegtl::seq<
       Function* f = p.getFunction(var_name); 
       if(i == nullptr) {
         // cout << "pushing variable" << endl;
+        // cannot find it in the scope, find it in parameters
         i = currentF->getVariable(var_name);
       }
     
@@ -605,6 +606,7 @@ struct Instruction_call_rule : pegtl::seq<
         parsed_items.push_back(i);
         return;
       }
+      // if it is not a declared variable, take it as a function name
       else if (f != nullptr){
         cout << "pushing function item\n"; 
         FunctionItem* fi = new FunctionItem(f->name); 
