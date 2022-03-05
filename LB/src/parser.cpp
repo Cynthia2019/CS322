@@ -596,9 +596,14 @@ struct Instruction_call_rule : pegtl::seq<
       auto currentScope = scope_stack.top();
       Variable *i = currentScope->getVariable(var_name);
       Function* f = p.getFunction(var_name); 
-      if(i != nullptr) {
-        cout << "pushing variable" << endl;
+      if(i == nullptr) {
+        // cout << "pushing variable" << endl;
+        i = currentF->getVariable(var_name);
+      }
+    
+      if (i != nullptr) {
         parsed_items.push_back(i);
+        return;
       }
       else if (f != nullptr){
         cout << "pushing function item\n"; 
