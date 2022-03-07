@@ -37,8 +37,7 @@ namespace LB
         int64_t counter = 0;
         unordered_map<Scope *, int64_t> scopeid;
         for (auto i : f->instructions) {
-            auto declare = dynamic_cast<Instruction_declare *>(i);
-            if (!declare) continue;
+            // cout << i->toString() << endl;
             int64_t id = 0;
             if (i->scope != prev) {
                 prev = i->scope;
@@ -49,8 +48,13 @@ namespace LB
                 } else {
                     id = scopeid[i->scope];
                 }
+                cout << "new scope: " << id << endl;
+            } else {
+                id = scopeid[i->scope];
             }
 
+            auto declare = dynamic_cast<Instruction_declare *>(i);
+            if (!declare) continue;
             for (auto v : declare->declared) {
                 auto old_name = v->get();
                 v->setName(LV + "_" + old_name + "_" + to_string(id));
