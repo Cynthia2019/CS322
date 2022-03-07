@@ -208,7 +208,7 @@ namespace LB {
             map<Instruction*, WhileLoop*> loop = processLoop(p, f); 
             CodeGenerator cg(f, loop, outputFile);
             cout << "new Function: " << endl; 
-            outputFile << "define " << f->type << " :" << f->name << "(";
+            outputFile  << f->type << " " << f->name << "(";
             for (int i = f->arguments.size() - 1; i >= 0 ; i--) {
                 string s;
                 if(f->arguments[i]->getVariableType() == var_int64) {

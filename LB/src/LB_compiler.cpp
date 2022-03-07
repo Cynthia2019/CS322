@@ -90,10 +90,6 @@ int main(
     }
     // cout << "======parsed========" << endl;
     // p.printProgram();
-    cout << "======start checking while=======" << endl; 
-    for(LB::Function* f : p.functions) {
-      LB::processLoop(p, f); 
-    }
     cout << "======start codegen=====" << endl;
     LB::generate_code(p);
   }
