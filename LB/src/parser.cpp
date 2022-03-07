@@ -1033,9 +1033,13 @@ template <>
       i->scope = scope_stack.top();       
       i->lineno = in.position().line;
       for(Item* item : list_of_args) {
+        cout << "1\n"; 
          i->args.push_back(item);
+         cout << "2\n";
          cout << item->toString() << endl;
+         cout << "3\n";
          parsed_items.pop_back();
+         cout << "4\n";
       }
       list_of_args = {};
       i->callee = parsed_items.back();
