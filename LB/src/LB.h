@@ -413,6 +413,7 @@ class FunctionItem : public Item {
   public:
     std::string name;
     std::string entry_label;
+    std::string longest_name;
     string type; 
     bool isMain;
     vector<Variable*> arguments; 

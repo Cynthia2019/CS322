@@ -16,6 +16,7 @@
 #include "parser.h"
 #include "scope.h"
 #include "codegenerator.h"
+#include "loop.h"
 
 using namespace std;
 
@@ -78,9 +79,6 @@ int main(
    * Parse the input file.
    */
   LB::Program p;
-/*
-    * Parse the L3 program.
-    */
   if (parse_only) {
     p = LB::parse_file(argv[optind]);
     cout << "======parsed========" << endl;
@@ -90,8 +88,14 @@ int main(
     for (auto f : p.functions) {
       LB::unscope(f);
     }
-    cout << "======parsed========" << endl;
-    p.printProgram();
+    // cout << "======parsed========" << endl;
+    // p.printProgram();
+    cout << "======start checking while=======" << endl; 
+    for(LB::Function* f : p.functions) {
+      LB::processLoop(p, f); 
+    }
+    cout << "======start codegen=====" << endl;
+    LB::generate_code(p);
   }
 
   return 0;

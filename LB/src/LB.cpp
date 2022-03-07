@@ -109,6 +109,7 @@ namespace LB
       Function::variables[variableName] = new Variable(variableName, type);
       break;
     }
+    if(this->longest_name.size() < variableName.size()) longest_name = variableName;
     return Function::variables[variableName];
   }
 

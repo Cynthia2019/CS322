@@ -1,0 +1,43 @@
+define void :main() {
+	int64 nums_m_0
+	int64 nums_n_0
+	int64 nums_k_0
+	int64 nums_ans_0
+	int64[][][] nums_nums_0
+nums_m_0 <- input()
+nums_n_0 <- input()
+nums_k_0 <- input()
+	nums_nums_0 <- new Array(nums_m_0, nums_n_0, nums_k_0)
+	nums_ans_0 <- :takeInput(nums_nums_0, nums_m_0, nums_n_0, nums_k_0)
+	nums_ans_0 <- nums_ans_0 << 1
+	nums_ans_0 <- nums_ans_0 + 1
+	print(nums_ans_0)
+	return
+}
+define int64 :takeInput(int64[][][], int64, int64, int64) {
+	int64 check_m_i_0
+	int64 check_m_j_0
+	int64 check_m_l_0
+	int64 check_m_check_m_0
+	int64 check_m_check_n_0
+	int64 check_m_check_k_0
+	int64 check_m_ans_0
+	check_m_i_0 <- 0
+	check_m_j_0 <- 0
+	check_m_l_0 <- 0
+	:loop_m
+	:loop_n
+	:loop_k
+	:take
+	int64 check_m_num_1
+check_m_num_1 <- input()
+	nums[check_m_i_0][check_m_j_0][check_m_l_0] <- check_m_num_1
+	check_m_ans_0 <- check_m_ans_0 + check_m_num_1
+	check_m_l_0 <- check_m_l_0 + 1
+	:inc_j
+	check_m_j_0 <- check_m_j_0 + 1
+	:inc_i
+	check_m_i_0 <- check_m_i_0 + 1
+	:end
+	return check_m_ans_0
+}
