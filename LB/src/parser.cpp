@@ -758,7 +758,21 @@ template <>
         cout << "firing args_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       std::string args = in.string();
-      int64_t argcount = count(args.begin(), args.end(), ',') + 1;
+      bool allspace = true;
+      for (auto c : args) {
+        if (c != ' ') {
+          allspace = false;
+          break;
+        }
+      }
+
+      int argcount;
+      if (allspace) {
+        argcount = 0;
+      } else {
+        argcount = count(args.begin(), args.end(), ',') + 1;
+      }
+      // cout <<  << endl;
       if (is_debug)
         cout << argcount << " arguments in total" << endl;
       while (argcount--) {
