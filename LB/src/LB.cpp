@@ -58,6 +58,9 @@ namespace LB
 
   std::string Program::getLongestLabel() {
     size_t maxlen = 0;
+    if (LL != "") {
+      return LL;
+    }
     ::string longgest = ":";
     for (auto f : this->functions) {
         for (auto i: f->instructions) {
@@ -71,6 +74,7 @@ namespace LB
           }
         }
     }
+    LL = longgest;
     return longgest;
   }
 
