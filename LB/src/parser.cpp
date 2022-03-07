@@ -877,6 +877,39 @@ template <>
   };
   // action for var <- t op t
   template <>
+  struct action<Instruction_break_rule>
+  {
+    template <typename Input>
+    static void apply(const Input &in, Program &p)
+    {
+      if (is_debug)
+        cout << "firing Instruction_op_rule: " << in.string() << endl;
+      auto currentF = p.functions.back();
+      auto i = new Instruction_break();
+      i->scope = scope_stack.top();
+      i->lineno = in.position().line;
+      currentF->instructions.push_back(i);
+    }
+  };
+
+  template <>
+  struct action<Instruction_continue_rule>
+  {
+    template <typename Input>
+    static void apply(const Input &in, Program &p)
+    {
+      if (is_debug)
+        cout << "firing Instruction_op_rule: " << in.string() << endl;
+      auto currentF = p.functions.back();
+      auto i = new Instruction_continue();
+      i->scope = scope_stack.top();
+      i->lineno = in.position().line;
+      currentF->instructions.push_back(i);
+    }
+  };
+
+
+  template <>
   struct action<Instruction_op_rule>
   {
     template <typename Input>

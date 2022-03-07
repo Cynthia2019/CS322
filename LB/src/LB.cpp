@@ -256,6 +256,12 @@ void Instruction_print::accept(Visitor* v) {
 void Instruction_input::accept(Visitor* v) {
   v->visit(this); 
 }
+void Instruction_continue::accept(Visitor* v) {
+  v->visit(this); 
+}
+void Instruction_break::accept(Visitor* v) {
+  v->visit(this); 
+}
 void Instruction_input_assignment::accept(Visitor* v) {
   v->visit(this); 
 }
