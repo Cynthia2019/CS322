@@ -450,7 +450,7 @@ class FunctionItem : public Item {
     void printProgram(void);
     Program();
   private:
-    std::string LL;
+    std::string LL = "";
   };
 
   class Visitor {
