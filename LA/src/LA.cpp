@@ -34,13 +34,13 @@ namespace LA
   Function::Function(void) {}
 
   Variable* Function::getVariable(std::string name) {
-    //std::string variableName = "var_" + name;
-    return Function::variables[name];
+    std::string variableName = "var_" + name;
+    return Function::variables[variableName];
   }
 
   Variable* Function::newVariable(std::string variable, VarTypes type, int dim){
-    // std::string variableName = "var_" + variable;
-    std::string variableName =variable;
+    std::string variableName = "var_" + variable;
+    // std::string variableName =variable;
     if(Function::variables.find(variableName) != Function::variables.end()){
       cerr << "multiple definition of " << variable << endl;
       abort();

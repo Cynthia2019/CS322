@@ -307,7 +307,19 @@ class FunctionItem : public Item {
   };
   class Instruction_input : public Instruction {
     public: 
-    std::string toString() override { return "input ()\n";};
+    std::string toString() override { return "input ()";};
+    void accept(Visitor *v) override; 
+  };
+
+  class Instruction_continue :public Instruction {
+    public:
+    std::string toString() override { return "continue";};
+    void accept(Visitor *v) override; 
+  };
+
+  class Instruction_break: public Instruction {
+    public:
+    std::string toString() override { return "break";};
     void accept(Visitor *v) override; 
   };
 
@@ -455,6 +467,8 @@ class FunctionItem : public Item {
       virtual void visit(Instruction_goto *i) = 0;
       virtual void visit(Instruction_print *i) = 0;
       virtual void visit(Instruction_input *i) = 0;
+      virtual void visit(Instruction_break *i) = 0;
+      virtual void visit(Instruction_continue *i) = 0;
       virtual void visit(Instruction_input_assignment *i) = 0;
       virtual void visit(Instruction_call_noassign *i) = 0;
       virtual void visit(Instruction_call_assignment *i) = 0;
