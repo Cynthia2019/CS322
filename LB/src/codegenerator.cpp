@@ -171,7 +171,10 @@ namespace LB {
     void CodeGenerator::visit(Instruction_while *i) {
         string s; 
         string newV = newVar(); 
-        s += "\tint64 " + newV + "\n";
+        WhileLoop* w = loop[i]; 
+        s = "\t" + w->cond->toString() + "\n";
+        outputFile << s;   
+        s = "\tint64 " + newV + "\n";
         outputFile << s;     
         s = "\t" + newV + " <- " + i->condition->oprand1->toString() + " " + i->condition->op->toString() + " " + i->condition->oprand2->toString() + "\n";
         outputFile << s;    

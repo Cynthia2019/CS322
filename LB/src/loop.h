@@ -4,7 +4,7 @@
 using namespace std; 
 namespace LB {
     struct WhileLoop {
-        Instruction* i; 
+        Instruction_while* i; 
         Label* begin; 
         Label* end; 
         Label* cond; 

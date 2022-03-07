@@ -15,6 +15,8 @@ namespace LB {
                 w->begin = wi->true_label; 
                 w->end = wi->false_label; 
                 w->cond = new Label(p.getLongestLabel() + "_label_" + to_string(counter)); 
+                counter++;
+                w->i = wi;
                 loops.push_back(w); 
             }
         }
@@ -35,6 +37,7 @@ namespace LB {
                 Label* label = label_i->label; 
                 for(WhileLoop* w : loops) {
                     if(label->toString() == w->begin->toString()){
+                        loop[w->i] = w;
                         loopStack.push(w);
                     }
                     else if(label->toString() == w->end->toString()) {
