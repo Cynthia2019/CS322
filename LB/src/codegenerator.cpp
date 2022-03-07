@@ -38,9 +38,6 @@ namespace LB {
     void CodeGenerator::visit(Instruction_assignment *i) {
         string dst = i->dst->toString(); 
         string src; 
-        if(i->src->getType() == item_function) {
-            src = ":";
-        }
         src += i->src->toString(); 
         outputFile << "\t" << dst << " <- " << src << endl;
     }
@@ -102,7 +99,6 @@ namespace LB {
     }
     void CodeGenerator::visit(Instruction_call_noassign *i) {
         string s = "\t";
-        if(i->callee->getType() == item_function) s += ":";
         s += i->callee->toString() + "("; 
         if(i->args.size() > 0) {
             for(int idx = 0; idx < i->args.size() - 1; idx++){
@@ -115,7 +111,6 @@ namespace LB {
     }
     void CodeGenerator::visit(Instruction_call_assignment *i) {
         string s = "\t" + i->dst->toString() + " <- ";
-        if(i->callee->getType() == item_function) s += ":";
         s += i->callee->toString() + "("; 
         if(i->args.size() > 0) {
             for(int idx = 0; idx < i->args.size() - 1; idx++){
