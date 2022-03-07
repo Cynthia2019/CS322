@@ -88,9 +88,7 @@ int main(
     for (auto f : p.functions) {
       LB::unscope(f);
     }
-    // cout << "======parsed========" << endl;
-    // p.printProgram();
-    cout << "======start codegen=====" << endl;
+    cout << "============start codegen==========" << endl;
     LB::generate_code(p);
   }
 
