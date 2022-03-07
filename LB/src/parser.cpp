@@ -182,8 +182,8 @@ namespace LB
                             pegtl::one<'+'>, 
                             pegtl::one<'-'>, 
                             pegtl::one<'*'>,
-                            pegtl::one<'&'>,
-                            cmp_op_rule
+                            pegtl::one<'&'>
+                            // cmp_op_rule
                             >
   {
   };
@@ -236,7 +236,7 @@ namespace LB
                                       seps, 
                                       pegtl::sor<variable_rule, number_rule>,
                                       seps,
-                                      op_rule,
+                                      pegtl::sor<op_rule, cmp_op_rule>,
                                       seps,
                                       pegtl::sor<number_rule, variable_rule>>
   {
@@ -1030,10 +1030,11 @@ template <>
         cout << "firing Instruction_call_assignment_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
       auto i = new Instruction_call_assignment();
-      i->scope = scope_stack.top();
+      i->scope = scope_stack.top();       
       i->lineno = in.position().line;
       for(Item* item : list_of_args) {
          i->args.push_back(item);
+         cout << item->toString() << endl;
          parsed_items.pop_back();
       }
       list_of_args = {};
@@ -1059,33 +1060,12 @@ template <>
       i->scope = scope_stack.top();
       i->lineno = in.position().line;
       i->label = dynamic_cast<Label*>(parsed_items.back());;
+      
       parsed_items.pop_back();
-      currentF->instructions.push_back(i);
       if(is_debug) cout << i->toString() << endl;
+      currentF->instructions.push_back(i);
     }
   };
-  // action for br t label
-  // template <>
-  // struct action<Instruction_br_t_rule>
-  // {
-  //   template <typename Input>
-  //   static void apply(const Input &in, Program &p)
-  //   {
-  //     if (is_debug)
-  //       cout << "firing Instruction_br_t_rule: " << in.string() << endl;
-  //     auto currentF = p.functions.back();
-  //     auto i = new Instruction_br_t();
-  //     i->lineno = in.position().line;
-  //     i->label2 = dynamic_cast<Label*>(parsed_items.back());;
-  //     parsed_items.pop_back();
-  //     i->label1 = dynamic_cast<Label*>(parsed_items.back());;
-  //     parsed_items.pop_back();
-  //     i->condition = parsed_items.back();
-  //     parsed_items.pop_back();
-  //     currentF->instructions.push_back(i);
-  //     if(is_debug) cout << i->toString() << endl;
-  //   }
-  // };
 
   template <>
   struct action<Instruction_assignment_rule>

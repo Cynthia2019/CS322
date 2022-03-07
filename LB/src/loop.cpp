@@ -46,12 +46,12 @@ namespace LB {
                 }
             }
         }
-        for(auto m : loop) {
-            cout << "instruction: " << m.first->toString() << endl;
-            cout << "loop begin: " << m.second->begin->toString() << endl;
-            cout << "loop end: " << m.second->end->toString() << endl;
-            cout << "loop new label: " << m.second->cond->toString() << endl;
-        }
+        // for(auto m : loop) {
+        //     cout << "instruction: " << m.first->toString() << endl;
+        //     cout << "loop begin: " << m.second->begin->toString() << endl;
+        //     cout << "loop end: " << m.second->end->toString() << endl;
+        //     cout << "loop new label: " << m.second->cond->toString() << endl;
+        // }
         return loop;
     }
 }
