@@ -28,7 +28,7 @@ namespace LA {
     CodeGenerator::CodeGenerator(Function *f, std::ofstream &ofs) :f(f), outputFile(ofs) {}
 
     std::string CodeGenerator::newVar(Variable* v) {
-        string s = "%" + v->toString() + "_new_" + to_string(counter); 
+        string s = "%temp_" + v->toString() + "_new_" + to_string(counter); 
         counter++; 
         return s; 
     }
