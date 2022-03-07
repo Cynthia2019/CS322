@@ -1,43 +1,43 @@
 define void :main() {
-	int64 nums_m_0
-	int64 nums_n_0
-	int64 nums_k_0
-	int64 nums_ans_0
-	int64[][][] nums_nums_0
-nums_m_0 <- input()
-nums_n_0 <- input()
-nums_k_0 <- input()
-	nums_nums_0 <- new Array(nums_m_0, nums_n_0, nums_k_0)
-	nums_ans_0 <- :takeInput(nums_nums_0, nums_m_0, nums_n_0, nums_k_0)
-	nums_ans_0 <- nums_ans_0 << 1
-	nums_ans_0 <- nums_ans_0 + 1
-	print(nums_ans_0)
+	int64 ret_in_0
+	int64 ret_ret_0
+	ret_in_0 <- input()
+	ret_in_0 <- ret_in_0 - 1
+	ret_in_0 <- ret_in_0 >> 1
+	ret_ret_0 <- :perfect(ret_in_0)
+	print(ret_ret_0)
 	return
 }
-define int64 :takeInput(int64[][][], int64, int64, int64) {
-	int64 check_m_i_0
-	int64 check_m_j_0
-	int64 check_m_l_0
-	int64 check_m_check_m_0
-	int64 check_m_check_n_0
-	int64 check_m_check_k_0
-	int64 check_m_ans_0
-	check_m_i_0 <- 0
-	check_m_j_0 <- 0
-	check_m_l_0 <- 0
-	:loop_m
-	:loop_n
-	:loop_k
-	:take
-	int64 check_m_num_1
-check_m_num_1 <- input()
-	nums[check_m_i_0][check_m_j_0][check_m_l_0] <- check_m_num_1
-	check_m_ans_0 <- check_m_ans_0 + check_m_num_1
-	check_m_l_0 <- check_m_l_0 + 1
-	:inc_j
-	check_m_j_0 <- check_m_j_0 + 1
-	:inc_i
-	check_m_i_0 <- check_m_i_0 + 1
-	:end
-	return check_m_ans_0
+define int64 :perfect(int64 in) {
+	int64 square_left_0
+	int64 square_right_0
+	square_left_0 <- 0
+	square_right_0 <- in
+	:perfect_loop
+	int64 square_mid_0
+	int64 square_square_0
+	square_mid_0 <- square_right_0 + square_left_0
+	square_mid_0 <- square_mid_0 >> 1
+	square_square_0 <- square_mid_0 * square_mid_0
+	int64 in_new_0
+	in_new_0 <- square_square_0 < in
+	br in_new_0 :perfect_leftPlus :cont
+	:cont
+	int64 in_new_1
+	in_new_1 <- square_square_0 > in
+	br in_new_1 :perfect_rightPlus :perfect_true
+	:perfect_leftPlus
+	square_left_0 <- square_mid_0 + 1
+	int64 in_new_2
+	in_new_2 <- square_left_0 <= square_right_0
+	br in_new_2 :perfect_loop :perfect_false
+	:perfect_rightPlus
+	square_right_0 <- square_mid_0 - 1
+	int64 in_new_3
+	in_new_3 <- square_left_0 <= square_right_0
+	br in_new_3 :perfect_loop :perfect_false
+	:perfect_true
+	return 1
+	:perfect_false
+	return 0
 }

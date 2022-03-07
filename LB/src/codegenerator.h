@@ -1,12 +1,13 @@
 #pragma once
 
 #include <LB.h>
+#include<loop.h>
 
 namespace LB{
     void generate_code(Program p);       
   class CodeGenerator : public Visitor {
     public: 
-      CodeGenerator(Function* f, std::ofstream &); 
+      CodeGenerator(Function* f, map<Instruction*, WhileLoop*>& loop, std::ofstream &); 
       void visit(Instruction_ret_not *i) override;
       void visit(Instruction_ret_t *i) override;
       void visit(Instruction_assignment *i) override;
@@ -26,11 +27,14 @@ namespace LB{
       void visit(Instruction_while *i) override;
       void visit(Instruction_if *i) override;
       void visit(Instruction_goto *i) override;
+      void visit(Instruction_break *i) override; 
+      void visit(Instruction_continue *i) override; 
       std::string newVar(); 
     private: 
       std::ofstream &outputFile;
       Function* f;
       int64_t counter = 0; 
+      map<Instruction*, WhileLoop*> loop;
   };
 
 }

@@ -13,7 +13,8 @@ extern bool is_debug;
 
 namespace LB {
 
-    CodeGenerator::CodeGenerator(Function *f, std::ofstream &ofs) :f(f), outputFile(ofs) {}
+    CodeGenerator::CodeGenerator(Function *f, map<Instruction*, WhileLoop*>& loop, std::ofstream &ofs) : 
+    f(f), loop(loop), outputFile(ofs) {}
 
     // std::string CodeGenerator::newVar(Variable* v) {
     //     string s = v->toString() + "_new_" + to_string(counter); 
@@ -160,26 +161,40 @@ namespace LB {
     void CodeGenerator::visit(Instruction_if *i) {
         string s; 
         string newV = newVar(); 
-        s += "\tint64 " + newV;
+        s += "\tint64 " + newV + "\n";
         outputFile << s;     
         s = "\t" + newV + " <- " + i->condition->oprand1->toString() + " " + i->condition->op->toString() + " " + i->condition->oprand2->toString() + "\n";
         outputFile << s;    
-        s = "\tbr " + newV + i->true_label->toString() + " " + i->false_label->toString() + '\n'; 
+        s = "\tbr " + newV + " " + i->true_label->toString() + " " + i->false_label->toString() + '\n'; 
         outputFile << s;   
     }
     void CodeGenerator::visit(Instruction_while *i) {
         string s; 
         string newV = newVar(); 
-        s += "\tint64 " + newV;
+        s += "\tint64 " + newV + "\n";
         outputFile << s;     
         s = "\t" + newV + " <- " + i->condition->oprand1->toString() + " " + i->condition->op->toString() + " " + i->condition->oprand2->toString() + "\n";
         outputFile << s;    
-        s = "\tbr " + newV + i->true_label->toString() + " " + i->false_label->toString() + '\n'; 
+        s = "\tbr " + newV + " " + i->true_label->toString() + " " + i->false_label->toString() + '\n'; 
         outputFile << s;        
     }
     void CodeGenerator::visit(Instruction_goto *i) {
         string s; 
-        s += "\t br " + i->label->toString(); 
+        s += "\tbr " + i->label->toString(); 
+        outputFile << s;        
+    }
+    void CodeGenerator::visit(Instruction_break *i) {
+        string s; 
+        WhileLoop* w = loop[i]; 
+        Label* I_exit = w->end; 
+        s = "\tbr " + I_exit->toString() + "\n"; 
+        outputFile << s;        
+    }
+    void CodeGenerator::visit(Instruction_continue *i) {
+        string s; 
+        WhileLoop* w = loop[i]; 
+        Label* I_cond = w->cond; 
+        s = "\tbr " + I_cond->toString() + "\n"; 
         outputFile << s;        
     }
     void generate_code(Program p) {
@@ -190,7 +205,8 @@ namespace LB {
         std::ofstream outputFile;
         outputFile.open("prog.LA");
         for (auto f : p.functions) {
-            CodeGenerator cg(f, outputFile);
+            map<Instruction*, WhileLoop*> loop = processLoop(p, f); 
+            CodeGenerator cg(f, loop, outputFile);
             cout << "new Function: " << endl; 
             outputFile << "define " << f->type << " :" << f->name << "(";
             for (int i = f->arguments.size() - 1; i >= 0 ; i--) {
@@ -211,6 +227,7 @@ namespace LB {
                         s += "[]";
                     }
                 }
+                s += " " + f->arguments[i]->toString();
                 if (i != 0) {
                     s += ", ";
                 }
