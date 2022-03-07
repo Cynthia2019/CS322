@@ -757,36 +757,44 @@ template <>
       if (is_debug)
         cout << "firing args_rule: " << in.string() << endl;
       auto currentF = p.functions.back();
-      std::string args = in.string(); 
-      if(args.size() == 0) return ;
-      while(args.find(',') != args.npos){
-          int n = args.find(','); 
-          //eliminate any space in 0-n
-          std::string temp = args.substr(0, n); 
-          temp.erase(std::remove_if(temp.begin(), temp.end(), [](unsigned char x){return std::isspace(x);}), temp.end()); 
-          if(is_debug) cout << "args: " << temp << endl;
-          if(isdigit(temp[0]) || temp[0] == '-'){
-              Number* i = new Number(std::stoll(temp)); 
-              list_of_args.push_back(i);
-          }
-          else {
-            auto currScope = scope_stack.top();
-            Variable *i = currScope->getVariable(temp);
-            list_of_args.push_back(i);
-          }
-          args = args.substr(n+1);
+      std::string args = in.string();
+      int64_t argcount = count(args.begin(), args.end(), ',') + 1;
+      if (is_debug)
+        cout << argcount << " arguments in total" << endl;
+      while (argcount--) {
+        list_of_args.push_back(parsed_items.back());
+        parsed_items.pop_back();
       }
-      if(is_debug) cout << "args after parsed: " << args << endl;
-      args.erase(std::remove_if(args.begin(), args.end(), [](unsigned char x){return std::isspace(x);}), args.end()); 
-      if(isdigit(args[0])){
-        Number* i = new Number(std::stoll(args)); 
-        list_of_args.push_back(i);
-      }
-      else {
-        auto currScope = scope_stack.top();
-        Variable *i = currScope->getVariable(args);
-        list_of_args.push_back(i);
-      }
+      
+      // if(args.size() == 0) return ;
+      // while(args.find(',') != args.npos){
+      //     int n = args.find(','); 
+      //     //eliminate any space in 0-n
+      //     std::string temp = args.substr(0, n); 
+      //     temp.erase(std::remove_if(temp.begin(), temp.end(), [](unsigned char x){return std::isspace(x);}), temp.end()); 
+      //     if(is_debug) cout << "args: " << temp << endl;
+      //     if(isdigit(temp[0]) || temp[0] == '-'){
+      //         Number* i = new Number(std::stoll(temp)); 
+      //         list_of_args.push_back(i);
+      //     }
+      //     else {
+      //       auto currScope = scope_stack.top();
+      //       Variable *i = currScope->getVariable(temp);
+      //       list_of_args.push_back(i);
+      //     }
+      //     args = args.substr(n+1);
+      // }
+      // if(is_debug) cout << "args after parsed: " << args << endl;
+      // args.erase(std::remove_if(args.begin(), args.end(), [](unsigned char x){return std::isspace(x);}), args.end()); 
+      // if(isdigit(args[0])){
+      //   Number* i = new Number(std::stoll(args)); 
+      //   list_of_args.push_back(i);
+      // }
+      // else {
+      //   auto currScope = scope_stack.top();
+      //   Variable *i = currScope->getVariable(args);
+      //   list_of_args.push_back(i);
+      // }
     }
   };
   // action for + - & * << >> < <= > >= =
@@ -951,12 +959,12 @@ template <>
       auto i = new Instruction_call_noassign();
       i->scope = scope_stack.top();
       i->lineno = in.position().line;
-      reverse(list_of_args.begin(), list_of_args.end());
+      // reverse(list_of_args.begin(), list_of_args.end());
       while(!list_of_args.empty()) {
           i->args.push_back(list_of_args.back());
           cout << "arg: " << list_of_args.back()->toString() << endl;
           list_of_args.pop_back();
-          parsed_items.pop_back();
+          // parsed_items.pop_back();
       }
       i->callee = parsed_items.back();
       parsed_items.pop_back();
@@ -1032,14 +1040,10 @@ template <>
       auto i = new Instruction_call_assignment();
       i->scope = scope_stack.top();       
       i->lineno = in.position().line;
-      for(Item* item : list_of_args) {
-        cout << "1\n"; 
-         i->args.push_back(item);
-         cout << "2\n";
-         cout << item->toString() << endl;
-         cout << "3\n";
-         parsed_items.pop_back();
-         cout << "4\n";
+      while(!list_of_args.empty()) {
+          i->args.push_back(list_of_args.back());
+          list_of_args.pop_back();
+          // parsed_items.pop_back();
       }
       list_of_args = {};
       i->callee = parsed_items.back();
@@ -1289,11 +1293,11 @@ template <>
       auto i = new Instruction_array();
       i->scope = scope_stack.top();
       i->lineno = in.position().line;
-      reverse(list_of_args.begin(), list_of_args.end());
+      // reverse(list_of_args.begin(), list_of_args.end());
       while(!list_of_args.empty()) {
           i->args.push_back(list_of_args.back());
           list_of_args.pop_back();
-          parsed_items.pop_back();
+          // parsed_items.pop_back();
       }
       i->dst = dynamic_cast<Variable*>(parsed_items.back());
       parsed_items.pop_back();
