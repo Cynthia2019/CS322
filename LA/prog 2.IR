@@ -1,0 +1,20 @@
+define void :main() {
+	:label_bb_temp_0
+	int64 %temp_lineno
+	int64 %temp_arr_dimension
+	int64 %temp_arr_lengh
+	int64 %temp_arr_index
+	int64 %temp_condition
+	int64 %v
+	call print(%v)
+	br :_error_uninitialize
+	:_error_uninitialize
+	call tensor-error(%temp_lineno)
+	br :_error_single_dimension
+	:_error_single_dimension
+	call tensor-error(%temp_lineno, %temp_arr_lengh, %temp_arr_index)
+	br :_error_multi_dimension
+	:_error_multi_dimension
+	call tensor-error(%temp_lineno, %temp_arr_dimension, %temp_arr_lengh, %temp_arr_index)
+	return
+}
